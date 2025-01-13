@@ -59,7 +59,7 @@ class Client(ClientBase):
         self.cache_path = cache_path
 
 
-    def get_greens_tensors(self, stations=[], origins=[], verbose=False):
+    def get_greens_tensors(self, stations=[], origins=[], verbose=False, **kwargs):
         """ Downloads Green's tensors
 
         Returns a ``GreensTensorList`` in which each element corresponds to a
