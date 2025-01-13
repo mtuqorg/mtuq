@@ -209,8 +209,9 @@ static PyObject *misfit(PyObject *self, PyObject *args) {
 
           // Sum cross-correlations of all components being considered
           for (ig=0; ig<NG; ig++) {
+            double source_val = sources (isrc, ig);
             for (it=0; it<NPAD; it++) {
-                cc(it) += greens_data(ista,ic,ig,it) * sources(isrc,ig);
+                cc(it) += greens_data(ista,ic,ig,it) * source_val;
             }
           }
         }
