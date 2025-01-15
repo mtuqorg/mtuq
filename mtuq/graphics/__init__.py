@@ -38,7 +38,7 @@ from mtuq.graphics.waveforms import\
     plot_data_greens1, plot_data_greens2, plot_data_greens3
 
 from mtuq.graphics.uq.omega import\
-    plot_cdf, plot_pdf, plot_screening_curve
+    plot_cdf, plot_pdf, plot_screening_curve, plot_confidence_curve
 
 from mtuq.graphics.uq import\
     likelihood_analysis

@@ -613,6 +613,55 @@ def _plot_omega_matplotlib(filename, omega, values,
     pyplot.savefig(filename)
     pyplot.close()
 
+def _plot_confidence_curve_matplotlib(filename, fractional_volume, values, 
+    title=None, xlabel='V', ylabel=r'$\mathcal{P}(V)$', figsize=(4., 4.), fontsize=18.):
+
+    fractional_volume = np.insert(fractional_volume, 0, 0)
+    values = np.insert(values, 0, 0)
+    fractional_volume = np.append(fractional_volume, 1)
+    values = np.append(values, 1)
+    fig, ax = pyplot.subplots(figsize=figsize)
+
+    ax.plot(fractional_volume, values, 'r-', linewidth=2.5, clip_on=False)
+
+    ax.plot(fractional_volume, fractional_volume, linestyle='--', color='gray', linewidth=1.5)
+
+    ax.fill_between(fractional_volume, values, 0, color='gray', alpha=0.3)
+
+    # Make sure the plot starts at 0,0
+    fractional_volume = np.insert(fractional_volume, 0, 0)
+    values = np.insert(values, 0, 0)
+
+    ax.plot([1], [1], 'ko', clip_on=False)  # Marker at top-right corner
+    ax.plot([0], [0], 'ko', clip_on=False)  # Bottom-left corner marker
+
+
+    # Display in text the average value of P(V)
+    average = np.mean(values)
+    ax.text(0.72, 0.10, r'$\mathcal{{P}}_{{AV}} = {:.2f}$'.format(average),  # Use raw string (r'') and LaTeX math formatting
+        fontsize=fontsize+2, ha='center', va='center', transform=ax.transAxes)
+    
+    # Customize tick labels
+    ax.set_xticks(np.linspace(0, 1, 11))  # Keep original ticks
+    ax.set_yticks(np.linspace(0, 1, 11))
+    ax.set_xticklabels(['0' if tick == 0 else '1' if tick == 1 else '' for tick in np.linspace(0, 1, 11)], fontsize=fontsize-2)
+    ax.set_yticklabels(['0' if tick == 0 else '1' if tick == 1 else '' for tick in np.linspace(0, 1, 11)], fontsize=fontsize-2)
+
+
+    if title:
+        ax.set_title(title, fontsize=fontsize)
+
+    if xlabel:
+        ax.set_xlabel(xlabel, fontsize=fontsize)
+
+    if ylabel:
+        ax.set_ylabel(ylabel, fontsize=fontsize)
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.margins(x=0.02, y=0.02)
+
+    pyplot.savefig(filename, bbox_inches='tight', dpi=300)
 #
 # utility functions
 #
