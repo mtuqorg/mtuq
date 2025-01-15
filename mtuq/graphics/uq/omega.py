@@ -164,7 +164,7 @@ def _calculate_omega(df, m0=None):
     # extract reference vector
     if type(m0)==MomentTensor:
         # convert from lune to mij parameters
-        m0 = m0.as_vector()
+        m0 = m0.as_matrix()
 
     elif type(m0)==Force:
         raise NotImplementedError
@@ -173,14 +173,41 @@ def _calculate_omega(df, m0=None):
         # assume df holds likelihoods, try maximum likelihood estimate
         idx = _argmax(df)
         m0 = m[idx,:]
+        m0 = np.array([[m0[0], m0[3], m0[4]],
+                          [m0[3], m0[1], m0[5]],
+                          [m0[4], m0[5], m0[2]]])
 
-    # vectorized dot product
-    dp = np.dot(m, m0)
-    dp /= np.sum(m0**2)**0.5
-    dp /= np.sum(m**2, axis=1)**0.5
+
+    m_tensors = np.zeros((m.shape[0], 3, 3))
+    m_tensors[:, 0, 0] = m[:, 0]  # Mrr
+    m_tensors[:, 1, 1] = m[:, 1]  # Mtt
+    m_tensors[:, 2, 2] = m[:, 2]  # Mpp
+    m_tensors[:, 0, 1] = m[:, 3]  # Mrt
+    m_tensors[:, 1, 0] = m[:, 3]  # Mrt (symmetric)
+    m_tensors[:, 0, 2] = m[:, 4]  # Mrp
+    m_tensors[:, 2, 0] = m[:, 4]  # Mrp (symmetric)
+    m_tensors[:, 1, 2] = m[:, 5]  # Mtp
+    m_tensors[:, 2, 1] = m[:, 5]  # Mtp (symmetric)
+    
+    # Compute the dot product of the tensors M and N
+    dot_product = np.einsum('...ij,...ij->...', m0, m_tensors)
+    
+    # Compute the norms of the tensors M and N
+    norm_M = np.sqrt(np.einsum('...ij,...ij->...', m0, m0))
+    norm_N = np.sqrt(np.einsum('...ij,...ij->...', m_tensors, m_tensors))
+    
+    # Compute the cosine of the angle between the tensors
+    cos_angle = dot_product / (norm_M * norm_N)
+
+    # Clip values to the valid range for arccos (prevent errors from numerical precision)
+    cos_angle = cos_angle.clip(-1, 1)
 
     # return angles as NumPy array
-    omega = 180./np.pi * np.arccos(dp)
+    omega = 180./np.pi * np.arccos(cos_angle)
+
+    # Fix nan values for identical vectors
+    omega[np.isnan(omega)] = 0.
+
     return omega
 
 
