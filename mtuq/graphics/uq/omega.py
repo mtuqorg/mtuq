@@ -7,7 +7,7 @@
 import numpy as np
 
 from mtuq import Force, MomentTensor
-from mtuq.graphics.uq._matplotlib import _plot_omega_matplotlib
+from mtuq.graphics.uq._matplotlib import _plot_omega_matplotlib, _plot_confidence_curve_matplotlib
 from mtuq.grid_search import DataArray, DataFrame
 from mtuq.util import warn
 from mtuq.util.math import to_mij
@@ -47,7 +47,7 @@ def plot_pdf(filename, df, var, m0=None, nbins=50, normalized=False, **kwargs):
 
 
 
-def plot_cdf(filename, df, var, nbins=50, normalized=False, **kwargs):
+def plot_cdf(filename, df, var, m0=None, nbins=50, normalized=False, **kwargs):
     """ Plots cumulative distribution function over angular distance
 
     .. rubric :: Input arguments
@@ -77,7 +77,37 @@ def plot_cdf(filename, df, var, nbins=50, normalized=False, **kwargs):
 
     _plot_omega(filename, omega, np.cumsum(pdf), **kwargs)
 
+def plot_confidence_curve(filename, df, var, m0=None, nbins=50, normalized=False, **kwargs):
+    """ Plots confidence curve over fractional volume
 
+    .. rubric :: Input arguments
+
+    ``filename`` (`str`):
+    Name of output image file
+
+    ``df`` (`DataFrame`):
+    Data structure containing moment tensors and corresponding misfit values
+
+    ``var`` (`float` or `array`):
+    Data variance
+
+    ``nbins`` (`int`):
+    Number of angular distance bins
+
+    ``normalized`` (`bool`): 
+    Normalize each angular distance bin by volume of corresponding shell?
+
+    """
+    if not isuniform(df):
+        warn('plot_confidence_curve requires randomly-drawn grid')
+        return
+
+    omega, pdf = _calculate_pdf(df, var, m0=m0, nbins=nbins, 
+        normalized=normalized)
+    _, pdf_homo = _calculate_pdf(df*0, var, m0=m0, nbins=nbins,
+        normalized=normalized)
+
+    _plot_omega(filename, np.cumsum(pdf_homo/np.sum(pdf_homo)), np.cumsum(pdf/np.sum(pdf)), backend=_plot_confidence_curve_matplotlib, **kwargs)
 
 def plot_screening_curve(filename, ds, var, nbins=50, **kwargs):
     """ Plots explosion screening curve (maximum likelihood versus angular
