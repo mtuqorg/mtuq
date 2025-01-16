@@ -629,10 +629,11 @@ class ProcessData(object):
                 dst_value = filenames_unique[filenames_unique_int.index(
                     min(filenames_unique_int, key=lambda x: abs(x - int(dst_desired))))]
 
-                sac_headers = obspy.read('%s/%s/%s/%s%s.ZDD' %
-                                         (self.CPS_database, self.CPS_model,
+                sac_headers = obspy.read('%s/%s/%s%s.ZDD' %
+                                         (self.CPS_database,
                                           dep_folder, dst_value, dep_folder),
                                          format='sac')[0].stats.sac
+
 
                 picks['P'] = sac_headers.a
                 picks['S'] = sac_headers.t0
