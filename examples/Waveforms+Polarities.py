@@ -88,7 +88,9 @@ if __name__=='__main__':
     # unpicked
     #
 
-    polarities = np.array([-1, -1, -1, 1, 1, 0, 1, 1, -1, 1, 1, 1, 0, 1, 1, 1, -1, 1, 1, 0])
+    #polarities = np.array([-1, -1, -1, 1, 1, 0, 1, 1, -1, 1, 1, 1, 0, 1, 1, 1, -1, 1, 1, 0])
+    pol_data = np.genfromtxt('../data/examples/20090407201255351/weights.dat')
+    polarities = pol_data[:,13]
 
 
 
@@ -203,7 +205,8 @@ if __name__=='__main__':
 
     if comm.rank==0:
 
-        results = results_bw + results_sw
+        m = 0.1
+        results = m*results_polarity/sum(abs(polarities)) + (1-m)*(results_bw+ results_sw)
 
         # `grid` index corresponding to minimum misfit
         idx = results.source_idxmin()
