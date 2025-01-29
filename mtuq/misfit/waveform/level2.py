@@ -12,6 +12,7 @@ from mtuq.misfit.waveform.level1 import correlate
 from mtuq.util.math import to_mij, to_rtp
 from mtuq.util.signal import get_components, get_time_sampling
 from mtuq.misfit.waveform import c_ext_L2
+from mtuq.misfit.waveform import c_ext_L1
 
 
 def misfit(data, greens, sources, norm, time_shift_groups,
@@ -87,7 +88,9 @@ def misfit(data, greens, sources, norm, time_shift_groups,
            hybrid_norm, dt, padding[0], padding[1], debug_level, *msg_args)
 
     elif norm in ['L1']:
-        raise NotImplementedError
+        results = c_ext_L1.misfit(
+           data_data, greens_data, greens_greens, sources, groups, weights,
+           hybrid_norm, dt, padding[0], padding[1], debug_level, *msg_args)
 
     if debug_level > 0:
       print('  Elapsed time (C extension) (s): %f' % \
