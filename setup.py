@@ -123,6 +123,10 @@ setup(
             'mtuq.misfit.waveform.c_ext_L2', ['mtuq/misfit/waveform/c_ext_L2.c'],
             include_dirs=[numpy.get_include()],
             extra_compile_args=get_compile_args()),
+        Extension(
+            'mtuq.misfit.waveform.c_ext_L1', ['mtuq/misfit/waveform/c_ext_L1.c'],
+            include_dirs=[numpy.get_include()],
+            extra_compile_args=get_compile_args()),
     ],
 )
 
