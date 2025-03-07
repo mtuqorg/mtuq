@@ -1,0 +1,6 @@
+﻿mtuq.graphics.plot_time_shifts
+==============================
+
+.. currentmodule:: mtuq.graphics
+
+.. autofunction:: plot_time_shifts

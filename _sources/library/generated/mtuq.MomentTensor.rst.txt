@@ -1,0 +1,118 @@
+﻿mtuq.MomentTensor
+=================
+
+.. currentmodule:: mtuq
+.. autoclass:: MomentTensor
+  :show-inheritance:
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  .. rubric:: Public Methods
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~MomentTensor.as_dict
+     ~MomentTensor.as_matrix
+     ~MomentTensor.as_vector
+     ~MomentTensor.cast
+     ~MomentTensor.magnitude
+     ~MomentTensor.moment
+  
+
+  
+
+  
+  

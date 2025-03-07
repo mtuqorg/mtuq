@@ -1,0 +1,6 @@
+﻿mtuq.graphics.attrs._default_backend
+====================================
+
+.. currentmodule:: mtuq.graphics.attrs
+
+.. autofunction:: _default_backend

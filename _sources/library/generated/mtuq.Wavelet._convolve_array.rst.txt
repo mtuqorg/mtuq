@@ -1,0 +1,6 @@
+mtuq.Wavelet._convolve_array
+============================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Wavelet._convolve_array

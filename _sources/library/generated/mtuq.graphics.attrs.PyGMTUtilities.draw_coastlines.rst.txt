@@ -1,0 +1,6 @@
+mtuq.graphics.attrs.PyGMTUtilities.draw_coastlines
+==================================================
+
+.. currentmodule:: mtuq.graphics.attrs
+
+.. automethod:: PyGMTUtilities.draw_coastlines

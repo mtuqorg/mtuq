@@ -1,0 +1,6 @@
+﻿mtuq.graphics.plot_misfit_latlon
+================================
+
+.. currentmodule:: mtuq.graphics
+
+.. autofunction:: plot_misfit_latlon

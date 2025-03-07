@@ -1,0 +1,6 @@
+mtuq.io.clients.CPS_SAC.Client._get_greens_tensor
+=================================================
+
+.. currentmodule:: mtuq.io.clients.CPS_SAC
+
+.. automethod:: Client._get_greens_tensor

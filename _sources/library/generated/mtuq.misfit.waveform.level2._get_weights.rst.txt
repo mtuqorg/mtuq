@@ -1,0 +1,6 @@
+mtuq.misfit.waveform.level2._get_weights
+========================================
+
+.. currentmodule:: mtuq.misfit.waveform.level2
+
+.. autofunction:: _get_weights

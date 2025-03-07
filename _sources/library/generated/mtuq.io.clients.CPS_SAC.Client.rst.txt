@@ -1,0 +1,113 @@
+﻿mtuq.io.clients.CPS_SAC.Client
+==============================
+
+.. currentmodule:: mtuq.io.clients.CPS_SAC
+.. autoclass:: Client
+  :show-inheritance:
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  .. rubric:: Public Methods
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~Client.get_greens_tensors
+  
+
+  
+  .. rubric:: Private Methods
+
+  .. warning::
+
+       Private methods are mainly for internal/developer use and their API might change without notice.
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~Client._get_greens_tensor
+  
+
+  
+  

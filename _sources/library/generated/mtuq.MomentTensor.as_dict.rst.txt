@@ -1,0 +1,6 @@
+mtuq.MomentTensor.as_dict
+=========================
+
+.. currentmodule:: mtuq
+
+.. automethod:: MomentTensor.as_dict

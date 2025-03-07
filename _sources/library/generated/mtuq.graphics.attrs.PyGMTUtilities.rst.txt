@@ -1,0 +1,118 @@
+﻿mtuq.graphics.attrs.PyGMTUtilities
+==================================
+
+.. currentmodule:: mtuq.graphics.attrs
+.. autoclass:: PyGMTUtilities
+  :show-inheritance:
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  .. rubric:: Public Methods
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~PyGMTUtilities.calculate_plotting_region
+     ~PyGMTUtilities.configure_colormap
+     ~PyGMTUtilities.draw_coastlines
+     ~PyGMTUtilities.get_header
+     ~PyGMTUtilities.get_resolution
+     ~PyGMTUtilities.prepare_latex_annotations
+  
+
+  
+
+  
+  

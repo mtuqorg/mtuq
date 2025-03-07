@@ -1,0 +1,6 @@
+mtuq.graphics.attrs.PyGMTUtilities.configure_colormap
+=====================================================
+
+.. currentmodule:: mtuq.graphics.attrs
+
+.. automethod:: PyGMTUtilities.configure_colormap

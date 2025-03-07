@@ -1,0 +1,6 @@
+﻿mtuq.grid_search.grid_search
+============================
+
+.. currentmodule:: mtuq.grid_search
+
+.. autofunction:: grid_search

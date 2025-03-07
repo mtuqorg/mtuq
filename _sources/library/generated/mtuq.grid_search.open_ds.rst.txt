@@ -1,0 +1,6 @@
+﻿mtuq.grid_search.open_ds
+========================
+
+.. currentmodule:: mtuq.grid_search
+
+.. autofunction:: open_ds

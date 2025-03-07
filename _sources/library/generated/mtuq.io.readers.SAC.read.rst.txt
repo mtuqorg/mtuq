@@ -1,0 +1,6 @@
+﻿mtuq.io.readers.SAC.read
+========================
+
+.. currentmodule:: mtuq.io.readers.SAC
+
+.. autofunction:: read

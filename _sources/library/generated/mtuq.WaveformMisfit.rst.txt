@@ -1,0 +1,105 @@
+﻿mtuq.WaveformMisfit
+===================
+
+.. currentmodule:: mtuq
+.. autoclass:: WaveformMisfit
+  :show-inheritance:
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  .. rubric:: Public Methods
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~WaveformMisfit.collect_attributes
+     ~WaveformMisfit.collect_synthetics
+  
+
+  
+
+  
+  

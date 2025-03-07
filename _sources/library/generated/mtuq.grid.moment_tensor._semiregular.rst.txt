@@ -1,0 +1,6 @@
+﻿mtuq.grid.moment_tensor._semiregular
+====================================
+
+.. currentmodule:: mtuq.grid.moment_tensor
+
+.. autofunction:: _semiregular

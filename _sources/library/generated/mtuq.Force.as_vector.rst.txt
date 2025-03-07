@@ -1,0 +1,6 @@
+mtuq.Force.as_vector
+====================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Force.as_vector

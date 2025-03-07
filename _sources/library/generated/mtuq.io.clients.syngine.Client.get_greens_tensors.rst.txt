@@ -1,0 +1,6 @@
+mtuq.io.clients.syngine.Client.get_greens_tensors
+=================================================
+
+.. currentmodule:: mtuq.io.clients.syngine
+
+.. automethod:: Client.get_greens_tensors

@@ -1,0 +1,6 @@
+mtuq.Dataset.get_stats
+======================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Dataset.get_stats

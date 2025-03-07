@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>mtuq.grid.moment_tensor._semiregular &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">mtuq.grid.moment_tensor._semiregular</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="mtuq-grid-moment-tensor-semiregular">
+<h1>mtuq.grid.moment_tensor._semiregular<a class="headerlink" href="#mtuq-grid-moment-tensor-semiregular" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="mtuq.grid.moment_tensor._semiregular">
+<span class="sig-prename descclassname"><span class="pre">mtuq.grid.moment_tensor.</span></span><span class="sig-name descname"><span class="pre">_semiregular</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">npts_v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npts_w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tightness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uniformity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mtuq/grid/moment_tensor.html#_semiregular"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtuq.grid.moment_tensor._semiregular" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns coordinate vectors along the <cite>v, w</cite> axes</p>
+<p class="rubric">Keyword arguments</p>
+<p><code class="docutils literal notranslate"><span class="pre">tightness</span></code> (<cite>float</cite>):
+Value in range <cite>[0,1)</cite> that controls how close the extremal points lie to the 
+boundary of the <cite>v, w</cite> rectangle</p>
+<p><code class="docutils literal notranslate"><span class="pre">uniformity</span></code> (<cite>float</cite>):
+Value in range <cite>[0,1]</cite> that controls the spacing between points</p>
+<ul class="simple">
+<li><p>For <cite>uniformity=0</cite>, the spacing will be regular in <a class="reference external" href="https://mtuqorg.github.io/mtuq/references.html">Tape2012</a> parameters 
+<cite>delta</cite>, <cite>gamma</cite>, which is  good for avoiding distortion near the upper
+and lower edges.</p></li>
+<li><p>For <cite>uniformity=1</cite>, the spacing will be regular in <a class="reference external" href="https://mtuqorg.github.io/mtuq/references.html">Tape2015</a> parameters <cite>v, w</cite>, 
+which means that points are uniformly-spaced in terms of moment tensor 
+Frobenius norms.</p></li>
+<li><p>For intermediate values, the spacing will be <cite>semiregular</cite> in the sense of
+a linear interpolation between the above cases.</p></li>
+</ul>
+</dd></dl>
+
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

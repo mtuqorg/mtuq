@@ -1,0 +1,6 @@
+﻿mtuq.download_greens_tensors
+============================
+
+.. currentmodule:: mtuq
+
+.. autofunction:: download_greens_tensors

@@ -1,0 +1,6 @@
+﻿mtuq.util.math.to_rtp
+=====================
+
+.. currentmodule:: mtuq.util.math
+
+.. autofunction:: to_rtp

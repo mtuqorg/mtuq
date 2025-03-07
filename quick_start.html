@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Quick start &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="_static/style.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Learning Python and ObsPy" href="user_guide/01.html" />
+    <link rel="prev" title="Installation" href="install/index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install/index.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Quick start</a><ul>
+<li><a class="reference internal" href="#serial-example">Serial example</a></li>
+<li><a class="reference internal" href="#parallel-examples">Parallel examples</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="install/index.html" title="Previous Chapter: Installation"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Installation</span>
+    </a>
+  </li>
+  <li>
+    <a href="user_guide/01.html" title="Next Chapter: Learning Python and ObsPy"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Learning Pyth... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="quick-start">
+<h1>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h1>
+<p>An easy way to get started is to try out these <a class="reference external" href="https://github.com/mtuqorg/mtuq/blob/master/examples">examples</a>, which estimate source parameters for an event from <cite>Silwal2016</cite>.</p>
+<p>Before running any of the scripts, users must first <a class="reference external" href="https://mtuqorg.github.io/mtuq/install/index.html">install MTUQ</a>.  After installation finishes, examples can be invoked within the <cite>examples/</cite> directory as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">./&lt;</span><span class="n">name_of_example</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The first time an example runs, Green’s functions will be downloaded, which can take several minutes.  Any subsequent runs will be much faster.</p>
+</div>
+<section id="serial-example">
+<h2>Serial example<a class="headerlink" href="#serial-example" title="Permalink to this headline">¶</a></h2>
+<p>The simplest example is <a class="reference external" href="https://github.com/mtuqorg/mtuq/blob/master/examples/SerialGridSearch.DoubleCouple.py">SerialGridSearch.DoubleCouple.py</a>.  After running the script, users can check their output against this <a class="reference external" href="https://github.com/rmodrak/mtbench/blob/FiguresSilwal2016/SerialGridSearch.DoubleCouple.png">expected result</a>.</p>
+<p>A typical runtime is about 60 seconds.  For faster results, <a class="reference external" href="https://github.com/mtuqorg/mtuq/blob/master/examples/GridSearch.DoubleCouple.py">GridSearch.DoubleCouple.py</a> runs the same inversion in parallel.</p>
+</section>
+<section id="parallel-examples">
+<h2>Parallel examples<a class="headerlink" href="#parallel-examples" title="Permalink to this headline">¶</a></h2>
+<p>All the other examples include MPI parallelization for faster evaluation on parallel systems.</p>
+<p>To see if MPI executables and libraries are present, start by checking if <cite>mpirun</cite> is on the system path.  If necessary, ask a system administrator for assistance installing or configuring MPI.</p>
+<p>If MPI is present, run the parallel examples as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mpirun</span> <span class="o">-</span><span class="n">n</span> <span class="o">&lt;</span><span class="n">nproc</span><span class="o">&gt;</span> <span class="n">python</span> <span class="o">./&lt;</span><span class="n">name_of_example</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Note that the examples will still work if invoked without <cite>mpirun</cite>, but running times will be longer.</p>
+<p><strong>References</strong></p>
+<p>[<cite>Silwal2016</cite>] Vipul Silwal and Carl Tape (2016), Seismic moment tensors and
+estimated uncertainties in southern Alaska, JGR, <a class="reference external" href="https://doi.org/10.1002/2015JB012588">https://doi.org/10.1002/2015JB012588</a></p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+mtuq.Dataset.select
+===================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Dataset.select

@@ -1,0 +1,6 @@
+﻿mtuq.grid.DoubleCoupleGridRegular
+=================================
+
+.. currentmodule:: mtuq.grid
+
+.. autofunction:: DoubleCoupleGridRegular

@@ -1,0 +1,6 @@
+mtuq.grid.Grid.get_dict
+=======================
+
+.. currentmodule:: mtuq.grid
+
+.. automethod:: Grid.get_dict

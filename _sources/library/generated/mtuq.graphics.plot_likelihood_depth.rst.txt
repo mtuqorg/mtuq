@@ -1,0 +1,6 @@
+﻿mtuq.graphics.plot_likelihood_depth
+===================================
+
+.. currentmodule:: mtuq.graphics
+
+.. autofunction:: plot_likelihood_depth

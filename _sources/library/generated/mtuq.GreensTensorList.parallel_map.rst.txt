@@ -1,0 +1,6 @@
+mtuq.GreensTensorList.parallel_map
+==================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensorList.parallel_map

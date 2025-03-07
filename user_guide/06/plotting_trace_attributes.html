@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Plotting trace attributes &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Customizing figures" href="customizing_figures.html" />
+    <link rel="prev" title="Trace attributes" href="trace_attributes.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../05.html">Visualization galleries</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Plotting trace attributes</a><ul>
+<li><a class="reference internal" href="#plotting-time-shifts">Plotting time shifts</a></li>
+<li><a class="reference internal" href="#plotting-amplitude-ratios">Plotting amplitude ratios</a></li>
+<li><a class="reference internal" href="#plotting-custom-attributes">Plotting custom attributes</a></li>
+<li><a class="reference internal" href="#source-code">Source code</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="trace_attributes.html" title="Previous Chapter: Trace attributes"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Trace attributes</span>
+    </a>
+  </li>
+  <li>
+    <a href="customizing_figures.html" title="Next Chapter: Customizing figures"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Customizing figures &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="plotting-trace-attributes">
+<h1>Plotting trace attributes<a class="headerlink" href="#plotting-trace-attributes" title="Permalink to this headline">¶</a></h1>
+<p>To calculate time shifts, amplitude ratios and other <a class="reference external" href="https://mtuqorg.github.io/mtuq/user_guide/06/trace_attributes.html">trace attributes</a>, the misfit functions’s <cite>collect_attributes</cite> method can be invoked using the same arguments as an ordinary misfit function evaluation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">attrs</span> <span class="o">=</span> <span class="n">misfit</span><span class="o">.</span><span class="n">collect_attributes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="plotting-time-shifts">
+<h2>Plotting time shifts<a class="headerlink" href="#plotting-time-shifts" title="Permalink to this headline">¶</a></h2>
+<p>Following <a class="reference external" href="https://mtuqorg.github.io/mtuq/references.html">Zhao1994</a>, moment tensor inversions commonly use time shifts to mitigate velocity model inaccuracy.  To understand such effects, it can be helpful to plot how time shifts vary geographically and by component.</p>
+<p>To plot time shifts, the <cite>attrs</cite> data structure above can be passed directly to a plotting function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_time_shifts</span>
+<span class="n">plot_time_shifts</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span><span class="s1">&#39;R&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>As a result, an image like the following will be created for each component:</p>
+<a class="reference internal image-reference" href="../../_images/20090407201255351_attrs_time_shifts_bw_Z.png"><img alt="../../_images/20090407201255351_attrs_time_shifts_bw_Z.png" src="../../_images/20090407201255351_attrs_time_shifts_bw_Z.png" style="width: 400px;" /></a>
+</section>
+<section id="plotting-amplitude-ratios">
+<h2>Plotting amplitude ratios<a class="headerlink" href="#plotting-amplitude-ratios" title="Permalink to this headline">¶</a></h2>
+<p>Similarly, the <cite>attrs</cite> data structure can be used to plot amplitude ratios:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_amplitude_ratios</span>
+<span class="n">plot_amplitude_ratios</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span><span class="s1">&#39;R&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>As a result, an image like the following will be created for each component:</p>
+<a class="reference internal image-reference" href="../../_images/20090407201255351_attrs_amplitude_ratios_bw_Z.png"><img alt="../../_images/20090407201255351_attrs_amplitude_ratios_bw_Z.png" src="../../_images/20090407201255351_attrs_amplitude_ratios_bw_Z.png" style="width: 400px;" /></a>
+</section>
+<section id="plotting-custom-attributes">
+<h2>Plotting custom attributes<a class="headerlink" href="#plotting-custom-attributes" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to add <a class="reference external" href="https://mtuqorg.github.io/mtuq/user_guide/06/trace_attributes.html#custom-trace-attributes">custom attributes</a> to the data structure returned by <cite>collect_attributes</cite>.</p>
+<p>To plot how a custom attribute varies, we can use the private function <cite>_plot_attrs</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics</span><span class="w"> </span><span class="kn">import</span> <span class="n">_plot_attrs</span>
+<span class="n">_plot_attrs</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="s1">&#39;custom_attr&#39;</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span><span class="s1">&#39;R&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>(In fact, <cite>_plot_attr</cite> is used under the hood by <cite>plot_time_shifts</cite>, <cite>plot_amplitude_ratios</cite>, and <cite>plot_log_amplitude_ratios</cite>.)</p>
+</section>
+<section id="source-code">
+<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
+<p>The above figures can be reproduced by running <a class="reference external" href="https://github.com/mtuqorg/mtuq/blob/master/examples/DetailedAnalysis.py">DetailedAnalysis.py</a>.</p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

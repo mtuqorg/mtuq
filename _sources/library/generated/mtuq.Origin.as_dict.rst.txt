@@ -1,0 +1,6 @@
+mtuq.Origin.as_dict
+===================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Origin.as_dict

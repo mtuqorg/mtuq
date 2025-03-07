@@ -1,0 +1,6 @@
+﻿mtuq.graphics.plot_cross_corr
+=============================
+
+.. currentmodule:: mtuq.graphics
+
+.. autofunction:: plot_cross_corr

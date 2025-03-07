@@ -1,0 +1,109 @@
+﻿mtuq.PolarityMisfit
+===================
+
+.. currentmodule:: mtuq
+.. autoclass:: PolarityMisfit
+  :show-inheritance:
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  .. rubric:: Public Methods
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~PolarityMisfit.collect_attributes
+     ~PolarityMisfit.get_observed
+     ~PolarityMisfit.get_predicted
+  
+
+  
+
+  
+  

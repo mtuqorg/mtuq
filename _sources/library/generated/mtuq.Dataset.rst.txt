@@ -1,0 +1,224 @@
+﻿mtuq.Dataset
+============
+
+.. currentmodule:: mtuq
+.. autoclass:: Dataset
+  :show-inheritance:
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  .. rubric:: Public Methods
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~Dataset.append
+     ~Dataset.apply
+     ~Dataset.copy
+     ~Dataset.get_components
+     ~Dataset.get_origins
+     ~Dataset.get_stations
+     ~Dataset.get_stats
+     ~Dataset.map
+     ~Dataset.max
+     ~Dataset.select
+     ~Dataset.sort_by_azimuth
+     ~Dataset.sort_by_distance
+     ~Dataset.sort_by_function
+     ~Dataset.tag_add
+     ~Dataset.tag_remove
+     ~Dataset.write
+  
+
+  
+
+  
+  

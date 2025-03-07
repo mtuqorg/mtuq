@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Plotting force results &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Plotting depth and hypocenter results" href="gallery_origin.html" />
+    <link rel="prev" title="Plotting moment tensor results" href="gallery_mt.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../04.html">Data processing</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Plotting force results</a><ul>
+<li><a class="reference internal" href="#misfit-values">Misfit values</a></li>
+<li><a class="reference internal" href="#maximum-likelihoods">Maximum likelihoods</a></li>
+<li><a class="reference internal" href="#tradeoffs-between-force-orientation-and-magnitude">Tradeoffs between force orientation and magnitude</a></li>
+<li><a class="reference internal" href="#source-code">Source code</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="gallery_mt.html" title="Previous Chapter: Plotting moment tensor results"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Plotting mome...</span>
+    </a>
+  </li>
+  <li>
+    <a href="gallery_origin.html" title="Next Chapter: Plotting depth and hypocenter results"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Plotting dept... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="plotting-force-results">
+<h1>Plotting force results<a class="headerlink" href="#plotting-force-results" title="Permalink to this headline">¶</a></h1>
+<p>Suppose we are running a force grid search:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="n">grid_search</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">misfit</span><span class="p">,</span> <span class="n">origins</span><span class="p">,</span> <span class="n">sources</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After the above command finishes, the data structure <cite>ds</cite> will contain all the forces and corresponding misfit values.</p>
+<p>For a grid of regulary-spaced forces, <cite>ds</cite> may look something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+
+<span class="go">Summary:</span>
+<span class="go">  grid shape: (200, 25, 25, 1)</span>
+<span class="go">  grid size:  125000</span>
+<span class="go">  mean: 2.984e-09</span>
+<span class="go">  std:  1.428e-10</span>
+<span class="go">  min:  2.605e-09</span>
+<span class="go">  max:  3.339e-09</span>
+
+<span class="go">Coordinates:</span>
+<span class="go">  * F0          (F0) float64 1e+11 1.012e+11 1.023e+11 ... 9.772e+11 9.886e+11</span>
+<span class="go">  * phi         (phi) float64 7.2 21.6 36.0 50.4 ... 309.6 324.0 338.4 352.8</span>
+<span class="go">  * h           (h) float64 -0.96 -0.88 -0.8 -0.72 -0.64 ... 0.72 0.8 0.88 0.96</span>
+<span class="go">  * origin_idx  (origin_idx) int64 0</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Force grids are implemented using parameters <cite>F0, phi, h</cite>, which are related to <cite>r, phi, theta</cite> spherical coordinates (<a class="reference external" href="https://en.wikipedia.org/wiki/Spherical_coordinate_system">physics convention</a>) by <cite>F0 = r</cite>, <cite>phi = phi</cite>, <cite>h = cos(theta)</cite>.  In addition, <cite>F0, phi, h</cite> are related to geographic directions by these <a class="reference external" href="https://mtuqorg.github.io/mtuq/_modules/mtuq/util/math.html#to_rtp">formulas</a>.</p>
+</div>
+<section id="misfit-values">
+<h2>Misfit values<a class="headerlink" href="#misfit-values" title="Permalink to this headline">¶</a></h2>
+<p>To plot the misfit values returned by the grid search, we can pass <cite>ds</cite> to a plotting utility as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_misfit_force</span>
+<span class="n">plot_misfit_force</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ds</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/20090407201255351_misfit_force.png"><img alt="../../_images/20090407201255351_misfit_force.png" src="../../_images/20090407201255351_misfit_force.png" style="width: 200px;" /></a>
+</section>
+<section id="maximum-likelihoods">
+<h2>Maximum likelihoods<a class="headerlink" href="#maximum-likelihoods" title="Permalink to this headline">¶</a></h2>
+<p>If a data variance estimate <cite>var</cite> is available, then misfit values can be converted to likelihood values.
+In the following approach, a two-dimensional likelihood surface is obtained by maximimizing over magnitude:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_likelihood_force</span>
+<span class="n">plot_likelihood_force</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/20090407201255351_likelihood_force.png"><img alt="../../_images/20090407201255351_likelihood_force.png" src="../../_images/20090407201255351_likelihood_force.png" style="width: 200px;" /></a>
+</section>
+<section id="tradeoffs-between-force-orientation-and-magnitude">
+<h2>Tradeoffs between force orientation and magnitude<a class="headerlink" href="#tradeoffs-between-force-orientation-and-magnitude" title="Permalink to this headline">¶</a></h2>
+<p>To see how the magnitude of the best-fitting force varies with respect to orientation, we can use the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_magnitude_tradeoffs_force</span>
+<span class="n">plot_magnitude_tradeoffs_force</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ds</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/20090407201255351_force_tradeoffs.png"><img alt="../../_images/20090407201255351_force_tradeoffs.png" src="../../_images/20090407201255351_force_tradeoffs.png" style="width: 200px;" /></a>
+</section>
+<section id="source-code">
+<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
+<p>[<a class="reference external" href="https://github.com/mtuqorg/mtuq/blob/master/docs/user_guide/05/code/gallery_force.py">script to reproduce above figures</a>]</p>
+<p>Users can run the script immediately after <a class="reference external" href="https://mtuqorg.github.io/mtuq/install/index.html">installing MTUQ</a>, without any additional setup.</p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

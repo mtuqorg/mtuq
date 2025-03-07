@@ -1,0 +1,6 @@
+mtuq.Wavelet._evaluate_on_interval
+==================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Wavelet._evaluate_on_interval

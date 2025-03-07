@@ -1,0 +1,6 @@
+mtuq.GreensTensorList.apply
+===========================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensorList.apply

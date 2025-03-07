@@ -1,0 +1,6 @@
+mtuq.graphics.attrs.PyGMTUtilities.calculate_plotting_region
+============================================================
+
+.. currentmodule:: mtuq.graphics.attrs
+
+.. automethod:: PyGMTUtilities.calculate_plotting_region

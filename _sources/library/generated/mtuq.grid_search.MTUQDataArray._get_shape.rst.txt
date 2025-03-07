@@ -1,0 +1,6 @@
+mtuq.grid_search.MTUQDataArray._get_shape
+=========================================
+
+.. currentmodule:: mtuq.grid_search
+
+.. automethod:: MTUQDataArray._get_shape

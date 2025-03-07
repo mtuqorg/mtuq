@@ -1,0 +1,6 @@
+﻿mtuq.graphics.attrs._pygmt_backend
+==================================
+
+.. currentmodule:: mtuq.graphics.attrs
+
+.. autofunction:: _pygmt_backend

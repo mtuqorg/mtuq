@@ -1,0 +1,6 @@
+﻿mtuq.graphics.plot_log_amplitude_ratios
+=======================================
+
+.. currentmodule:: mtuq.graphics
+
+.. autofunction:: plot_log_amplitude_ratios

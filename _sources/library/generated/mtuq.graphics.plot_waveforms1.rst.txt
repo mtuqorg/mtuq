@@ -1,0 +1,6 @@
+﻿mtuq.graphics.plot_waveforms1
+=============================
+
+.. currentmodule:: mtuq.graphics
+
+.. autofunction:: plot_waveforms1

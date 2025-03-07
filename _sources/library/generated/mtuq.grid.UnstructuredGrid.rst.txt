@@ -1,0 +1,123 @@
+﻿mtuq.grid.UnstructuredGrid
+==========================
+
+.. currentmodule:: mtuq.grid
+.. autoclass:: UnstructuredGrid
+  :show-inheritance:
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  .. rubric:: Public Methods
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~UnstructuredGrid.get
+     ~UnstructuredGrid.get_dict
+     ~UnstructuredGrid.partition
+     ~UnstructuredGrid.to_array
+     ~UnstructuredGrid.to_dataframe
+  
+
+  
+
+  
+  

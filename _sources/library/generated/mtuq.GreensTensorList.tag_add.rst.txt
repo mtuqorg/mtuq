@@ -1,0 +1,6 @@
+mtuq.GreensTensorList.tag_add
+=============================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensorList.tag_add

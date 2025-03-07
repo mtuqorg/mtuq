@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>mtuq.GreensTensorList &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">mtuq.GreensTensorList</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="mtuq-greenstensorlist">
+<h1>mtuq.GreensTensorList<a class="headerlink" href="#mtuq-greenstensorlist" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="mtuq.GreensTensorList">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtuq.</span></span><span class="sig-name descname"><span class="pre">GreensTensorList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mtuq/greens_tensor/base.html#GreensTensorList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtuq.GreensTensorList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></p>
+<p>Container for one or more <cite>GreensTensor</cite> objects</p>
+<p class="rubric">Public Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.GreensTensorList.append.html#mtuq.GreensTensorList.append" title="mtuq.GreensTensorList.append"><code class="xref py py-obj docutils literal notranslate"><span class="pre">append</span></code></a></p></td>
+<td><p>Appends <cite>GreensTensor</cite> to the container</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.GreensTensorList.apply.html#mtuq.GreensTensorList.apply" title="mtuq.GreensTensorList.apply"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code></a></p></td>
+<td><p>Applies function to all <cite>GreensTensors</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.GreensTensorList.convolve.html#mtuq.GreensTensorList.convolve" title="mtuq.GreensTensorList.convolve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convolve</span></code></a></p></td>
+<td><p>Convolves time series with given wavelet</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.GreensTensorList.copy.html#mtuq.GreensTensorList.copy" title="mtuq.GreensTensorList.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a></p></td>
+<td><p>Return a shallow copy of the list.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.GreensTensorList.get_synthetics.html#mtuq.GreensTensorList.get_synthetics" title="mtuq.GreensTensorList.get_synthetics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_synthetics</span></code></a></p></td>
+<td><p>Generates synthetics through a linear combination of time series</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.GreensTensorList.map.html#mtuq.GreensTensorList.map" title="mtuq.GreensTensorList.map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map</span></code></a></p></td>
+<td><p>Maps function to all <cite>GreensTensors</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.GreensTensorList.parallel_map.html#mtuq.GreensTensorList.parallel_map" title="mtuq.GreensTensorList.parallel_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parallel_map</span></code></a></p></td>
+<td><p>Version of <cite>map</cite> parallelized using mpi4py</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.GreensTensorList.select.html#mtuq.GreensTensorList.select" title="mtuq.GreensTensorList.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a></p></td>
+<td><p>Selects <cite>GreensTensors</cite> that match the given station or origin</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.GreensTensorList.sort_by_azimuth.html#mtuq.GreensTensorList.sort_by_azimuth" title="mtuq.GreensTensorList.sort_by_azimuth"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort_by_azimuth</span></code></a></p></td>
+<td><p>Sorts in-place by source-receiver azimuth</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.GreensTensorList.sort_by_distance.html#mtuq.GreensTensorList.sort_by_distance" title="mtuq.GreensTensorList.sort_by_distance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort_by_distance</span></code></a></p></td>
+<td><p>Sorts in-place by hypocentral distance</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.GreensTensorList.sort_by_function.html#mtuq.GreensTensorList.sort_by_function" title="mtuq.GreensTensorList.sort_by_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort_by_function</span></code></a></p></td>
+<td><p>Sorts in-place by user-supplied function</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.GreensTensorList.tag_add.html#mtuq.GreensTensorList.tag_add" title="mtuq.GreensTensorList.tag_add"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tag_add</span></code></a></p></td>
+<td><p>Appends string to tags list</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.GreensTensorList.tag_remove.html#mtuq.GreensTensorList.tag_remove" title="mtuq.GreensTensorList.tag_remove"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tag_remove</span></code></a></p></td>
+<td><p>Removes string from tags list</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.GreensTensorList.write.html#mtuq.GreensTensorList.write" title="mtuq.GreensTensorList.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a></p></td>
+<td><p>Writes a Python pickle of current <cite>GreensTensorList</cite></p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

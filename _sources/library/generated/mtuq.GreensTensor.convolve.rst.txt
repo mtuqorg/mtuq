@@ -1,0 +1,6 @@
+mtuq.GreensTensor.convolve
+==========================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensor.convolve

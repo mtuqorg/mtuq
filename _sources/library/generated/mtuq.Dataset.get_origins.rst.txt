@@ -1,0 +1,6 @@
+mtuq.Dataset.get_origins
+========================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Dataset.get_origins

@@ -1,0 +1,48 @@
+﻿mtuq.misfit.waveform.level1
+===========================
+
+.. currentmodule:: mtuq.misfit.waveform.level1
+.. automodule:: mtuq.misfit.waveform.level1
+
+   .. comment to end block
+
+   
+
+   
+   
+   
+   
+   
+   
+
+   
+   .. rubric:: Public Functions
+
+   .. autosummary::
+      :toctree: .
+      :nosignatures:
+
+   
+      misfit
+   
+
+   
+
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree: .
+      :nosignatures:
+
+   
+      Helper
+   
+   
+
+   
+   
+   

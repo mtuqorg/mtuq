@@ -1,0 +1,6 @@
+mtuq.graphics.attrs.PyGMTUtilities.prepare_latex_annotations
+============================================================
+
+.. currentmodule:: mtuq.graphics.attrs
+
+.. automethod:: PyGMTUtilities.prepare_latex_annotations

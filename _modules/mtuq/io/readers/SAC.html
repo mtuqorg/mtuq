@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.io.readers.SAC &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/style.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.io.readers.SAC</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">obspy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">join</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">obspy.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stream</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">Origin</span><span class="p">,</span> <span class="n">Station</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">warn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_components</span><span class="p">,</span> <span class="n">check_time_sampling</span>
+
+
+<div class="viewcode-block" id="read"><a class="viewcode-back" href="../../../../library/generated/mtuq.io.readers.SAC.read.html#mtuq.io.readers.SAC.read">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">station_id_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">event_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Reads SAC files and returns an `mtuq.Dataset`</span>
+
+<span class="sd">    .. rubric :: Parameters</span>
+
+<span class="sd">    ``filenames`` (`str` or `list`):</span>
+<span class="sd">    Wildcard string or list of filenames</span>
+
+<span class="sd">    ``station_id_list`` (`list`):</span>
+<span class="sd">    Any traces not from one of the listed stations will be excluded</span>
+
+<span class="sd">    ``event_id`` (`str`):</span>
+<span class="sd">    Identifier to be suppplied to the Dataset</span>
+
+<span class="sd">    ``tags`` (`list`):</span>
+<span class="sd">    Tags to be supplied to the Dataset</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># read traces one at a time</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">_glob</span><span class="p">(</span><span class="n">filenames</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">+=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;sac&#39;</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Not a SAC file: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">(</span>
+        <span class="s2">&quot;Failed to read in any SAC files.&quot;</span><span class="p">)</span>
+
+
+    <span class="c1"># sort by station</span>
+    <span class="n">data_sorted</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">station_id</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span>
+            <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">network</span><span class="p">,</span>
+            <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+            <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">location</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">station_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data_sorted</span><span class="p">:</span>
+            <span class="n">data_sorted</span><span class="p">[</span><span class="n">station_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_sorted</span><span class="p">[</span><span class="n">station_id</span><span class="p">]</span> <span class="o">+=</span> <span class="n">trace</span>
+
+    <span class="k">if</span> <span class="n">station_id_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data_sorted</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="c1"># remove traces not from station_id_list</span>
+        <span class="k">for</span> <span class="n">station_id</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">station_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">station_id_list</span><span class="p">:</span>
+                <span class="n">data_sorted</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">station_id</span><span class="p">)</span>
+
+    <span class="n">streams</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">station_id</span> <span class="ow">in</span> <span class="n">data_sorted</span><span class="p">:</span>
+         <span class="n">streams</span> <span class="o">+=</span> <span class="p">[</span><span class="n">data_sorted</span><span class="p">[</span><span class="n">station_id</span><span class="p">]]</span>
+
+    <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
+        <span class="c1"># check for duplicate components</span>
+        <span class="n">check_components</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+
+        <span class="c1"># check for that all traces have same time sampling</span>
+        <span class="n">check_components</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+
+    <span class="c1"># collect event metadata</span>
+    <span class="n">preliminary_origin</span> <span class="o">=</span> <span class="n">_get_origin</span><span class="p">(</span><span class="n">streams</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">event_id</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">preliminary_origin</span><span class="o">==</span><span class="n">_get_origin</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">event_id</span><span class="p">)</span>
+        <span class="n">stream</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">preliminary_origin</span>
+    <span class="n">tags</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;origin_type:preliminary&#39;</span><span class="p">]</span>
+
+    <span class="c1"># collect station metadata</span>
+    <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
+        <span class="n">stream</span><span class="o">.</span><span class="n">station</span> <span class="o">=</span> <span class="n">_get_station</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+
+    <span class="c1"># create MTUQ Dataset</span>
+    <span class="k">return</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">streams</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">event_id</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_origin</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">event_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Extracts event metadata from SAC headers</span>
+
+<span class="sd">    At the beginning of an inversion, MTUQ requires preliminary estimates for</span>
+<span class="sd">    event location and depth. We obtain these from SAC headers, which for IRIS</span>
+<span class="sd">    data represent catalog solutions </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sac_headers</span> <span class="o">=</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sac</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">latitude</span> <span class="o">=</span> <span class="n">sac_headers</span><span class="o">.</span><span class="n">evla</span>
+        <span class="n">longitude</span> <span class="o">=</span> <span class="n">sac_headers</span><span class="o">.</span><span class="n">evlo</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Could not determine event location from sac headers. &quot;</span>
+              <span class="s2">&quot;Setting location to nan...&quot;</span><span class="p">)</span>
+        <span class="n">latitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">longitudue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">depth_in_m</span> <span class="o">=</span> <span class="n">sac_headers</span><span class="o">.</span><span class="n">evdp</span><span class="o">*</span><span class="mf">1000.</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Could not determine event depth from sac headers. &quot;</span>
+             <span class="s2">&quot;Setting depth to nan...&quot;</span><span class="p">)</span>
+        <span class="n">depth_in_m</span> <span class="o">=</span> <span class="mf">0.</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">origin_time</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">UTCDateTime</span><span class="p">(</span>
+            <span class="n">year</span><span class="o">=</span><span class="n">sac_headers</span><span class="o">.</span><span class="n">nzyear</span><span class="p">,</span>
+            <span class="n">julday</span><span class="o">=</span><span class="n">sac_headers</span><span class="o">.</span><span class="n">nzjday</span><span class="p">,</span> 
+            <span class="n">hour</span><span class="o">=</span><span class="n">sac_headers</span><span class="o">.</span><span class="n">nzhour</span><span class="p">,</span>
+            <span class="n">minute</span><span class="o">=</span><span class="n">sac_headers</span><span class="o">.</span><span class="n">nzmin</span><span class="p">,</span>
+            <span class="n">second</span><span class="o">=</span><span class="n">sac_headers</span><span class="o">.</span><span class="n">nzsec</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Could not determine origin time from sac headers. &quot;</span>
+              <span class="s2">&quot;Setting origin time to zero...&quot;</span><span class="p">)</span>
+        <span class="n">origin_time</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Origin</span><span class="p">({</span>
+        <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">event_id</span><span class="p">,</span>
+        <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">origin_time</span><span class="p">,</span>
+        <span class="s1">&#39;longitude&#39;</span><span class="p">:</span> <span class="n">longitude</span><span class="p">,</span>
+        <span class="s1">&#39;latitude&#39;</span><span class="p">:</span> <span class="n">latitude</span><span class="p">,</span>
+        <span class="s1">&#39;depth_in_m&#39;</span><span class="p">:</span> <span class="n">depth_in_m</span>
+        <span class="p">})</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_station</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Extracts station metadata from SAC headers</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="n">stats</span> <span class="o">=</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span>
+    <span class="n">sac_headers</span> <span class="o">=</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sac</span>
+
+    <span class="c1">#       </span>
+    <span class="c1"># populate station object</span>
+    <span class="c1">#       </span>
+    <span class="n">station</span> <span class="o">=</span> <span class="n">Station</span><span class="p">()</span>
+        
+    <span class="n">station</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+        <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">network</span><span class="p">,</span>
+        <span class="s1">&#39;station&#39;</span><span class="p">:</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+        <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+        <span class="s1">&#39;sampling_rate&#39;</span><span class="p">:</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span>
+        <span class="s1">&#39;npts&#39;</span><span class="p">:</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span><span class="p">,</span>
+        <span class="s1">&#39;delta&#39;</span><span class="p">:</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span><span class="p">,</span>
+        <span class="s1">&#39;starttime&#39;</span><span class="p">:</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">,</span>
+        <span class="s1">&#39;endtime&#39;</span><span class="p">:</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="p">,</span>
+        <span class="p">})</span>
+    
+    <span class="n">station</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+        <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+            <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">network</span><span class="p">,</span>
+            <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+            <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">location</span><span class="p">])})</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">station_latitude</span> <span class="o">=</span> <span class="n">sac_headers</span><span class="o">.</span><span class="n">stla</span>
+        <span class="n">station_longitude</span> <span class="o">=</span> <span class="n">sac_headers</span><span class="o">.</span><span class="n">stlo</span>
+        <span class="n">station</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s1">&#39;latitude&#39;</span><span class="p">:</span> <span class="n">station_latitude</span><span class="p">,</span>
+            <span class="s1">&#39;longitude&#39;</span><span class="p">:</span> <span class="n">station_longitude</span><span class="p">})</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+            <span class="s2">&quot;Could not determine station location from SAC headers.&quot;</span><span class="p">)</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">station</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s1">&#39;station_elevation_in_m&#39;</span><span class="p">:</span> <span class="n">sac_headers</span><span class="o">.</span><span class="n">stel</span><span class="p">,</span>
+            <span class="s1">&#39;station_depth_in_m&#39;</span><span class="p">:</span> <span class="n">sac_headers</span><span class="o">.</span><span class="n">stdp</span><span class="p">})</span>
+    <span class="k">except</span><span class="p">:</span> 
+        <span class="k">pass</span>
+    
+    <span class="k">return</span> <span class="n">station</span>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_glob</span><span class="p">(</span><span class="n">filenames</span><span class="p">):</span>
+   <span class="c1"># glob any wildcards</span>
+   <span class="n">_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+   <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">(</span><span class="n">filenames</span><span class="p">):</span>
+       <span class="n">_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+   <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">_list</span><span class="p">)</span>
+
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+mtuq.PolarityMisfit.get_predicted
+=================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: PolarityMisfit.get_predicted

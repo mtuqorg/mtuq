@@ -1,0 +1,6 @@
+mtuq.grid_search.MTUQDataFrame.save
+===================================
+
+.. currentmodule:: mtuq.grid_search
+
+.. automethod:: MTUQDataFrame.save

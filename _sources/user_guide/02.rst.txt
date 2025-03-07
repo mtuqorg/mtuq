@@ -1,0 +1,38 @@
+
+Acquiring seismic data
+======================
+
+Acquiring and quality control checking seismic data can be one of the most challenging steps in an inversion.  This page describes our preferred data client and MTUQ's data and metadata format requirements.
+
+
+
+Data acquisition clients
+------------------------
+
+`ObsPy FDSN clients <https://docs.obspy.org/packages/obspy.clients.fdsn.html>`_ provide a way of programmatically downloading waveforms from `IRIS <https://www.iris.edu>`_. `PySEP <https://github.com/mtuqorg/pysep>`_ is a wrapper around an ObsPy FDSN client and our preferred data acquisition tool.  
+
+Besides downloading waveforms through ObsPy calls, PySEP performs data processing and quality control, ensuring that the data processing and time discretization requirements below are satisfied.  
+
+Additionally, PySEP generates "weight files" that can optionally be used by `mtuq.process_data` to control the relative contribution of different stations to the data misfit function.
+
+
+
+File format, metadata, and data processing requirements
+-------------------------------------------------------
+
+SAC is currently the only file format supported by `mtuq.read`.
+
+The following information must be present in the SAC metadata headers: `station latitude`, `station longitude`, `network code`, `station code`, `location code`
+
+It is expected that the following data processing steps have been carried out prior to reading user-supplied waveforms by `mtuq.read`:
+
+- instrument response has already been removed
+- traces have already by rotated into vertical (Z), radial (R) and transverse (T) components
+- all traces have the same sampling rate
+
+
+Other file formats
+------------------
+
+Besides SAC, many other file formats could be supported in principle.  To make adding such support easier, `mtuq.read` closely follows `obspy.read`, with each supported file format having its own keyword argument and an identically named module in `mtuq.io.readers`.
+

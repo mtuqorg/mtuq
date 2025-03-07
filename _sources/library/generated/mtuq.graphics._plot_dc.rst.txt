@@ -1,0 +1,6 @@
+﻿mtuq.graphics._plot_dc
+======================
+
+.. currentmodule:: mtuq.graphics
+
+.. autofunction:: _plot_dc

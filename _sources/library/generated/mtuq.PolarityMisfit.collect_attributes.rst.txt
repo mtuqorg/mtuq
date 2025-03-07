@@ -1,0 +1,6 @@
+mtuq.PolarityMisfit.collect_attributes
+======================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: PolarityMisfit.collect_attributes

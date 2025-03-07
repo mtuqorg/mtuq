@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.graphics.uq.double_couple &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/style.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.graphics.uq.double_couple</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># graphics/uq/double_couple.py - uncertainty quantification of double couple sources</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics._gmt</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_cpt</span><span class="p">,</span> <span class="n">_cpt_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics.uq._matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">_plot_dc_matplotlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.grid_search</span><span class="w"> </span><span class="kn">import</span> <span class="n">MTUQDataArray</span><span class="p">,</span> <span class="n">MTUQDataFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataarray_idxmin</span><span class="p">,</span> <span class="n">dataarray_idxmax</span><span class="p">,</span> <span class="n">defaults</span><span class="p">,</span> <span class="n">warn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util.math</span><span class="w"> </span><span class="kn">import</span> <span class="n">closed_interval</span><span class="p">,</span> <span class="n">open_interval</span><span class="p">,</span> <span class="n">to_delta</span><span class="p">,</span> <span class="n">to_gamma</span><span class="p">,</span> <span class="n">to_mij</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">exists</span>
+
+
+<div class="viewcode-block" id="plot_misfit_dc"><a class="viewcode-back" href="../../../../library/generated/mtuq.graphics.plot_misfit_dc.html#mtuq.graphics.plot_misfit_dc">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">plot_misfit_dc</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Plots misfit values over strike, dip, slip</span>
+
+<span class="sd">    .. rubric :: Required input arguments</span>
+
+<span class="sd">    ``filename`` (`str`):</span>
+<span class="sd">    Name of output image file</span>
+
+<span class="sd">    ``ds`` (`DataArray` or `DataFrame`):</span>
+<span class="sd">    Data structure containing moment tensors and corresponding misfit values</span>
+
+
+<span class="sd">    .. rubric :: Optional input arguments</span>
+
+<span class="sd">    For optional argument descriptions, </span>
+<span class="sd">    `see here &lt;mtuq.graphics._plot_dc.html&gt;`_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">defaults</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s1">&#39;colormap&#39;</span><span class="p">:</span> <span class="s1">&#39;viridis&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;squeeze&#39;</span><span class="p">:</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span>
+        <span class="p">})</span>
+
+    <span class="n">_check</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span> <span class="n">DataArray</span><span class="p">):</span>
+        <span class="n">misfit</span> <span class="o">=</span> <span class="n">_misfit_dc_regular</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+        
+    <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span> <span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">misfit</span> <span class="o">=</span> <span class="n">_misfit_dc_random</span><span class="p">(</span><span class="n">ds</span> <span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">_plot_dc</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">misfit</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_likelihood_dc"><a class="viewcode-back" href="../../../../library/generated/mtuq.graphics.plot_likelihood_dc.html#mtuq.graphics.plot_likelihood_dc">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">plot_likelihood_dc</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Plots maximum likelihood values over strike, dip, slip</span>
+
+<span class="sd">    .. rubric :: Required input arguments</span>
+
+<span class="sd">    ``filename`` (`str`):</span>
+<span class="sd">    Name of output image file</span>
+
+<span class="sd">    ``ds`` (`DataArray` or `DataFrame`):</span>
+<span class="sd">    Data structure containing moment tensors and corresponding misfit values</span>
+
+<span class="sd">   ``var`` (`float` or `array`):</span>
+<span class="sd">    Data variance</span>
+
+
+<span class="sd">    .. rubric :: Optional input arguments</span>
+
+<span class="sd">    For optional argument descriptions, </span>
+<span class="sd">    `see here &lt;mtuq.graphics._plot_dc.html&gt;`_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">defaults</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s1">&#39;colormap&#39;</span><span class="p">:</span> <span class="s1">&#39;hot_r&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;squeeze&#39;</span><span class="p">:</span> <span class="s1">&#39;max&#39;</span><span class="p">,</span>
+        <span class="p">})</span>
+
+    <span class="n">_check</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span> <span class="n">DataArray</span><span class="p">):</span>
+        <span class="n">likelihoods</span> <span class="o">=</span> <span class="n">_likelihoods_dc_regular</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span> <span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">likelihoods</span> <span class="o">=</span> <span class="n">_likelihoods_dc_random</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">_plot_dc</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">likelihoods</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_marginal_dc"><a class="viewcode-back" href="../../../../library/generated/mtuq.graphics.plot_marginal_dc.html#mtuq.graphics.plot_marginal_dc">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">plot_marginal_dc</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Plots marginal likelihood values over strike, dip, slip</span>
+
+<span class="sd">    .. rubric :: Required input arguments</span>
+
+<span class="sd">    ``filename`` (`str`):</span>
+<span class="sd">    Name of output image file</span>
+
+<span class="sd">    ``ds`` (`DataArray` or `DataFrame`):</span>
+<span class="sd">    Data structure containing moment tensors and corresponding misfit values</span>
+
+<span class="sd">   ``var`` (`float` or `array`):</span>
+<span class="sd">    Data variance</span>
+
+
+<span class="sd">    .. rubric :: Optional input arguments</span>
+
+<span class="sd">    For optional argument descriptions, </span>
+<span class="sd">    `see here &lt;mtuq.graphics._plot_dc.html&gt;`_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">defaults</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s1">&#39;colormap&#39;</span><span class="p">:</span> <span class="s1">&#39;hot_r&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;squeeze&#39;</span><span class="p">:</span> <span class="s1">&#39;max&#39;</span><span class="p">,</span>
+        <span class="p">})</span>
+
+    <span class="n">_check</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span> <span class="n">DataArray</span><span class="p">):</span>
+        <span class="n">marginals</span> <span class="o">=</span> <span class="n">_marginals_dc_regular</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span> <span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">marginals</span> <span class="o">=</span> <span class="n">_marginals_dc_random</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">_plot_dc</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">marginals</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_variance_reduction_dc</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">data_norm</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Plots variance reduction values over strike, dip, slip</span>
+
+<span class="sd">    .. rubric :: Required input arguments</span>
+
+<span class="sd">    ``filename`` (`str`):</span>
+<span class="sd">    Name of output image file</span>
+
+<span class="sd">    ``ds`` (`DataArray` or `DataFrame`):</span>
+<span class="sd">    Data structure containing moment tensors and corresponding misfit values</span>
+
+<span class="sd">   ``data_norm`` (`float`):</span>
+<span class="sd">    Data norm</span>
+
+
+<span class="sd">    .. rubric :: Optional input arguments</span>
+
+<span class="sd">    For optional argument descriptions, </span>
+<span class="sd">    `see here &lt;mtuq.graphics._plot_dc.html&gt;`_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">defaults</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s1">&#39;colormap&#39;</span><span class="p">:</span> <span class="s1">&#39;viridis_r&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;squeeze&#39;</span><span class="p">:</span> <span class="s1">&#39;max&#39;</span><span class="p">,</span>
+        <span class="p">})</span>
+
+    <span class="n">_check</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span> <span class="n">DataArray</span><span class="p">):</span>
+        <span class="n">variance_reduction</span> <span class="o">=</span> <span class="n">_variance_reduction_dc_regular</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">data_norm</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span> <span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">variance_reduction</span> <span class="o">=</span> <span class="n">_variance_reduction_dc_random</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">data_norm</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">_plot_dc</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">variance_reduction</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+
+<div class="viewcode-block" id="_plot_dc"><a class="viewcode-back" href="../../../../library/generated/mtuq.graphics._plot_dc.html#mtuq.graphics._plot_dc">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_plot_dc</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">da</span><span class="p">,</span> <span class="n">show_best</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">_plot_dc_matplotlib</span><span class="p">,</span>
+    <span class="n">squeeze</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Plots DataArray values over strike, dip, slip</span>
+
+<span class="sd">    .. rubric :: Keyword arguments</span>
+
+<span class="sd">    ``colormap`` (`str`)</span>
+<span class="sd">    Color palette used for plotting values </span>
+<span class="sd">    (choose from GMT or MTUQ built-ins)</span>
+
+<span class="sd">    ``show_best`` (`bool`):</span>
+<span class="sd">    Show where best-fitting moment tensor falls in terms of strike, dip, slip</span>
+
+<span class="sd">    ``squeeze`` (`str`):</span>
+<span class="sd">    By default, 2-D surfaces are obtained by minimizing or maximizing.</span>
+<span class="sd">    For slices instead, use `slice_min` or `slice_max`.</span>
+
+<span class="sd">    ``backend`` (`function`):</span>
+<span class="sd">    Choose from `_plot_dc_matplotlib` (default) or user-supplied function</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">da</span><span class="p">),</span> <span class="n">DataArray</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">show_best</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;best_dc&#39;</span> <span class="ow">in</span> <span class="n">da</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+            <span class="n">best_dc</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;best_dc&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Best-fitting orientation not given&quot;</span><span class="p">)</span>
+            <span class="n">best_dc</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># note the following parameterization details</span>
+    <span class="c1">#     kappa = strike</span>
+    <span class="c1">#     sigma = slip</span>
+    <span class="c1">#     h = cos(dip)</span>
+
+    <span class="c1"># squeeze full 3-D array into 2-D arrays</span>
+    <span class="k">if</span> <span class="n">squeeze</span><span class="o">==</span><span class="s1">&#39;min&#39;</span><span class="p">:</span>
+        <span class="n">values_h_kappa</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;sigma&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">values_sigma_kappa</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;h&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">values_sigma_h</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;kappa&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">elif</span> <span class="n">squeeze</span><span class="o">==</span><span class="s1">&#39;max&#39;</span><span class="p">:</span>
+        <span class="n">values_h_kappa</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;sigma&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">values_sigma_kappa</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;h&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">values_sigma_h</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;kappa&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">elif</span> <span class="n">squeeze</span><span class="o">==</span><span class="s1">&#39;slice_min&#39;</span><span class="p">:</span>
+        <span class="n">argmin</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">argmin</span><span class="p">((</span><span class="s1">&#39;kappa&#39;</span><span class="p">,</span><span class="s1">&#39;sigma&#39;</span><span class="p">,</span><span class="s1">&#39;h&#39;</span><span class="p">))</span>
+        <span class="n">values_h_kappa</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="n">argmin</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">],</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">values_sigma_kappa</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="n">argmin</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">],</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">values_sigma_h</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">kappa</span><span class="o">=</span><span class="n">argmin</span><span class="p">[</span><span class="s1">&#39;kappa&#39;</span><span class="p">],</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">elif</span> <span class="n">squeeze</span><span class="o">==</span><span class="s1">&#39;slice_max&#39;</span><span class="p">:</span>
+        <span class="n">argmax</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">argmax</span><span class="p">((</span><span class="s1">&#39;kappa&#39;</span><span class="p">,</span><span class="s1">&#39;sigma&#39;</span><span class="p">,</span><span class="s1">&#39;h&#39;</span><span class="p">))</span>
+        <span class="n">values_h_kappa</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="n">argmax</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">],</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">values_sigma_kappa</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="n">argmax</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">],</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">values_sigma_h</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">kappa</span><span class="o">=</span><span class="n">argmax</span><span class="p">[</span><span class="s1">&#39;kappa&#39;</span><span class="p">],</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span>
+
+    <span class="n">backend</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span>
+        <span class="n">da</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span>
+        <span class="n">values_h_kappa</span><span class="p">,</span>
+        <span class="n">values_sigma_kappa</span><span class="p">,</span>
+        <span class="n">values_sigma_h</span><span class="p">,</span>
+        <span class="n">best_dc</span><span class="o">=</span><span class="n">best_dc</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="c1">#</span>
+<span class="c1"># for extracting misfit, variance reduction and likelihood from</span>
+<span class="c1"># regularly-spaced grids</span>
+<span class="c1">#</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_misfit_dc_regular</span><span class="p">(</span><span class="n">da</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; For each moment tensor orientation, extract minimum misfit</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">misfit</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;origin_idx&#39;</span><span class="p">,</span> <span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">misfit</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">({</span>
+        <span class="s1">&#39;best_mt&#39;</span><span class="p">:</span> <span class="n">_min_mt</span><span class="p">(</span><span class="n">da</span><span class="p">),</span>
+        <span class="s1">&#39;best_dc&#39;</span><span class="p">:</span> <span class="n">_min_dc</span><span class="p">(</span><span class="n">da</span><span class="p">),</span>
+        <span class="p">})</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_misfit_dc_random</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+    <span class="c1"># Ensure &#39;misfit&#39; column exists</span>
+    <span class="k">if</span> <span class="s1">&#39;misfit&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;misfit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">da</span> <span class="o">=</span> <span class="n">_bin_dc_regular</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">group</span><span class="p">:</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;misfit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">({</span>
+        <span class="s1">&#39;best_dc&#39;</span><span class="p">:</span> <span class="n">_min_dc</span><span class="p">(</span><span class="n">da</span><span class="p">),</span>
+    <span class="p">})</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_likelihoods_dc_regular</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; For each moment tensor orientation, calculate maximum likelihood</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">likelihoods</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">likelihoods</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">likelihoods</span><span class="o">.</span><span class="n">values</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">var</span><span class="p">))</span>
+    <span class="n">likelihoods</span><span class="o">.</span><span class="n">values</span> <span class="o">/=</span> <span class="n">likelihoods</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="n">likelihoods</span> <span class="o">=</span> <span class="n">likelihoods</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;origin_idx&#39;</span><span class="p">,</span> <span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">))</span>
+    <span class="n">likelihoods</span><span class="o">.</span><span class="n">values</span> <span class="o">/=</span> <span class="n">likelihoods</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="c1">#likelihoods /= dc_area</span>
+
+    <span class="k">return</span> <span class="n">likelihoods</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">({</span>
+        <span class="s1">&#39;best_mt&#39;</span><span class="p">:</span> <span class="n">_min_mt</span><span class="p">(</span><span class="n">da</span><span class="p">),</span>
+        <span class="s1">&#39;best_dc&#39;</span><span class="p">:</span> <span class="n">_min_dc</span><span class="p">(</span><span class="n">da</span><span class="p">),</span>
+        <span class="s1">&#39;maximum_likelihood_estimate&#39;</span><span class="p">:</span> <span class="n">dataarray_idxmax</span><span class="p">(</span><span class="n">likelihoods</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span>
+        <span class="p">})</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_likelihoods_dc_random</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate max likelihood from random dataset bins, ensuring global normalization.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">likelihoods</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+    <span class="c1"># Ensure &#39;misfit&#39; column exists</span>
+    <span class="k">if</span> <span class="s1">&#39;misfit&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">likelihoods</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">likelihoods</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">likelihoods</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span> <span class="s1">&#39;misfit&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Compute likelihoods globally and normalize BEFORE binning</span>
+    <span class="n">likelihoods</span><span class="p">[</span><span class="s1">&#39;likelihood&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">likelihoods</span><span class="p">[</span><span class="s1">&#39;misfit&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">var</span><span class="p">))</span>
+    <span class="n">likelihoods</span><span class="p">[</span><span class="s1">&#39;likelihood&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">likelihoods</span><span class="p">[</span><span class="s1">&#39;likelihood&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># Global normalization</span>
+
+    <span class="c1"># Apply binning, operating on globally normalized likelihoods</span>
+    <span class="n">binned_likelihoods</span> <span class="o">=</span> <span class="n">_bin_dc_regular</span><span class="p">(</span>
+        <span class="n">likelihoods</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">group</span><span class="p">:</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;likelihood&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">binned_likelihoods</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">({</span>
+        <span class="s1">&#39;best_dc&#39;</span><span class="p">:</span> <span class="n">_max_dc</span><span class="p">(</span><span class="n">binned_likelihoods</span><span class="p">),</span>
+        <span class="s1">&#39;maximum_likelihood_estimate&#39;</span><span class="p">:</span> <span class="n">dataarray_idxmax</span><span class="p">(</span><span class="n">binned_likelihoods</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span>
+    <span class="p">})</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_marginals_dc_regular</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; For each moment tensor orientation, calculate marginal likelihood</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">likelihoods</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">likelihoods</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">likelihoods</span><span class="o">.</span><span class="n">values</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">var</span><span class="p">))</span>
+    <span class="n">likelihoods</span><span class="o">.</span><span class="n">values</span> <span class="o">/=</span> <span class="n">likelihoods</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="n">marginals</span> <span class="o">=</span> <span class="n">likelihoods</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;origin_idx&#39;</span><span class="p">,</span> <span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">))</span>
+    <span class="n">marginals</span><span class="o">.</span><span class="n">values</span> <span class="o">/=</span> <span class="n">marginals</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">marginals</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">({</span>
+        <span class="s1">&#39;best_dc&#39;</span><span class="p">:</span> <span class="n">_max_dc</span><span class="p">(</span><span class="n">marginals</span><span class="p">),</span>
+        <span class="p">})</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_marginals_dc_random</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate marginal likelihoods for random bins with global normalization.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">likelihoods</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="s1">&#39;misfit&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">likelihoods</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">likelihoods</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">likelihoods</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span> <span class="s1">&#39;misfit&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Compute likelihoods and normalize globally</span>
+    <span class="n">likelihoods</span><span class="p">[</span><span class="s1">&#39;likelihood&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">likelihoods</span><span class="p">[</span><span class="s1">&#39;misfit&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">var</span><span class="p">))</span>
+    <span class="n">likelihoods</span><span class="p">[</span><span class="s1">&#39;likelihood&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">likelihoods</span><span class="p">[</span><span class="s1">&#39;likelihood&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># Global normalization</span>
+
+    <span class="c1"># Sum within bins after global normalization</span>
+    <span class="n">marginals</span> <span class="o">=</span> <span class="n">_bin_dc_regular</span><span class="p">(</span>
+        <span class="n">likelihoods</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">group</span><span class="p">:</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;likelihood&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span>
+
+    <span class="c1"># No need for further normalization, already globally adjusted</span>
+    <span class="k">return</span> <span class="n">marginals</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">({</span>
+        <span class="s1">&#39;best_dc&#39;</span><span class="p">:</span> <span class="n">_max_dc</span><span class="p">(</span><span class="n">marginals</span><span class="p">),</span>
+    <span class="p">})</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_variance_reduction_dc_regular</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="n">data_norm</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; For each moment tensor orientation, extracts maximum variance reduction</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">variance_reduction</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">da</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">/</span><span class="n">data_norm</span>
+
+    <span class="n">variance_reduction</span> <span class="o">=</span> <span class="n">variance_reduction</span><span class="o">.</span><span class="n">max</span><span class="p">(</span>
+        <span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;origin_idx&#39;</span><span class="p">,</span> <span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">))</span>
+
+    <span class="c1"># widely-used convention - variance reducation as a percentage</span>
+    <span class="n">variance_reduction</span><span class="o">.</span><span class="n">values</span> <span class="o">*=</span> <span class="mf">100.</span>
+
+    <span class="k">return</span> <span class="n">variance_reduction</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">({</span>
+        <span class="s1">&#39;best_mt&#39;</span><span class="p">:</span> <span class="n">_min_mt</span><span class="p">(</span><span class="n">da</span><span class="p">),</span>
+        <span class="s1">&#39;best_dc&#39;</span><span class="p">:</span> <span class="n">_min_dc</span><span class="p">(</span><span class="n">da</span><span class="p">),</span>
+        <span class="p">})</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_variance_reduction_dc_random</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">data_norm</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+    <span class="c1"># Ensure &#39;misfit&#39; column exists</span>
+    <span class="k">if</span> <span class="s1">&#39;misfit&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;misfit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">da</span> <span class="o">=</span> <span class="n">_bin_dc_regular</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">group</span><span class="p">:</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;misfit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">/</span><span class="n">data_norm</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">({</span>
+        <span class="s1">&#39;best_dc&#39;</span><span class="p">:</span> <span class="n">_max_dc</span><span class="p">(</span><span class="n">da</span><span class="p">),</span>
+    <span class="p">})</span>
+
+
+<span class="c1">#</span>
+<span class="c1"># utility functions</span>
+<span class="c1">#</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_min_mt</span><span class="p">(</span><span class="n">da</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Returns moment tensor vector corresponding to minimum DataArray value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">da</span> <span class="o">=</span> <span class="n">dataarray_idxmin</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>
+    <span class="n">lune_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;kappa&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">]</span>
+    <span class="n">lune_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">da</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">lune_keys</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">to_mij</span><span class="p">(</span><span class="o">*</span><span class="n">lune_vals</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_max_mt</span><span class="p">(</span><span class="n">da</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Returns moment tensor vector corresponding to maximum DataArray value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">da</span> <span class="o">=</span> <span class="n">dataarray_idxmax</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>
+    <span class="n">lune_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;kappa&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">]</span>
+    <span class="n">lune_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">da</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">lune_keys</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">to_mij</span><span class="p">(</span><span class="o">*</span><span class="n">lune_vals</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_min_dc</span><span class="p">(</span><span class="n">da</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Returns orientation angles corresponding to minimum DataArray value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">da</span> <span class="o">=</span> <span class="n">dataarray_idxmin</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>
+    <span class="n">dc_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kappa&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">]</span>
+    <span class="n">dc_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">da</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dc_keys</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">dc_vals</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_max_dc</span><span class="p">(</span><span class="n">da</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Returns orientation angles corresponding to maximum DataArray value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">da</span> <span class="o">=</span> <span class="n">dataarray_idxmax</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>
+    <span class="n">dc_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kappa&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">]</span>
+    <span class="n">dc_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">da</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dc_keys</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">dc_vals</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_bin_dc_regular</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">handle</span><span class="p">,</span> <span class="n">nbins</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bins irregularly-spaced moment tensor orientations into regular grids for plotting.&quot;&quot;&quot;</span>
+    <span class="c1"># Orientation bins</span>
+    <span class="n">kappa_min</span><span class="p">,</span> <span class="n">kappa_max</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">360</span>
+    <span class="n">sigma_min</span><span class="p">,</span> <span class="n">sigma_max</span> <span class="o">=</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span>
+    <span class="n">h_min</span><span class="p">,</span> <span class="n">h_max</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+
+    <span class="n">kappa_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">kappa_min</span><span class="p">,</span> <span class="n">kappa_max</span><span class="p">,</span> <span class="n">nbins</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">sigma_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">sigma_min</span><span class="p">,</span> <span class="n">sigma_max</span><span class="p">,</span> <span class="n">nbins</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">h_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">h_min</span><span class="p">,</span> <span class="n">h_max</span><span class="p">,</span> <span class="n">nbins</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">kappa_centers</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">kappa_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">kappa_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="n">sigma_centers</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">sigma_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">sigma_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="n">h_centers</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">h_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">h_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+    <span class="c1"># Prepare the data arrays</span>
+    <span class="n">kappa_vals</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;kappa&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">sigma_vals</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">h_vals</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="c1"># Compute bin indices for each data point</span>
+    <span class="n">kappa_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">kappa_vals</span><span class="p">,</span> <span class="n">kappa_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">sigma_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">sigma_vals</span><span class="p">,</span> <span class="n">sigma_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">h_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">h_vals</span><span class="p">,</span> <span class="n">h_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="c1"># Ensure indices are within valid range</span>
+    <span class="n">kappa_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">kappa_indices</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nbins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">sigma_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">sigma_indices</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nbins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">h_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">h_indices</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nbins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Add bin indices to DataFrame</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;kappa_idx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kappa_indices</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sigma_idx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma_indices</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;h_idx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">h_indices</span>
+
+    <span class="c1"># Group by bin indices</span>
+    <span class="c1"># grouped = df.groupby([&#39;h_idx&#39;, &#39;sigma_idx&#39;, &#39;kappa_idx&#39;])</span>
+    <span class="n">grouped</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;kappa_idx&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma_idx&#39;</span><span class="p">,</span> <span class="s1">&#39;h_idx&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Initialize the output array with appropriate data type</span>
+    <span class="n">binned</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">nbins</span><span class="p">,</span> <span class="n">nbins</span><span class="p">,</span> <span class="n">nbins</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+    <span class="c1"># Process each group</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">k_idx</span><span class="p">,</span> <span class="n">s_idx</span><span class="p">,</span> <span class="n">h_idx</span><span class="p">),</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">grouped</span><span class="p">:</span>
+        <span class="c1"># Apply the handle function to the group DataFrame</span>
+        <span class="n">binned</span><span class="p">[</span><span class="n">k_idx</span><span class="p">,</span> <span class="n">s_idx</span><span class="p">,</span> <span class="n">h_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">handle</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+
+    <span class="c1"># Create the DataArray</span>
+    <span class="n">da</span> <span class="o">=</span> <span class="n">DataArray</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">binned</span><span class="p">,</span>
+        <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;kappa&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">),</span>
+        <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;kappa&#39;</span><span class="p">:</span> <span class="n">kappa_centers</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">:</span> <span class="n">sigma_centers</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="n">h_centers</span><span class="p">},</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">da</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check</span><span class="p">(</span><span class="n">ds</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Checks data structures</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">MTUQDataArray</span><span class="p">,</span> <span class="n">MTUQDataFrame</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Unexpected grid format&quot;</span><span class="p">)</span>
+
+
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+mtuq.grid_search.MTUQDataArray.item
+===================================
+
+.. currentmodule:: mtuq.grid_search
+
+.. automethod:: MTUQDataArray.item

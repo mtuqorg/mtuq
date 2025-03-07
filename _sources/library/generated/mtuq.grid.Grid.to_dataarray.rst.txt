@@ -1,0 +1,6 @@
+mtuq.grid.Grid.to_dataarray
+===========================
+
+.. currentmodule:: mtuq.grid
+
+.. automethod:: Grid.to_dataarray

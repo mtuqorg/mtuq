@@ -1,0 +1,6 @@
+mtuq.grid.Grid.partition
+========================
+
+.. currentmodule:: mtuq.grid
+
+.. automethod:: Grid.partition

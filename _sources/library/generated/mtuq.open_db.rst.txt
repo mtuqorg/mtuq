@@ -1,0 +1,6 @@
+﻿mtuq.open_db
+============
+
+.. currentmodule:: mtuq
+
+.. autofunction:: open_db

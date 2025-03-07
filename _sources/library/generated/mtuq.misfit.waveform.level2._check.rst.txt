@@ -1,0 +1,6 @@
+mtuq.misfit.waveform.level2._check
+==================================
+
+.. currentmodule:: mtuq.misfit.waveform.level2
+
+.. autofunction:: _check

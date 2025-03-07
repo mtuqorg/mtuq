@@ -1,0 +1,6 @@
+mtuq.grid.Grid.get
+==================
+
+.. currentmodule:: mtuq.grid
+
+.. automethod:: Grid.get

@@ -1,0 +1,6 @@
+mtuq.graphics.attrs.PyGMTUtilities.get_resolution
+=================================================
+
+.. currentmodule:: mtuq.graphics.attrs
+
+.. automethod:: PyGMTUtilities.get_resolution

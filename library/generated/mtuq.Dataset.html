@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>mtuq.Dataset &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">mtuq.Dataset</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="mtuq-dataset">
+<h1>mtuq.Dataset<a class="headerlink" href="#mtuq-dataset" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="mtuq.Dataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtuq.</span></span><span class="sig-name descname"><span class="pre">Dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">streams</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mtuq/dataset.html#Dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtuq.Dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></p>
+<p>Seismic data container</p>
+<p>A list of ObsPy streams in which each stream corresponds to a single
+seismic station</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Each supported file format has a corresponding reader that creates
+Datasets (see <code class="docutils literal notranslate"><span class="pre">mtuq.io.readers</span></code>).</p>
+</div>
+<p class="rubric">Public Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.Dataset.append.html#mtuq.Dataset.append" title="mtuq.Dataset.append"><code class="xref py py-obj docutils literal notranslate"><span class="pre">append</span></code></a></p></td>
+<td><p>Appends stream to Dataset</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.Dataset.apply.html#mtuq.Dataset.apply" title="mtuq.Dataset.apply"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code></a></p></td>
+<td><p>Applies a function to all streams</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.Dataset.copy.html#mtuq.Dataset.copy" title="mtuq.Dataset.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a></p></td>
+<td><p>Return a shallow copy of the list.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.Dataset.get_components.html#mtuq.Dataset.get_components" title="mtuq.Dataset.get_components"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_components</span></code></a></p></td>
+<td><p>Returns <cite>list</cite> of components from all streams</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.Dataset.get_origins.html#mtuq.Dataset.get_origins" title="mtuq.Dataset.get_origins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_origins</span></code></a></p></td>
+<td><p>Returns origin metadata from all streams as a <cite>list</cite> of  <cite>mtuq.event.Origin</cite> objects</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.Dataset.get_stations.html#mtuq.Dataset.get_stations" title="mtuq.Dataset.get_stations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_stations</span></code></a></p></td>
+<td><p>Returns station metadata from all streams as a <cite>list</cite> of <cite>mtuq.station.Stations</cite> objects</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.Dataset.get_stats.html#mtuq.Dataset.get_stats" title="mtuq.Dataset.get_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_stats</span></code></a></p></td>
+<td><p>Returns trace metadata in nested lists</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.Dataset.map.html#mtuq.Dataset.map" title="mtuq.Dataset.map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map</span></code></a></p></td>
+<td><p>Maps function to all streams</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.Dataset.max.html#mtuq.Dataset.max" title="mtuq.Dataset.max"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max</span></code></a></p></td>
+<td><p>Returns maximum absolute amplitude over all traces</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.Dataset.select.html#mtuq.Dataset.select" title="mtuq.Dataset.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a></p></td>
+<td><p>Selects streams that match the given station or origin</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.Dataset.sort_by_azimuth.html#mtuq.Dataset.sort_by_azimuth" title="mtuq.Dataset.sort_by_azimuth"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort_by_azimuth</span></code></a></p></td>
+<td><p>Sorts in-place by source-receiver azimuth</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.Dataset.sort_by_distance.html#mtuq.Dataset.sort_by_distance" title="mtuq.Dataset.sort_by_distance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort_by_distance</span></code></a></p></td>
+<td><p>Sorts in-place by hypocentral distance</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.Dataset.sort_by_function.html#mtuq.Dataset.sort_by_function" title="mtuq.Dataset.sort_by_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort_by_function</span></code></a></p></td>
+<td><p>Sorts in-place by user-supplied function</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.Dataset.tag_add.html#mtuq.Dataset.tag_add" title="mtuq.Dataset.tag_add"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tag_add</span></code></a></p></td>
+<td><p>Appends string to tags list</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.Dataset.tag_remove.html#mtuq.Dataset.tag_remove" title="mtuq.Dataset.tag_remove"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tag_remove</span></code></a></p></td>
+<td><p>Removes string from tags list</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.Dataset.write.html#mtuq.Dataset.write" title="mtuq.Dataset.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a></p></td>
+<td><p>Writes dataset to disk</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

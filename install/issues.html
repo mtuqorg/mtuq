@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Installation notes &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/style.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Installation notes</a><ul>
+<li><a class="reference internal" href="#installation-on-apple-silicon-macs">Installation on Apple Silicon Macs</a></li>
+<li><a class="reference internal" href="#cython-extension-modules">Cython extension modules</a></li>
+<li><a class="reference internal" href="#cython-compilation-settings">Cython compilation settings</a></li>
+<li><a class="reference internal" href="#troubleshooting-cython-compilation">Troubleshooting Cython compilation</a></li>
+<li><a class="reference internal" href="#instaseis-installation">Instaseis installation</a></li>
+<li><a class="reference internal" href="#speeding-up-conda-installs">Speeding up conda installs</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="installation-notes">
+<h1>Installation notes<a class="headerlink" href="#installation-notes" title="Permalink to this headline">¶</a></h1>
+<section id="installation-on-apple-silicon-macs">
+<h2>Installation on Apple Silicon Macs<a class="headerlink" href="#installation-on-apple-silicon-macs" title="Permalink to this headline">¶</a></h2>
+<p>MTUQ installation on Apple M1, M2 and M3 Macs is now possible using the default installation procedure.  A modified conda environment file is no longer necessary.</p>
+</section>
+<section id="cython-extension-modules">
+<h2>Cython extension modules<a class="headerlink" href="#cython-extension-modules" title="Permalink to this headline">¶</a></h2>
+<p>MTUQ uses Cython extension modules for a significant speed up.</p>
+<p>By default, Cython extension modules are compiled using the conda-forge <a class="reference external" href="https://anaconda.org/conda-forge/compilers">c-compiler</a> package, which seems to work well on most Linux, Mac, and Windows systems.</p>
+</section>
+<section id="cython-compilation-settings">
+<h2>Cython compilation settings<a class="headerlink" href="#cython-compilation-settings" title="Permalink to this headline">¶</a></h2>
+<p>To experiment with different compilation settings, users are free to comment out <cite>c-compiler</cite> in <cite>env.yaml</cite> and specify a different compiler via the <cite>CC</cite> environment vairable.</p>
+<p>For fast experimentation, users can run</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">build_ext</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>which compiles the Cython extensions without first installing other dependencies in the conda environment file.</p>
+</section>
+<section id="troubleshooting-cython-compilation">
+<h2>Troubleshooting Cython compilation<a class="headerlink" href="#troubleshooting-cython-compilation" title="Permalink to this headline">¶</a></h2>
+<p>If Cython modules fail to compile, MTUQ installation will exit with an error message ending with <cite>CondaEnvException: Pip failed</cite>.  More informative output can then be obtained by running <cite>build_ext.sh</cite>.</p>
+<p>To troubleshoot Cython installation, users can try modifying the Cython source code files listed in <cite>setup.py</cite>, or try varying the compilation settings determined by <cite>setup.py</cite>, the <cite>CC</cite> environment variable, the conda environment, and the underlying system environment.</p>
+<p>Alternatively, users can bypass Cython compilation errors by adding <cite>optional=True</cite> to the extension module settings in <cite>setup.py</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ext_modules</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Extension</span><span class="p">(</span>
+        <span class="s1">&#39;mtuq.misfit.waveform.c_ext_L2&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;mtuq/misfit/waveform/c_ext_L2.c&#39;</span><span class="p">],</span>
+        <span class="n">include_dirs</span><span class="o">=</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">get_include</span><span class="p">()],</span>
+        <span class="n">extra_compile_args</span><span class="o">=</span><span class="n">get_compile_args</span><span class="p">(),</span>
+        <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>With this change, Cython errors will be ignored at install-time and MTUQ may fall back to slow pure Python functions at runtime.</p>
+</section>
+<section id="instaseis-installation">
+<h2>Instaseis installation<a class="headerlink" href="#instaseis-installation" title="Permalink to this headline">¶</a></h2>
+<p>MTUQ uses Instaseis to generate synthetic seismograms.</p>
+<p>Because Instaseis does not always install successfully under conda-forge, we implement a workaround using a modified Instaseis repository hosted on GitHub.</p>
+<p>Similar to Cython extensions, Instaseis uses Fortran extensions for speedup, for which we install <cite>fortran-compiler</cite> conda-forge package.</p>
+</section>
+<section id="speeding-up-conda-installs">
+<h2>Speeding up conda installs<a class="headerlink" href="#speeding-up-conda-installs" title="Permalink to this headline">¶</a></h2>
+<p>Older versions of the conda package manager can be very slow. For a potential speed up, conda can be updated as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="o">-</span><span class="n">n</span> <span class="n">base</span> <span class="n">conda</span>
+</pre></div>
+</div>
+<p>For reference, the largest potential speed up comes from the new <a class="reference external" href="https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community">mamba</a> dependency solver, which was <a class="reference external" href="https://conda.org/blog/2023-11-06-conda-23-10-0-release">adopted</a> in the 23.10 release.</p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
