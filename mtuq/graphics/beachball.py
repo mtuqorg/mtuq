@@ -32,7 +32,7 @@ from mtuq.util.beachball import convert_sphere_points_to_angles, lambert_azimuth
 import warnings
 
 
-def plot_beachball(filename, mt, stations, origin, backend=None, **kwargs):
+def plot_beachball(filename, mt, stations, origin, taup_model='ak135', backend=None, **kwargs):
     """ Plots focal mechanism and station locations
 
     .. rubric :: Required arguments
@@ -66,7 +66,7 @@ def plot_beachball(filename, mt, stations, origin, backend=None, **kwargs):
 
     ``taup_model`` (`str`):
     Name of built-in ObsPy TauP model or path to custom ObsPy TauP model,
-    used for takeoff angle calculations
+    used for takeoff angle calculations. ak135 model used by default. 
 
     """
 
@@ -75,13 +75,13 @@ def plot_beachball(filename, mt, stations, origin, backend=None, **kwargs):
 
     if backend is None:
         backend = _plot_beachball_matplotlib
-        backend(filename, mt, stations, origin, **kwargs)
+        backend(filename, mt,taup_model, stations, origin, **kwargs)
         return
     elif backend == _plot_beachball_pygmt and exists_pygmt():
-        backend(filename, mt, stations, origin, **kwargs)
+        backend(filename, mt, stations, origin, taup_model, **kwargs)
         return
     elif backend == _plot_beachball_gmt and exists_gmt() and gmt_major_version() >= 6:
-        backend(filename, mt, stations, origin, **kwargs)
+        backend(filename, mt, stations, origin, taup_model, **kwargs)
         return
 
     try:
@@ -95,7 +95,7 @@ def plot_beachball(filename, mt, stations, origin, backend=None, **kwargs):
         warn("plot_beachball: Plotting failed")
 
 
-def plot_polarities(filename, observed, predicted, stations, origin, mt, backend=None, **kwargs):
+def plot_polarities(filename, observed, predicted, stations, origin, mt, taup_model='ak135',backend=None, **kwargs):
     """ Plots first-motion polarities
 
     .. rubric :: Required arguments
@@ -118,13 +118,18 @@ def plot_polarities(filename, observed, predicted, stations, origin, mt, backend
     ``mt`` (`mtuq.MomentTensor`):
     Moment tensor object
 
+    .. rubric :: Optional arguments
+
+    ``taup_model`` (`str`):
+    Name of built-in ObsPy TauP model or path to custom ObsPy TauP model,
+    used for takeoff angle calculations. ak135 model used by default. 
+
     """
     if backend is None:
         backend = _plot_beachball_matplotlib
 
         polarity_data = np.vstack((observed, predicted))
-
-        backend(filename, mt, stations, origin, polarity_data=polarity_data, **kwargs)
+        backend(filename, mt, taup_model, stations, origin, polarity_data=polarity_data, **kwargs)
         return
     
     if exists_pygmt():
@@ -143,7 +148,7 @@ GMT_PROJECTION = '-Jm0/0/5c'
 
 
 def _plot_beachball_gmt(filename, mt, stations, origin,
-    taup_model='ak135', add_station_markers=True, add_station_labels=True,
+    taup_model, add_station_markers=True, add_station_labels=True,
     fill_color='gray', marker_color='black'):
 
 
@@ -265,7 +270,7 @@ PYGMT_SCALE     = '9.9c'
 
 
 def _plot_beachball_pygmt(filename, mt, stations, origin,
-    taup_model='ak135', add_station_labels=True, add_station_markers=True,
+    taup_model, add_station_labels=True, add_station_markers=True,
     fill_color='gray', marker_color='black'):
 
     import pygmt
@@ -457,8 +462,8 @@ def _polar2(stations, **kwargs):
     __polar2(stations, **kwargs)
 
 
-def _plot_beachball_matplotlib(filename, mt_arrays, stations=None, origin=None, lon_lats=None, 
-                               scale=None, fig=None, ax=None, taup_model='ak135', color='gray', 
+def _plot_beachball_matplotlib(filename, mt_arrays,taup_model, stations=None, origin=None,lon_lats=None, 
+                               scale=None, fig=None, ax=None, color='gray', 
                                lune_rotation=False, polarity_data=None, **kwargs):
     
     from scipy.interpolate import griddata
