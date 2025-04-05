@@ -148,7 +148,7 @@ GMT_PROJECTION = '-Jm0/0/5c'
 
 
 def _plot_beachball_gmt(filename, mt, stations, origin,
-    taup_model, add_station_markers=True, add_station_labels=True,
+    taup_model='ak135', add_station_markers=True, add_station_labels=True,
     fill_color='gray', marker_color='black'):
 
 
@@ -270,7 +270,7 @@ PYGMT_SCALE     = '9.9c'
 
 
 def _plot_beachball_pygmt(filename, mt, stations, origin,
-    taup_model, add_station_labels=True, add_station_markers=True,
+    taup_model='ak135', add_station_labels=True, add_station_markers=True,
     fill_color='gray', marker_color='black'):
 
     import pygmt
@@ -462,7 +462,7 @@ def _polar2(stations, **kwargs):
     __polar2(stations, **kwargs)
 
 
-def _plot_beachball_matplotlib(filename, mt_arrays,taup_model, stations=None, origin=None,lon_lats=None, 
+def _plot_beachball_matplotlib(filename, mt_arrays,taup_model='ak135', stations=None, origin=None,lon_lats=None, 
                                scale=None, fig=None, ax=None, color='gray', 
                                lune_rotation=False, polarity_data=None, **kwargs):
     
