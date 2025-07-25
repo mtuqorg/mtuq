@@ -1,4 +1,3 @@
-
 #
 # graphics/header.py - figure headers and text
 #
@@ -9,7 +8,7 @@ import os
 from matplotlib import pyplot
 from matplotlib.font_manager import FontProperties
 from mtuq.event import MomentTensor
-from mtuq.graphics.beachball import plot_beachball
+from mtuq.graphics.beachball import plot_beachball, _plot_beachball_matplotlib
 from mtuq.graphics._pygmt import exists_pygmt, plot_force_pygmt
 from mtuq.graphics._matplotlib import plot_force_matplotlib
 from mtuq.util.math import to_delta_gamma
@@ -97,12 +96,24 @@ class SourceHeader(Base):
     def parse_origin(self):
         depth_in_m = self.origin.depth_in_m
         depth_in_km = self.origin.depth_in_m/1000.
-        if depth_in_m < 1000.:
-            self.depth_str = '%.0f m' % depth_in_m
-        elif depth_in_km <= 100.:
-            self.depth_str = '%.1f km' % depth_in_km
+        if depth_in_m >= 0:
+            if depth_in_m < 1000.:
+                self.depth_str = '%.0f m' % depth_in_m
+            elif depth_in_km <= 100.:
+                self.depth_str = '%.1f km' % depth_in_km
+            else:
+                self.depth_str = '%.0f km' % depth_in_km
+            self.depth_label = 'Depth'
         else:
-            self.depth_str = '%.0f km' % depth_in_km
+            height_in_m = abs(depth_in_m)
+            height_in_km = abs(depth_in_km)
+            if height_in_m < 1000.:
+                self.depth_str = '%.0f m' % height_in_m
+            elif height_in_km <= 100.:
+                self.depth_str = '%.1f km' % height_in_km
+            else:
+                self.depth_str = '%.0f km' % height_in_km
+            self.depth_label = 'Height'
 
 
     def parse_misfit(self):
@@ -237,7 +248,7 @@ class MomentTensorHeader(SourceHeader):
         self.parse_station_counts()
 
 
-    def display_source(self, ax, height, width, offset):
+    def display_source(self, ax, height, width, offset, backend=_plot_beachball_matplotlib):
 
         #
         # If ObsPy plotted focal mechanisms correctly we could do the following
@@ -263,16 +274,28 @@ class MomentTensorHeader(SourceHeader):
         xp = offset
         yp = 0.075*height
 
-        plot_beachball('tmp.png', self.mt, None, None)
-        img = pyplot.imread('tmp.png')
+        if backend != _plot_beachball_matplotlib:
+            plot_beachball('tmp.png', self.mt, None, None, backend=backend)
+            img = pyplot.imread('tmp.png')
 
-        try:
-            os.remove('tmp.png')
-            os.remove('tmp.ps')
-        except:
-            pass
+            try:
+                os.remove('tmp.png')
+                os.remove('tmp.ps')
+            except:
+                pass
 
-        ax.imshow(img, extent=(xp,xp+diameter,yp,yp+diameter))
+            ax.imshow(img, extent=(xp,xp+diameter,yp,yp+diameter))
+
+        else:
+            inset_ax = ax.inset_axes([xp, yp, diameter, diameter], transform=ax.transData)
+
+            inset_ax.set_xticks([])
+            inset_ax.set_yticks([])
+            inset_ax.set_frame_on(False)
+            # Draw the beachball directly as vector graphics
+            plot_beachball(None, self.mt, None, None, fig=inset_ax.figure, ax=inset_ax, backend=_plot_beachball_matplotlib)
+
+            inset_ax.axis('off')
 
 
     def write(self, height, width, margin_left, margin_top):
@@ -289,8 +312,8 @@ class MomentTensorHeader(SourceHeader):
         px += 0.00
         py -= 0.35
 
-        line = '%s  %s  $M_w$ %.2f  Depth %s' % (
-            self.event_name, _lat_lon(self.origin), self.magnitude, self.depth_str)
+        line = '%s  %s  $M_w$ %.2f  %s %s' % (
+            self.event_name, _lat_lon(self.origin), self.magnitude, self.depth_label, self.depth_str)
         _write_bold(line, px, py, ax, fontsize=16.5)
 
 
@@ -406,8 +429,8 @@ class ForceHeader(SourceHeader):
         px += 0.00
         py -= 0.35
 
-        line = '%s  %s  $F$ %.2e N   Depth %s' % (
-            self.event_name, _lat_lon(self.origin), self.force_dict['F0'], self.depth_str)
+        line = '%s  %s  $F$ %.2e N   %s %s' % (
+            self.event_name, _lat_lon(self.origin), self.force_dict['F0'], self.depth_label, self.depth_str)
         _write_bold(line, px, py, ax, fontsize=16)
 
 
@@ -465,22 +488,29 @@ class ForceHeader(SourceHeader):
             return
 
         # image size
-        diameter = 0.75*height
+        diameter = 0.8*height
 
         # image placement
         xp = offset
-        yp = 0.075*height
+        yp = (height - diameter) / 2 - 0.1*diameter
 
-        backend('tmp.png', self.force_dict)
-        img = pyplot.imread('tmp.png')
-
-        try:
-            # os.remove('tmp.png')
-            os.remove('tmp.ps')
-        except:
-            pass
-
-        ax.imshow(img, extent=(xp,xp+diameter,yp,yp+diameter))
+        if backend == plot_force_matplotlib:
+            # Use inset axes and plot directly as vector graphics
+            inset_ax = ax.inset_axes([xp, yp, diameter, diameter], transform=ax.transData)
+            inset_ax.set_xticks([])
+            inset_ax.set_yticks([])
+            inset_ax.set_frame_on(False)
+            plot_force_matplotlib(force_dict=self.force_dict, ax=inset_ax)
+            inset_ax.axis('off')
+        else:
+            backend('tmp.png', self.force_dict)
+            img = pyplot.imread('tmp.png')
+            try:
+                os.remove('tmp.png')
+                os.remove('tmp.ps')
+            except:
+                pass
+            ax.imshow(img, extent=(xp,xp+diameter,yp,yp+diameter))
 
 
 

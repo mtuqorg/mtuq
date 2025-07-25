@@ -73,7 +73,7 @@ def plot_beachball(filename, mt, stations, origin, backend=None, **kwargs):
     if type(mt)!=MomentTensor:
         raise TypeError
 
-    if backend is None:
+    if backend is None or backend == _plot_beachball_matplotlib:
         backend = _plot_beachball_matplotlib
         backend(filename, mt, stations, origin, **kwargs)
         return
