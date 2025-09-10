@@ -317,6 +317,11 @@ class ProcessData(object):
             self.window_length = window_length
             _window_warnings(window_type, window_length)
 
+        elif self.window_type == 'synthetic':
+            # window type for synthetic examples
+            assert window_length > 0.
+            self.window_length = window_length
+
         else:
             raise ValueError('Bad parameter: window_type')
 
@@ -701,6 +706,14 @@ class ProcessData(object):
                     starttime = average_time - self.window_length/2.
                     endtime = average_time + self.window_length/2.
 
+                starttime += float(origin.time)
+                endtime += float(origin.time)
+
+            elif self.window_type == 'synthetic':
+                # window type for synthetic examples
+                # waveform starts at 0.0
+                starttime = 0.0
+                endtime = starttime + self.window_length
                 starttime += float(origin.time)
                 endtime += float(origin.time)
 
