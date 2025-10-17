@@ -195,7 +195,8 @@ if __name__=='__main__':
 
     plot_data_greens2(event_id+'DC_waveforms.png',
         data_bw, data_sw, greens_bw, greens_sw, process_bw, process_sw, 
-        misfit_bw, misfit_sw, stations, origin, best_mt, lune_dict)
+        misfit_bw, misfit_sw, stations, origin, best_mt, lune_dict,
+        dat_kwargs={'linewidth':0.5}, syn_kwargs={'color':'purple'})
 
 
     plot_beachball(event_id+'DC_beachball.png',
