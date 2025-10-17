@@ -32,6 +32,8 @@ def plot_waveforms1(
         normalize='maximum_amplitude',
         trace_label_writer=trace_label_writer,
         station_label_writer=station_label_writer,
+        dat_kwargs={},     
+        syn_kwargs={},
         ):
 
     """ Creates data/synthetics comparison figure with 3 columns (Z, R, T)
@@ -80,7 +82,8 @@ def plot_waveforms1(
         # plot traces
         _plot_stream(axes[ir], [1,2,3], ['Z','R','T'], 
                   data[_i], synthetics[_i],
-                  normalize, factor, trace_label_writer, total_misfit)
+                  normalize, factor, trace_label_writer, total_misfit,
+                  dat_kwargs=dat_kwargs, syn_kwargs=syn_kwargs)
 
         ir += 1
 
@@ -103,6 +106,8 @@ def plot_waveforms2(
         normalize='maximum_amplitude',
         trace_label_writer=trace_label_writer,
         station_label_writer=station_label_writer,
+        dat_kwargs={},
+        syn_kwargs={},
         ):
 
 
@@ -161,12 +166,14 @@ def plot_waveforms2(
         # plot body wave traces
         _plot_stream(axes[ir], [1,2], ['Z','R'],
                      data_bw[_i], synthetics_bw[_i],
-                     normalize, factor_bw, trace_label_writer, total_misfit_bw)
+                     normalize, factor_bw, trace_label_writer, total_misfit_bw,
+                     dat_kwargs=dat_kwargs, syn_kwargs=syn_kwargs)
 
         # plot surface wave traces
         _plot_stream(axes[ir], [3,4,5], ['Z','R','T'],
                      data_sw[_i], synthetics_sw[_i],
-                     normalize, factor_sw, trace_label_writer, total_misfit_sw)
+                     normalize, factor_sw, trace_label_writer, total_misfit_sw,
+                     dat_kwargs=dat_kwargs, syn_kwargs=syn_kwargs)
 
         ir += 1
 
@@ -191,6 +198,8 @@ def plot_waveforms3(
         normalize='maximum_amplitude',
         trace_label_writer=trace_label_writer,
         station_label_writer=station_label_writer,
+        dat_kwargs={},
+        syn_kwargs={},
         ):
 
     """ Creates data/synthetics comparison figure with 5 columns 
@@ -261,17 +270,20 @@ def plot_waveforms3(
         # plot body waves
         _plot_stream(axes[ir], [1,2], ['Z','R'], 
                      data_bw[_i], synthetics_bw[_i],
-                     normalize, factor_bw, trace_label_writer, total_misfit_bw)
+                     normalize, factor_bw, trace_label_writer, total_misfit_bw,
+                     dat_kwargs=dat_kwargs, syn_kwargs=syn_kwargs)
         
         # plot Rayleigh waves
         _plot_stream(axes[ir], [3,4], ['Z','R'],
                      data_rayl[_i], synthetics_rayl[_i],
-                     normalize, factor_rayl, trace_label_writer, total_misfit_rayl)
+                     normalize, factor_rayl, trace_label_writer, total_misfit_rayl,
+                     dat_kwargs=dat_kwargs, syn_kwargs=syn_kwargs)
 
         # plot Love waves
         _plot_stream(axes[ir], [5], ['T'],
                      data_love[_i], synthetics_love[_i],
-                     normalize, factor_love, trace_label_writer, total_misfit_love)
+                     normalize, factor_love, trace_label_writer, total_misfit_love,
+                     dat_kwargs=dat_kwargs, syn_kwargs=syn_kwargs)
 
         ir += 1
 
@@ -534,7 +546,9 @@ def _plot_stream(
     normalize='maximum_amplitude',
     amplitude_factor=None,
     trace_label_writer=None,
-    total_misfit=1.
+    total_misfit=1.,
+    dat_kwargs={},
+    syn_kwargs={},
     ):
 
     if normalize in [
@@ -580,7 +594,7 @@ def _plot_stream(
         elif amplitude_factor:
             ylim = [-amplitude_factor, +amplitude_factor]
 
-        _plot_trace(axis, dat, syn)
+        _plot_trace(axis, dat, syn, dat_update=dat_kwargs, syn_update=syn_kwargs)
 
         try:
             axis.set_ylim(*ylim)
@@ -593,18 +607,35 @@ def _plot_stream(
             pass
 
 
-def _plot_trace(axis, dat, syn, label=None):
+def _plot_trace(axis, dat, syn, dat_update={}, syn_update={}):
     """ Plots data and synthetics time series on current axes
     """
     if dat is None and syn is None:
         # nothing to plot
         return
 
+    dat_kwargs = {
+        'color': 'black',
+        'linewidth': 1.5,
+        'clip_on': True,
+        'zorder': 10,
+        }
+
+    syn_kwargs = {
+        'color': 'red',
+        'linewidth': 1.25,
+        'clip_on': True,
+        'zorder': 10,
+        }
+
+    dat_kwargs.update(dat_update)
+    syn_kwargs.update(syn_update)
+
+
     if dat:
         t,d = _time_series(dat)
 
-        axis.plot(t, d, 'k', linewidth=1.5,
-            clip_on=True, zorder=10)
+        axis.plot(t, d, **dat_kwargs)
 
     if syn:
         # which start and stop indices will correctly align synthetics?
@@ -613,9 +644,7 @@ def _plot_trace(axis, dat, syn, label=None):
 
         t,s = _time_series(syn)
 
-        axis.plot(t[:stop-start], s[start:stop], 'r', linewidth=1.25,
-            clip_on=True, zorder=10)
-
+        axis.plot(t[:stop-start], s[start:stop], **syn_kwargs)
 
 
 def _add_component_labels1(axes, body_wave_labels=True, surface_wave_labels=True):

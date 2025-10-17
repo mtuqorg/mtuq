@@ -22,7 +22,7 @@ class WaveformMisfit(object):
     Evaluating misfit is a two-step procedure. 
 
     First, the user supplies parameters such as the type of norm (see below for
-    detailed argument descriptions):
+    detailed argument description):
 
     .. code::
 
@@ -319,8 +319,8 @@ class WaveformMisfit(object):
         return deepcopy(synthetics)
 
 
-    def description(self):
-        _description = ''
+    def _description(self):
+        _string = ''
 
         if self.verbose > 1:
             if self.norm=='L1':
@@ -344,7 +344,7 @@ class WaveformMisfit(object):
                 elif self.norm=='hybrid':
                     NF = 'Σ √(∫ |d(t)|² dt)'
 
-            _description += \
+            _string += \
 f"""\
     Misfit function evaluates
       {formula}
@@ -358,14 +358,14 @@ f"""\
 """
 
             if self.time_shift_min != self.time_shift_max:
-                _description +=\
+                _string +=\
                     f'      t_s is a cross-correlation time shift\n'
 
             if self.normalize:
-                _description +=\
+                _string +=\
                     f'      NF = {NF} is a normalization factor\n'
 
-            _description += '\n'
+            _string += '\n'
 
 
         _type = type(self).__name__
@@ -376,12 +376,12 @@ f"""\
             3: 'Cython [deprecated]',
             }[self.level]
 
-        _description += '\n'.join([
+        _string += '\n'.join([
             f'    Misfit function type:\n    {_type}\n',
             f'    Misfit function implementation:\n    {_level}\n',
             ])
 
-        return _description
+        return _string
 
          
 

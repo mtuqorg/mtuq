@@ -47,7 +47,7 @@ def plot_pdf(filename, df, var, m0=None, nbins=50, normalized=False, **kwargs):
 
 
 
-def plot_cdf(filename, df, var, nbins=50, normalized=False, **kwargs):
+def plot_cdf(filename, df, var, m0=None, nbins=50, normalized=False, **kwargs):
     """ Plots cumulative distribution function over angular distance
 
     .. rubric :: Input arguments
