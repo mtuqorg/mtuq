@@ -1,0 +1,216 @@
+﻿mtuq.GreensTensorList
+=====================
+
+.. currentmodule:: mtuq
+.. autoclass:: GreensTensorList
+  :show-inheritance:
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  .. rubric:: Public Methods
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~GreensTensorList.append
+     ~GreensTensorList.apply
+     ~GreensTensorList.convolve
+     ~GreensTensorList.copy
+     ~GreensTensorList.get_synthetics
+     ~GreensTensorList.map
+     ~GreensTensorList.parallel_map
+     ~GreensTensorList.select
+     ~GreensTensorList.sort_by_azimuth
+     ~GreensTensorList.sort_by_distance
+     ~GreensTensorList.sort_by_function
+     ~GreensTensorList.tag_add
+     ~GreensTensorList.tag_remove
+     ~GreensTensorList.write
+  
+
+  
+
+  
+  

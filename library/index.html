@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Library reference &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/style.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Customizing figures" href="../user_guide/06/customizing_figures.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick start</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Library reference</a><ul>
+<li><a class="reference internal" href="#seismic-data-structures">Seismic data structures</a></li>
+<li><a class="reference internal" href="#data-i-o">Data I/O</a></li>
+<li><a class="reference internal" href="#data-processing-and-inversion">Data processing and inversion</a></li>
+<li><a class="reference internal" href="#station-and-event-structures">Station and event structures</a></li>
+<li><a class="reference internal" href="#data-visualization">Data visualization</a></li>
+<li><a class="reference internal" href="#moment-tensor-and-force-visualization">Moment tensor and force visualization</a></li>
+<li><a class="reference internal" href="#depth-and-hypocenter-visualization">Depth and hypocenter visualization</a></li>
+<li><a class="reference internal" href="#visualizing-by-location-and-component">Visualizing by location and component</a></li>
+<li><a class="reference internal" href="#moment-tensor-and-force-grids">Moment tensor and force grids</a></li>
+<li><a class="reference internal" href="#grid-base-classes">Grid base classes</a></li>
+<li><a class="reference internal" href="#database-and-web-service-clients">Database and web service clients</a></li>
+<li><a class="reference internal" href="#low-level-misfit-modules">Low-level misfit modules</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="../user_guide/06/customizing_figures.html" title="Previous Chapter: Customizing figures"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Customizing figures</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="library-reference">
+<h1>Library reference<a class="headerlink" href="#library-reference" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>MTUQ is still in under development.  Some documentation may be incomplete or describe planned rather than current functionality.</p>
+</div>
+<section id="seismic-data-structures">
+<h2>Seismic data structures<a class="headerlink" href="#seismic-data-structures" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.Dataset.html">mtuq.Dataset</a></p></td>
+<td><p>Container for observed or synthetic seismic data</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.GreensTensor.html">mtuq.GreenTensor</a></p></td>
+<td><p>Green’s tensor object</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.GreensTensorList.html">mtuq.GreenTensorList</a></p></td>
+<td><p>Container for Green’s tensor objects</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="data-i-o">
+<h2>Data I/O<a class="headerlink" href="#data-i-o" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.download_greens.html">mtuq.download_greens</a></p></td>
+<td><p>Downloads Green’s tensors from syngine</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.open_db.html">mtuq.open_db</a></p></td>
+<td><p>Opens Green’s tensor database from disk</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.grid_search.open_ds.html">mtuq.open_ds</a></p></td>
+<td><p>Opens grid search results from disk</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.io.readers.SAC.read.html">mtuq.read</a></p></td>
+<td><p>Reads seismic data from disk</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="data-processing-and-inversion">
+<h2>Data processing and inversion<a class="headerlink" href="#data-processing-and-inversion" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.ProcessData.html">mtuq.ProcessData</a></p></td>
+<td><p>Data processing function constructor</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.PolarityMisfit.html">mtuq.PolarityMisfit</a></p></td>
+<td><p>Polarity misfit function constructor</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.WaveformMisfit.html">mtuq.WaveformMisfit</a></p></td>
+<td><p>Waveform misfit function constructor</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.grid_search.grid_search.html">mtuq.grid_search</a></p></td>
+<td><p>Evaluates misfit over grids</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.grid_search.MTUQDataArray.html">mtuq.MTUQDataArray</a></p></td>
+<td><p>Data structure for storing misfit on regularly-spaced grids</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.grid_search.MTUQDataFrame.html">mtuq.MTUQDataFrame</a></p></td>
+<td><p>Data structure for storing misfit on irregularly-spaced grids</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="station-and-event-structures">
+<h2>Station and event structures<a class="headerlink" href="#station-and-event-structures" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.Station.html">mtuq.Station</a></p></td>
+<td><p>Station metdata object</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.Origin.html">mtuq.Origin</a></p></td>
+<td><p>Origin metdata object</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.Wavelet.html">mtuq.Wavelet</a></p></td>
+<td><p>Source wavelet or source-time function object</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.Force.html">mtuq.Force</a></p></td>
+<td><p>Force source</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.MomentTensor.html">mtuq.MomentTensor</a></p></td>
+<td><p>Moment tensor source</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="data-visualization">
+<h2>Data visualization<a class="headerlink" href="#data-visualization" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_waveforms1.html">mtuq.graphics.plot_waveforms1</a></p></td>
+<td><p>Plots surface waves only</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_waveforms2.html">mtuq.graphics.plot_waveforms2</a></p></td>
+<td><p>Plots body and surface waves</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_waveforms3.html">mtuq.graphics.plot_waveforms3</a></p></td>
+<td><p>Plots body, Rayleigh, and Love waves</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_data_greens1.html">mtuq.graphics.plot_data_greens1</a></p></td>
+<td><p>Variation on <cite>plot_waveforms1</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_data_greens2.html">mtuq.graphics.plot_data_greens2</a></p></td>
+<td><p>Variation on <cite>plot_waveforms2</cite></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_data_greens3.html">mtuq.graphics.plot_data_greens3</a></p></td>
+<td><p>Variation on <cite>plot_waveforms3</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_beachball.html">mtuq.graphics.plot_beachball</a></p></td>
+<td><p>Plots first-motion beachball</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_polarities.html">mtuq.graphics.plot_polarities</a></p></td>
+<td><p>Plots first-motion data fit</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="moment-tensor-and-force-visualization">
+<h2>Moment tensor and force visualization<a class="headerlink" href="#moment-tensor-and-force-visualization" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_likelihood_lune.html">mtuq.graphics.plot_likelihood_lune</a></p></td>
+<td><p>Plots maximum likelihoods on lune</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_marginal_lune.html">mtuq.graphics.plot_marginal_lune</a></p></td>
+<td><p>Plots marginal likelihoods on lune</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_misfit_lune.html">mtuq.graphics.plot_misfit_lune</a></p></td>
+<td><p>Plots misfit on lune</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_likelihood_vw.html">mtuq.graphics.plot_likelihood_vw</a></p></td>
+<td><p>Plots maximum likelihoods on <cite>v,w</cite> rectangle</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_marginal_vw.html">mtuq.graphics.plot_marginal_vw</a></p></td>
+<td><p>Plots marginal likelihoods on <cite>v,w</cite> rectangle</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_misfit_vw.html">mtuq.graphics.plot_misfit_vw</a></p></td>
+<td><p>Plots misfit on <cite>v,w</cite> rectangle</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_likelihood_force.html">mtuq.graphics.plot_likelihood_force</a></p></td>
+<td><p>Plots maximum likelihoods w.r.t force orientation</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_marginal_force.html">mtuq.graphics.plot_marginal_force</a></p></td>
+<td><p>Plots marginal likelihoods w.r.t. force orientation</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_misfit_force.html">mtuq.graphics.plot_misfit_force</a></p></td>
+<td><p>Plots misfit w.r.t force orientation</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="depth-and-hypocenter-visualization">
+<h2>Depth and hypocenter visualization<a class="headerlink" href="#depth-and-hypocenter-visualization" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_likelihood_depth.html">mtuq.graphics.plot_likelihood_depth</a></p></td>
+<td><p>Plots maximum likelihoods versus depth</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_misfit_depth.html">mtuq.graphics.plot_misfit_depth</a></p></td>
+<td><p>Plots misfit versus depth</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_likelihood_latlon.html">mtuq.graphics.plot_likelihood_latlon</a></p></td>
+<td><p>Plots maximum likelihoods versus hypocenter</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_misfit_latlon.html">mtuq.graphics.plot_misfit_laton</a></p></td>
+<td><p>Plots misfit versus hypocenter</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="visualizing-by-location-and-component">
+<h2>Visualizing by location and component<a class="headerlink" href="#visualizing-by-location-and-component" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_time_shifts.html">mtuq.graphics.plot_time_shifts</a></p></td>
+<td><p>Plots time shifts by location and component</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_amplitude_ratios.html">mtuq.graphics.plot_amplitude_ratios</a></p></td>
+<td><p>Plots amplitude ratios by location and component</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.graphics.plot_cc_max.html">mtuq.graphics.plot_cc_max</a></p></td>
+<td><p>Plots maximum correlation coefficient by location and component</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="moment-tensor-and-force-grids">
+<h2>Moment tensor and force grids<a class="headerlink" href="#moment-tensor-and-force-grids" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.grid.FullMomentTensorGridRandom.html">mtuq.grid.FullMomentTensorGridRandom</a></p></td>
+<td><p>Grid with randomly-drawn full moment tensors</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.grid.FullMomentTensorGridSemiregular.html">mtuq.grid.FullMomentTensorGridSemiregular</a></p></td>
+<td><p>Grid with semiregularly-spaced full moment tensors</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.grid.DoubleCoupleGridRandom.html">mtuq.grid.DoubleCoupleGridRandom</a></p></td>
+<td><p>Grid with randomly-drawn double couples</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.grid.DoubleCoupleGridRegular.html">mtuq.grid.DoubleCoupleGridRegular</a></p></td>
+<td><p>Grid with regularly-spaced double couples</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.grid.DeviatoricGridRandom.html">mtuq.grid.DeviatoricGridRandom</a></p></td>
+<td><p>Grid with randomly-drawn deviatoric moment tensors</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.grid.DeviatoricGridSemiregular.html">mtuq.grid.DeviatoricGridSemiregular</a></p></td>
+<td><p>Grid with semiregularly-spaced deviatoric moment tensors</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.grid.ForceGridRandom.html">mtuq.grid.ForceGridRandom</a></p></td>
+<td><p>Grid with randomly-drawn forces</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.grid.ForceGridRegular.html">mtuq.grid.ForceGridRegular</a></p></td>
+<td><p>Grid with regularly-spaced forces</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="grid-base-classes">
+<h2>Grid base classes<a class="headerlink" href="#grid-base-classes" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These base classes can be used for specialized uses cases not covered by the above grids</p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.grid.Grid.html">mtuq.grid.Grid</a></p></td>
+<td><p>Grid defined by values on axes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.grid.UnstructuredGrid.html">mtuq.grid.UnstructuredGrid</a></p></td>
+<td><p>Grid defined by lists of coordinates points</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="database-and-web-service-clients">
+<h2>Database and web service clients<a class="headerlink" href="#database-and-web-service-clients" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These classes provide low-level database and web service access.  Normally it is easier to use high-level functions <code class="docutils literal notranslate"><span class="pre">mtuq.download_greens_tensors</span></code> or <code class="docutils literal notranslate"><span class="pre">mtuq.open_db</span></code> instead.</p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.io.clients.AxiSEM_NetCDF.Client.html">mtuq.io.clients.AxiSEM_NetCDF.Client</a></p></td>
+<td><p>AxiSEM NetCDF database client based on instaseis</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.io.clients.FK_SAC.Client.html">mtuq.io.clients.FK_SAC.Client</a></p></td>
+<td><p>FK database client</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.io.clients.CPS_SAC.Client.html">mtuq.io.clients.CPS_SAC.Client</a></p></td>
+<td><p>CPS database client</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.io.clients.SPECFEM3D_SGT.Client.html">mtuq.io.clients.SPECFEM3D_SGT.Client</a></p></td>
+<td><p>SPECFEM3D/3D_GLOBE database client based on seisgen</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.io.clients.syngine.Client.html">mtuq.io.clients.syngine.Client</a></p></td>
+<td><p>Syngine web service client</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="low-level-misfit-modules">
+<h2>Low-level misfit modules<a class="headerlink" href="#low-level-misfit-modules" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Waveform misfit evaluation is the most computationally intensive task performed by this package.  These classes provide low-level access to non-optimized and optimized versions of the misfit function  (the former exists to check correctness of the latter).  Normally users can avoid this complexity by simply calling <code class="docutils literal notranslate"><span class="pre">mtuq.misfit.WaveformMisfit</span></code>.</p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.misfit.waveform.level0.html">mtuq.misfit.waveform.level0.misfit</a></p></td>
+<td><p>Easy-to-read pure Python implementation</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="generated/mtuq.misfit.waveform.level1.html">mtuq.misfit.waveform.level1.misfit</a></p></td>
+<td><p>Fast pure Python implementation</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="generated/mtuq.misfit.waveform.level2.html">mtuq.misfit.waveform.level2.misfit</a></p></td>
+<td><p>Fastest Python/numba.jit implementation</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

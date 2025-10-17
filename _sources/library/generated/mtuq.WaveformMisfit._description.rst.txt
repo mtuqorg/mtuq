@@ -1,0 +1,6 @@
+mtuq.WaveformMisfit._description
+================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: WaveformMisfit._description

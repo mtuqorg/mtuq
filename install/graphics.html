@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Graphics notes &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/style.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Graphics notes</a><ul>
+<li><a class="reference internal" href="#frontends-versus-backends">Frontends versus backends</a></li>
+<li><a class="reference internal" href="#matplotlib-backends">matplotlib backends</a></li>
+<li><a class="reference internal" href="#gmt-and-pygmt-backends">GMT and PyGMT backends</a></li>
+<li><a class="reference internal" href="#pygmt-installation">PyGMT installation</a></li>
+<li><a class="reference internal" href="#moment-tensor-beachballs">Moment tensor beachballs</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="graphics-notes">
+<h1>Graphics notes<a class="headerlink" href="#graphics-notes" title="Permalink to this headline">¶</a></h1>
+<section id="frontends-versus-backends">
+<h2>Frontends versus backends<a class="headerlink" href="#frontends-versus-backends" title="Permalink to this headline">¶</a></h2>
+<p>Under the hood, MTUQ plotting functions are separated into <a class="reference external" href="https://mtuqorg.github.io/mtuq/library/index.html#data-visualization">frontends</a>, which users can invoke directly, and backends, which isolate calls to graphics libraries.</p>
+<p>In addition to helping with planned transitions from one graphics library to another, this separation helps with graphics <a class="reference external" href="https://mtuqorg.github.io/mtuq/user_guide/06/customizing_figures.html">customizability</a>.</p>
+</section>
+<section id="matplotlib-backends">
+<h2>matplotlib backends<a class="headerlink" href="#matplotlib-backends" title="Permalink to this headline">¶</a></h2>
+<p>By default, MTUQ uses matplotlib backends.</p>
+</section>
+<section id="gmt-and-pygmt-backends">
+<h2>GMT and PyGMT backends<a class="headerlink" href="#gmt-and-pygmt-backends" title="Permalink to this headline">¶</a></h2>
+<p>MTUQ also includes older GMT and PyGMT backends.  To use these, it is necessary to install PyGMT and then supply the backend function when invoking the frontend.</p>
+</section>
+<section id="pygmt-installation">
+<h2>PyGMT installation<a class="headerlink" href="#pygmt-installation" title="Permalink to this headline">¶</a></h2>
+<p>To avoid known issues with early PyGMT versions, it is necessary to specify a minimum version as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="s1">&#39;pygmt&gt;=0.9&#39;</span>
+</pre></div>
+</div>
+<p>A conservative approach, which avoids possible issues with PyGMT 0.10 or later releases, is to specify the stable PyGMT 0.9 version:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="s1">&#39;pygmt=0.9&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="moment-tensor-beachballs">
+<h2>Moment tensor beachballs<a class="headerlink" href="#moment-tensor-beachballs" title="Permalink to this headline">¶</a></h2>
+<p>MTUQ now includes its own beachball plotting implementation, as well as wrappers over GMT, PyGMT and ObsPy beachball plotting functions.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Some versions of GMT and ObsPy plotted <a class="reference external" href="https://github.com/obspy/obspy/issues/2388">non-double couple</a> beachballs incorrectly.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>MTUQ’s native <a class="reference external" href="https://mtuqorg.github.io/mtuq/_modules/mtuq/graphics/beachball.html">beachball plotting</a> appears to improve over some versions of GMT and ObsPy, but is still being tested.</p>
+</div>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

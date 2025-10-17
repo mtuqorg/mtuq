@@ -1,0 +1,6 @@
+mtuq.Dataset.map
+================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Dataset.map

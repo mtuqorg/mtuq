@@ -1,0 +1,62 @@
+
+Acquiring seismic data
+======================
+
+Acquiring and quality control checking seismic data can be one of the most challenging steps in an inversion.  This page describes our preferred data client and MTUQ's data and metadata requirements.
+
+
+Data acquisition clients
+------------------------
+
+`ObsPy FDSN clients <https://docs.obspy.org/packages/obspy.clients.fdsn.html>`_ provide a way of programmatically downloading waveforms from `IRIS <https://www.iris.edu>`_. `PySEP <https://github.com/mtuqorg/pysep>`_ is a wrapper around an ObsPy FDSN client and our preferred data acquisition tool.  
+
+Besides downloading SAC files, PySEP performs data processing and quality control, ensuring that the data processing and time discretization requirements below are satisfied.  
+
+Additionally, PySEP generates `weight files` that can optionally be used to control the relative contribution of different stations to the data misfit function.
+
+
+Reading seismic data
+---------------------
+
+Once downloaded, SAC files can be read using a list of filenames
+
+.. code::
+
+    data = mtuq.read(filenames, format='SAC')
+
+or a Unix-style wildcard
+
+.. code::
+
+    data = mtuq.read(wilcard, format='SAC')
+
+In both cases, the result is an `mtuq.Dataset <https://mtuqorg.github.io/mtuq/library/generated/mtuq.Dataset.html>`_  sorted by seismic station.
+
+
+
+File format, metadata, and data processing requirements
+-------------------------------------------------------
+
+SAC is the only natively supported file format.
+
+The following information must be present in the SAC metadata headers: `station latitude`, `station longitude`, `network code`, `station code`, `location code`, trace `start time` and `time increment`.  
+
+It is expected that the following data processing has been carried out prior to reading SAC files:
+
+- instrument response has been removed
+- traces have been rotated into vertical (Z), radial (R) and transverse (T) components
+- all traces have the same sampling rate
+
+
+Other file formats
+------------------
+
+Support for other file formats can be added through a `plug-in system <https://mtuqorg.github.io/mtuq/user_guide/02/devel.html#other-file-formats>`_.
+
+
+More information
+----------------
+
+Documentation relevant to special cases, such as synthetic inversions,  non-standard time conventions, and non-standard geographic coordinate systems, is `under construction <https://mtuqorg.github.io/mtuq/user_guide/02/notes.html>`_.
+
+

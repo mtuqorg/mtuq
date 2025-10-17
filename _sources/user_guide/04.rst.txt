@@ -1,0 +1,66 @@
+
+
+Data processing 
+===============
+
+Filtering, windowing and other signal processing operations are important for meaningful comparisons between data synthetics.  
+
+To make data processing easier, `mtuq.ProcessData` is an attempt at a one-size-fits-all data processing class.  While the approach below based on `mtuq.ProcessData` is very general,  users are nevertheless free to apply their own custom data processing functions instead, with the only condition being that the `requirements <https://mtuqorg.github.io/mtuq/user_guide/04.html#requirements-for-processed-data>`_ below end up being satisfied.
+
+
+
+An approach based on `mtuq.ProcessData`
+---------------------------------------
+
+Data processing choices include filter type, window length, and many others. For detailed descriptions of all available parameters, see the `library reference <https://mtuqorg.github.io/mtuq/library/generated/mtuq.ProcessData.html>`_.
+ 
+
+
+With `mtuq.ProcessData`, the choice of data processing parameters is clearly separated from the application of the data processing function to seismic data, resulting in a two-step procedure.
+
+In the first step, the user supplies parameters to create a data processing function:
+
+.. code::
+
+    process_data = ProcessData(**parameters)
+
+In the second step, an ObsPy stream is given as input and a processed stream returned as output:
+
+.. code::
+
+    processed_stream = process_data(stream)
+
+
+Data processing can also be applied to an entire `Dataset` at once:
+
+.. code::
+
+    processed_data = mtuq.Dataset()
+    for stream in raw_data:
+        processed_data += process_data(stream)
+
+
+Or, more succinctly:
+
+.. code::
+
+    processed_data = raw_data.map(process_data)
+
+
+
+Requirements for processed data
+-------------------------------
+
+Processed traces must satisfy:
+
+- all traces must have the same sampling rate and number of samples
+- all traces common to the same station must have the same startime and endtime
+
+These conditions help MTUQ achieve faster memory access patterns and more easily maintainable code.  An easy way to ensure that they are satisfied is to simply use `mtuq.ProcessData` for data processing.
+
+
+Plotting waveforms
+------------------
+
+Of course, to make meaningful comparisons between data and synthetics, processed data must pass basic quality control checks.  For example, windowed data must contain actual body wave or surface arrivals from the given event.  MTUQ's `waveform plotting <https://mtuqorg.github.io/mtuq/library/index.html#data-visualization>`_ functions can sometimes be helpful for these types of checks.
+

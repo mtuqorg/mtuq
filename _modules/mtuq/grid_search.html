@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.grid_search &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.grid_search</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">netCDF4</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.event</span><span class="w"> </span><span class="kn">import</span> <span class="n">Origin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">DataArray</span><span class="p">,</span> <span class="n">Grid</span><span class="p">,</span> <span class="n">UnstructuredGrid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">gather2</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">timer</span><span class="p">,</span> <span class="n">remove_list</span><span class="p">,</span> <span class="n">warn</span><span class="p">,</span>\
+    <span class="n">ProgressCallback</span><span class="p">,</span> <span class="n">dataarray_idxmin</span><span class="p">,</span> <span class="n">dataarray_idxmax</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">splitext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xarray.core.formatting</span><span class="w"> </span><span class="kn">import</span> <span class="n">unindexed_dims_repr</span>
+
+
+<span class="n">xarray</span><span class="o">.</span><span class="n">set_options</span><span class="p">(</span><span class="n">keep_attrs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="grid_search"><a class="viewcode-back" href="../../library/generated/mtuq.grid_search.grid_search.html#mtuq.grid_search.grid_search">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">grid_search</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">misfit</span><span class="p">,</span> <span class="n">origins</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> 
+    <span class="n">msg_interval</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">timed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gather</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Evaluates misfit over grids</span>
+
+<span class="sd">    .. rubric :: Usage</span>
+
+<span class="sd">    Carries out a grid search by evaluating </span>
+<span class="sd">    `misfit(data, greens.select(origin), source)` over all origins and sources.</span>
+
+<span class="sd">    If `origins` and `sources` are regularly-spaced, returns an `MTUQDataArray`</span>
+<span class="sd">    containing misfit values and corresponding grid points. Otherwise, </span>
+<span class="sd">    an `MTUQDataFrame` is returned.</span>
+
+
+<span class="sd">    .. rubric :: Input arguments</span>
+
+<span class="sd">    ``data`` (`mtuq.Dataset`):</span>
+<span class="sd">    The observed data to be compared with synthetic data</span>
+
+
+<span class="sd">    ``greens`` (`mtuq.GreensTensorList`):</span>
+<span class="sd">    Green&#39;s functions used to generate synthetic data</span>
+
+
+<span class="sd">    ``misfit`` (`mtuq.Misfit` or some other function):</span>
+<span class="sd">    Misfit function</span>
+
+
+<span class="sd">    ``origins`` (`list` of `mtuq.Origin` objects):</span>
+<span class="sd">    Origins to be searched over</span>
+
+
+<span class="sd">    ``sources`` (`mtuq.Grid` or `mtuq.UnstructuredGrid`):</span>
+<span class="sd">    Source mechanisms to be searched over</span>
+
+
+<span class="sd">    ``msg_interval`` (`int`):</span>
+<span class="sd">    How frequently, as a percentage of total evaluations, should progress </span>
+<span class="sd">    messages be displayed? (`int` between 0 and 100)</span>
+
+
+<span class="sd">    ``timed`` (`bool`):</span>
+<span class="sd">    Displays elapsed time at end</span>
+
+
+<span class="sd">    ``gather`` (`bool`):</span>
+<span class="sd">    If `True`, process 0 returns all results and any other processes return</span>
+<span class="sd">    `None`.  Otherwise, results are divided evenly among processes.</span>
+<span class="sd">    (ignored outside MPI environment)</span>
+
+
+<span class="sd">    .. note:</span>
+
+<span class="sd">      If invoked from an MPI environment, the grid is partitioned between</span>
+<span class="sd">      processes and each process runs ``_grid_search_serial`` on its given</span>
+<span class="sd">      partition. If not invoked from an MPI environment, `grid_search`</span>
+<span class="sd">      reduces to ``_grid_search_serial``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># check grid</span>
+    <span class="n">origins</span> <span class="o">=</span> <span class="n">iterable</span><span class="p">(</span><span class="n">origins</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">origin</span> <span class="ow">in</span> <span class="n">origins</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Origin</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Grid</span><span class="p">,</span> <span class="n">UnstructuredGrid</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span>
+
+    <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">origins</span><span class="p">)</span><span class="o">*</span><span class="n">sources</span><span class="o">.</span><span class="n">size</span>
+
+
+    <span class="k">if</span> <span class="n">_is_mpi_env</span><span class="p">():</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">mpi4py</span><span class="w"> </span><span class="kn">import</span> <span class="n">MPI</span>
+        <span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
+        <span class="n">iproc</span><span class="p">,</span> <span class="n">nproc</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span><span class="p">,</span> <span class="n">comm</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="k">if</span> <span class="n">nproc</span> <span class="o">&gt;</span> <span class="n">sources</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Number of CPU cores exceeds size of grid&#39;</span><span class="p">)</span>
+
+
+    <span class="c1"># print debugging information</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="o">&gt;</span><span class="mi">0</span> <span class="ow">and</span> <span class="n">_is_mpi_env</span><span class="p">()</span> <span class="ow">and</span> <span class="n">iproc</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">misfit</span><span class="o">.</span><span class="n">_description</span><span class="p">())</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    Number of misfit evaluations: </span><span class="si">{:,}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    Number of MPI processes: </span><span class="si">{:,}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nproc</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    Number of evaluations per process: </span><span class="si">{:,}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">size</span><span class="o">//</span><span class="n">nproc</span><span class="p">))</span>
+
+
+    <span class="k">elif</span> <span class="n">verbose</span><span class="o">&gt;</span><span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_is_mpi_env</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">misfit</span><span class="o">.</span><span class="n">_description</span><span class="p">())</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    Number of misfit evaluations: </span><span class="si">{:,}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+
+
+    <span class="k">if</span> <span class="n">_is_mpi_env</span><span class="p">():</span>
+        <span class="c1">#</span>
+        <span class="c1"># divide up the grid search over MPI processes</span>
+        <span class="c1">#</span>
+        <span class="n">_all</span> <span class="o">=</span> <span class="n">sources</span>
+        <span class="n">_subsets</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">iproc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">_subsets</span> <span class="o">=</span> <span class="n">sources</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">nproc</span><span class="p">)</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">_subsets</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">iproc</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">timed</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">msg_interval</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+    <span class="c1">#</span>
+    <span class="c1"># evaluate misfit over grids</span>
+    <span class="c1">#</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">_grid_search_serial</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">misfit</span><span class="p">,</span> <span class="n">origins</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">timed</span><span class="o">=</span><span class="n">timed</span><span class="p">,</span>
+        <span class="n">msg_interval</span><span class="o">=</span><span class="n">msg_interval</span><span class="p">)</span>
+
+
+    <span class="c1">#</span>
+    <span class="c1"># collect results</span>
+    <span class="c1">#</span>
+    <span class="k">if</span> <span class="n">_is_mpi_env</span><span class="p">()</span> <span class="ow">and</span> <span class="n">gather</span><span class="p">:</span>
+        <span class="c1"># gather results from MPI processes</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">gather2</span><span class="p">(</span><span class="n">comm</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="n">_all</span>
+
+        <span class="k">if</span> <span class="n">iproc</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+    <span class="c1"># convert from NumPy array to DataArray or DataFrame</span>
+    <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">sources</span><span class="p">),</span> <span class="n">Grid</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_to_dataarray</span><span class="p">(</span><span class="n">origins</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">sources</span><span class="p">),</span> <span class="n">UnstructuredGrid</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_to_dataframe</span><span class="p">(</span><span class="n">origins</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@timer</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_grid_search_serial</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">misfit</span><span class="p">,</span> <span class="n">origins</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> 
+    <span class="n">timed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">msg_interval</span><span class="o">=</span><span class="mi">25</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Evaluates misfit over origin and source grids </span>
+<span class="sd">    (serial implementation)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ni</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">origins</span><span class="p">)</span>
+    <span class="n">nj</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+
+    <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">origin</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">origins</span><span class="p">):</span>
+
+        <span class="n">msg_handle</span> <span class="o">=</span> <span class="n">ProgressCallback</span><span class="p">(</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">_i</span><span class="o">*</span><span class="n">nj</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">ni</span><span class="o">*</span><span class="n">nj</span><span class="p">,</span> <span class="n">percent</span><span class="o">=</span><span class="n">msg_interval</span><span class="p">)</span>
+
+        <span class="c1"># evaluate misfit function</span>
+        <span class="n">values</span> <span class="o">+=</span> <span class="p">[</span><span class="n">misfit</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">origin</span><span class="p">),</span> <span class="n">sources</span><span class="p">,</span> <span class="n">msg_handle</span><span class="p">)]</span>
+
+    <span class="c1"># returns NumPy array of shape `(len(sources), len(origins))` </span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+
+
+<div class="viewcode-block" id="MTUQDataArray"><a class="viewcode-back" href="../../library/generated/mtuq.grid_search.MTUQDataArray.html#mtuq.grid_search.MTUQDataArray">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">MTUQDataArray</span><span class="p">(</span><span class="n">xarray</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Data structure for storing values on regularly-spaced grids</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        Besides the methods below, `MTUQDataArray` includes many useful methods</span>
+<span class="sd">        inherited from ``xarray.DataArray``. See </span>
+<span class="sd">        `xarray documentation &lt;http://xarray.pydata.org/en/stable/generated/xarray.DataArray.html&gt;`_ </span>
+<span class="sd">        for more information.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MTUQDataArray.origin_idxmin"><a class="viewcode-back" href="../../library/generated/mtuq.grid_search.MTUQDataArray.origin_idxmin.html#mtuq.grid_search.MTUQDataArray.origin_idxmin">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">origin_idxmin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns `origins` index corresponding to minimum misfit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">dataarray_idxmin</span><span class="p">(</span><span class="bp">self</span><span class="p">)[</span><span class="s1">&#39;origin_idx&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="MTUQDataArray.source_idxmin"><a class="viewcode-back" href="../../library/generated/mtuq.grid_search.MTUQDataArray.source_idxmin.html#mtuq.grid_search.MTUQDataArray.source_idxmin">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">source_idxmin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns `sources` index corresponding to minimum misfit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_shape</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">argmin</span><span class="p">(),</span> <span class="n">shape</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="MTUQDataArray._get_shape"><a class="viewcode-back" href="../../library/generated/mtuq.grid_search.MTUQDataArray._get_shape.html#mtuq.grid_search.MTUQDataArray._get_shape">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">_get_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Private helper method</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;origin_idx&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">/</span><span class="n">nn</span><span class="p">),</span> <span class="n">nn</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MTUQDataArray.save"><a class="viewcode-back" href="../../library/generated/mtuq.grid_search.MTUQDataArray.save.html#mtuq.grid_search.MTUQDataArray.save">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Saves grid search results to NetCDF file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  saving NetCDF file: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;Summary:&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;  grid shape: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">(),</span>
+            <span class="s1">&#39;  grid size:  </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+            <span class="s1">&#39;  mean: </span><span class="si">%.3e</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+            <span class="s1">&#39;  std:  </span><span class="si">%.3e</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+            <span class="s1">&#39;  min:  </span><span class="si">%.3e</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+            <span class="s1">&#39;  max:  </span><span class="si">%.3e</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+            <span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;coords&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+                <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span>
+
+            <span class="n">unindexed_dims_str</span> <span class="o">=</span> <span class="n">unindexed_dims_repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">unindexed_dims_str</span><span class="p">:</span>
+                <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unindexed_dims_str</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">summary</span><span class="o">+</span><span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="MTUQDataFrame"><a class="viewcode-back" href="../../library/generated/mtuq.grid_search.MTUQDataFrame.html#mtuq.grid_search.MTUQDataFrame">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">MTUQDataFrame</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Data structure for storing values on irregularly-spaced grids</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        Besides the methods below, `MTUQDataFrame` includes many useful methods</span>
+<span class="sd">        inherited from ``pandas.DataFrame``. See `pandas documentation </span>
+<span class="sd">        &lt;https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html&gt;`_</span>
+<span class="sd">        for more information.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MTUQDataFrame.origin_idxmin"><a class="viewcode-back" href="../../library/generated/mtuq.grid_search.MTUQDataFrame.origin_idxmin.html#mtuq.grid_search.MTUQDataFrame.origin_idxmin">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">origin_idxmin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns coordinates corresponding to minimum misfit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;origin_idx&#39;</span><span class="p">][</span><span class="n">df</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()]</span></div>
+
+<div class="viewcode-block" id="MTUQDataFrame.source_idxmin"><a class="viewcode-back" href="../../library/generated/mtuq.grid_search.MTUQDataFrame.source_idxmin.html#mtuq.grid_search.MTUQDataFrame.source_idxmin">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">source_idxmin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns coordinates corresponding to minimum misfit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;source_idx&#39;</span><span class="p">][</span><span class="n">df</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()]</span></div>
+
+<div class="viewcode-block" id="MTUQDataFrame.save"><a class="viewcode-back" href="../../library/generated/mtuq.grid_search.MTUQDataFrame.save.html#mtuq.grid_search.MTUQDataFrame.save">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Saves grid search results to HDF5 file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  saving HDF5 file: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">to_hdf</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;df&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_constructor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">MTUQDataFrame</span></div>
+
+
+<span class="c1">#</span>
+<span class="c1"># utility functions</span>
+<span class="c1">#</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_mpi_env</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">mpi4py</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">mpi4py.MPI</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="n">mpi4py</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_dataarray</span><span class="p">(</span><span class="n">origins</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Converts grid_search inputs to DataArray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">origin_dims</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;origin_idx&#39;</span><span class="p">,)</span>
+    <span class="n">origin_coords</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">origins</span><span class="p">))]</span>
+    <span class="n">origin_shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">origins</span><span class="p">),)</span>
+
+    <span class="n">source_dims</span> <span class="o">=</span> <span class="n">sources</span><span class="o">.</span><span class="n">dims</span>
+    <span class="n">source_coords</span> <span class="o">=</span> <span class="n">sources</span><span class="o">.</span><span class="n">coords</span>
+    <span class="n">source_shape</span> <span class="o">=</span> <span class="n">sources</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">return</span> <span class="n">MTUQDataArray</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+        <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">source_shape</span> <span class="o">+</span> <span class="n">origin_shape</span><span class="p">),</span>
+        <span class="s1">&#39;coords&#39;</span><span class="p">:</span> <span class="n">source_coords</span> <span class="o">+</span> <span class="n">origin_coords</span><span class="p">,</span>
+        <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="n">source_dims</span> <span class="o">+</span> <span class="n">origin_dims</span><span class="p">,</span>
+         <span class="p">})</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_dataframe</span><span class="p">(</span><span class="n">origins</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index_type</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Converts grid_search inputs to DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">origins</span><span class="p">)</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.e7</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  pandas indexing becomes very slow with &gt;10 million rows</span><span class="se">\n</span><span class="s2">&quot;</span>
+              <span class="s2">&quot;  consider using index_type=1 in mtuq.grid_search._to_dataframe</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="p">)</span>
+
+    <span class="n">origin_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">origins</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+    <span class="n">source_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sources</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Cartesian products</span>
+    <span class="n">origin_idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">origin_idx</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sources</span><span class="p">)))</span>
+    <span class="n">source_idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">source_idx</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">origins</span><span class="p">)))</span>
+    <span class="n">source_coords</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">coords</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sources</span><span class="o">.</span><span class="n">coords</span><span class="p">):</span>
+        <span class="n">source_coords</span> <span class="o">+=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">origins</span><span class="p">)))]</span>
+
+    <span class="c1"># assemble coordinates</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span><span class="n">origin_idx</span><span class="p">,</span> <span class="n">source_idx</span><span class="p">]</span>
+    <span class="n">dims</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;origin_idx&#39;</span><span class="p">,</span> <span class="s1">&#39;source_idx&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">index_type</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+        <span class="n">coords</span> <span class="o">+=</span> <span class="n">source_coords</span>
+        <span class="n">dims</span> <span class="o">+=</span> <span class="n">sources</span><span class="o">.</span><span class="n">dims</span>
+
+    <span class="c1"># construct DataFrame</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="n">dims</span><span class="p">[</span><span class="n">_i</span><span class="p">]:</span> <span class="n">coords</span><span class="p">[</span><span class="n">_i</span><span class="p">]</span> <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">))}</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="n">values</span><span class="o">.</span><span class="n">flatten</span><span class="p">()})</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">MTUQDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">dims</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="c1">#</span>
+<span class="c1"># I/O functions</span>
+<span class="c1">#</span>
+
+<div class="viewcode-block" id="open_ds"><a class="viewcode-back" href="../../library/generated/mtuq.grid_search.open_ds.html#mtuq.grid_search.open_ds">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">open_ds</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Reads grid search results from disk</span>
+
+<span class="sd">    .. rubric :: Parameters</span>
+
+<span class="sd">    ``filename`` (`str`):</span>
+<span class="sd">    File containing grid search results</span>
+
+<span class="sd">    ``format`` (`str`):</span>
+<span class="sd">    File format (&#39;NetCDF&#39; or &#39;HDF5&#39;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">format</span><span class="p">:</span>
+        <span class="c1"># try to determine file format, if not given</span>
+        <span class="k">if</span> <span class="n">h5py</span><span class="o">.</span><span class="n">is_hdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <span class="nb">format</span> <span class="o">=</span> <span class="s1">&#39;HDF&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">netCDF</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+                <span class="nb">format</span> <span class="o">=</span> <span class="s1">&#39;NETCDF4&#39;</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;File format not recognized: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;H5&#39;</span><span class="p">,</span> <span class="s1">&#39;HDF&#39;</span><span class="p">,</span><span class="s1">&#39;HDF5&#39;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">open_df</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;NC&#39;</span><span class="p">,</span> <span class="s1">&#39;NC4&#39;</span><span class="p">,</span> <span class="s1">&#39;NETCDF&#39;</span><span class="p">,</span> <span class="s1">&#39;NETCDF4&#39;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">open_da</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;File format not supported: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">open_da</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Reads MTUQDataArray from NetCDF file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">da</span> <span class="o">=</span> <span class="n">xarray</span><span class="o">.</span><span class="n">open_dataarray</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">MTUQDataArray</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">da</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">da</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">da</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">open_df</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Reads MTUQDataFrame from HDF5 file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">MTUQDataFrame</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

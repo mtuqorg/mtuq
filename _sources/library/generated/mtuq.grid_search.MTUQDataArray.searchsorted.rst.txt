@@ -1,0 +1,6 @@
+mtuq.grid_search.MTUQDataArray.searchsorted
+===========================================
+
+.. currentmodule:: mtuq.grid_search
+
+.. automethod:: MTUQDataArray.searchsorted

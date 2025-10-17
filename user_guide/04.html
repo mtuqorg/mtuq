@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Data processing &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/style.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Visualization galleries" href="05.html" />
+    <link rel="prev" title="Acquiring Green’s functions" href="03.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick start</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Data processing</a><ul>
+<li><a class="reference internal" href="#an-approach-based-on-mtuq-processdata">An approach based on <cite>mtuq.ProcessData</cite></a></li>
+<li><a class="reference internal" href="#requirements-for-processed-data">Requirements for processed data</a></li>
+<li><a class="reference internal" href="#plotting-waveforms">Plotting waveforms</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="03.html" title="Previous Chapter: Acquiring Green’s functions"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Acquiring Gre...</span>
+    </a>
+  </li>
+  <li>
+    <a href="05.html" title="Next Chapter: Visualization galleries"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Visualization... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="data-processing">
+<h1>Data processing<a class="headerlink" href="#data-processing" title="Permalink to this headline">¶</a></h1>
+<p>Filtering, windowing and other signal processing operations are important for meaningful comparisons between data synthetics.</p>
+<p>To make data processing easier, <cite>mtuq.ProcessData</cite> is an attempt at a one-size-fits-all data processing class.  While the approach below based on <cite>mtuq.ProcessData</cite> is very general,  users are nevertheless free to apply their own custom data processing functions instead, with the only condition being that the <a class="reference external" href="https://mtuqorg.github.io/mtuq/user_guide/04.html#requirements-for-processed-data">requirements</a> below end up being satisfied.</p>
+<section id="an-approach-based-on-mtuq-processdata">
+<h2>An approach based on <cite>mtuq.ProcessData</cite><a class="headerlink" href="#an-approach-based-on-mtuq-processdata" title="Permalink to this headline">¶</a></h2>
+<p>Data processing choices include filter type, window length, and many others. For detailed descriptions of all available parameters, see the <a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.ProcessData.html">library reference</a>.</p>
+<p>With <cite>mtuq.ProcessData</cite>, the choice of data processing parameters is clearly separated from the application of the data processing function to seismic data, resulting in a two-step procedure.</p>
+<p>In the first step, the user supplies parameters to create a data processing function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">process_data</span> <span class="o">=</span> <span class="n">ProcessData</span><span class="p">(</span><span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the second step, an ObsPy stream is given as input and a processed stream returned as output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">processed_stream</span> <span class="o">=</span> <span class="n">process_data</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Data processing can also be applied to an entire <cite>Dataset</cite> at once:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">processed_data</span> <span class="o">=</span> <span class="n">mtuq</span><span class="o">.</span><span class="n">Dataset</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">raw_data</span><span class="p">:</span>
+    <span class="n">processed_data</span> <span class="o">+=</span> <span class="n">process_data</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or, more succinctly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">processed_data</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">process_data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="requirements-for-processed-data">
+<h2>Requirements for processed data<a class="headerlink" href="#requirements-for-processed-data" title="Permalink to this headline">¶</a></h2>
+<p>Processed traces must satisfy:</p>
+<ul class="simple">
+<li><p>all traces must have the same sampling rate and number of samples</p></li>
+<li><p>all traces common to the same station must have the same startime and endtime</p></li>
+</ul>
+<p>These conditions help MTUQ achieve faster memory access patterns and more easily maintainable code.  An easy way to ensure that they are satisfied is to simply use <cite>mtuq.ProcessData</cite> for data processing.</p>
+</section>
+<section id="plotting-waveforms">
+<h2>Plotting waveforms<a class="headerlink" href="#plotting-waveforms" title="Permalink to this headline">¶</a></h2>
+<p>Of course, to make meaningful comparisons between data and synthetics, processed data must pass basic quality control checks.  For example, windowed data must contain actual body wave or surface arrivals from the given event.  MTUQ’s <a class="reference external" href="https://mtuqorg.github.io/mtuq/library/index.html#data-visualization">waveform plotting</a> functions can sometimes be helpful for these types of checks.</p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

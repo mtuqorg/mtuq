@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.event &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.event</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">obspy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">obspy.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTCDateTime</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttribDict</span><span class="p">,</span> <span class="n">asarray</span>
+
+
+
+<div class="viewcode-block" id="Origin"><a class="viewcode-back" href="../../library/generated/mtuq.Origin.html#mtuq.Origin">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Origin</span><span class="p">(</span><span class="n">AttribDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Origin metadata object</span>
+
+<span class="sd">    Holds the following event information</span>
+
+<span class="sd">    - latitude and longitude</span>
+<span class="sd">    - depth</span>
+<span class="sd">    - origin time</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        Some file formats have a corresponding reader that creates</span>
+<span class="sd">        Origin objects from file metadata (see ``mtuq.io.readers``).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+        <span class="s1">&#39;latitude&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s1">&#39;longitude&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s1">&#39;depth_in_m&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">,</span> <span class="s1">&#39;depth_in_m&#39;</span><span class="p">]:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">Origin</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Origin</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="n">other</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">!=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="Origin.as_dict"><a class="viewcode-back" href="../../library/generated/mtuq.Origin.as_dict.html#mtuq.Origin.as_dict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Converts to dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span></div></div>
+
+
+<div class="viewcode-block" id="MomentTensor"><a class="viewcode-back" href="../../library/generated/mtuq.MomentTensor.html#mtuq.MomentTensor">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">MomentTensor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Moment tensor object</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        The constructor accepts six-element arrays in any ObsPy `basis convention &lt;https://docs.obspy.org/packages/autogen/obspy.imaging.mopad_wrapper.beach.html#supported-basis-systems&gt;`_.</span>
+<span class="sd">        Moment tensors are then converted to and internally represented in the</span>
+<span class="sd">        ``up-south-east`` convention.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">convention</span><span class="o">=</span><span class="s2">&quot;USE&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">array</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+               <span class="s2">&quot;Missing argument: moment tensors must be given as a &quot;</span>
+               <span class="s2">&quot;NumPy array&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;Couldn&#39;t cast input argument as NumPy array.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">array</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Unexpected array size: moment tensors must be given as a &quot;</span>
+                <span class="s2">&quot;NumPy array with six elements&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">convention</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;USE&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">=</span> <span class="n">array</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;So far, only up-south-east convention is implemented&quot;</span><span class="p">)</span>
+
+            <span class="c1">#self._array = _change_convention_mt(asarray(array),</span>
+            <span class="c1">#    asarray(array), convention, &#39;USE&#39;)</span>
+
+
+<div class="viewcode-block" id="MomentTensor.as_dict"><a class="viewcode-back" href="../../library/generated/mtuq.MomentTensor.as_dict.html#mtuq.MomentTensor.as_dict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns dictionary in `up-south-east` convention</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;Mrr&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s1">&#39;Mtt&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="s1">&#39;Mpp&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="s1">&#39;Mrt&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+            <span class="s1">&#39;Mrp&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
+            <span class="s1">&#39;Mtp&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span>
+            <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="MomentTensor.as_vector"><a class="viewcode-back" href="../../library/generated/mtuq.MomentTensor.as_vector.html#mtuq.MomentTensor.as_vector">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">as_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns 1D NumPy array in `up-south-east` convention</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span></div>
+
+
+<div class="viewcode-block" id="MomentTensor.as_matrix"><a class="viewcode-back" href="../../library/generated/mtuq.MomentTensor.as_matrix.html#mtuq.MomentTensor.as_matrix">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">as_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns 2D symmetric NumPy array in `up-south-east` convention</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">array</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">array</span><span class="p">[</span><span class="mi">4</span><span class="p">]],</span>
+                         <span class="p">[</span><span class="n">array</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">array</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">array</span><span class="p">[</span><span class="mi">5</span><span class="p">]],</span>
+                         <span class="p">[</span><span class="n">array</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">array</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">array</span><span class="p">[</span><span class="mi">2</span><span class="p">]]])</span></div>
+
+
+<div class="viewcode-block" id="MomentTensor.cast"><a class="viewcode-back" href="../../library/generated/mtuq.MomentTensor.cast.html#mtuq.MomentTensor.cast">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">cast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">convention</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns 1D NumPy array in given basis convention</span>
+
+<span class="sd">            .. rubric :: Input arguments</span>
+
+<span class="sd">            ``convention`` (`str`):</span>
+<span class="sd">            ObsPy `basis convention &lt;https://docs.obspy.org/packages/autogen/obspy.imaging.mopad_wrapper.beach.html#supported-basis-systems&gt;`_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_change_convention_mt</span><span class="p">(</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">,</span> <span class="s1">&#39;USE&#39;</span><span class="p">,</span> <span class="n">convention</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="MomentTensor.moment"><a class="viewcode-back" href="../../library/generated/mtuq.MomentTensor.moment.html#mtuq.MomentTensor.moment">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">moment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Calculates seismic moment (`M_0`)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">M</span><span class="p">,</span><span class="n">M</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span></div>
+
+
+<div class="viewcode-block" id="MomentTensor.magnitude"><a class="viewcode-back" href="../../library/generated/mtuq.MomentTensor.magnitude.html#mtuq.MomentTensor.magnitude">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">magnitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Calculates moment magnitude (`M_w`)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># how to generalize for slightly different formulas? </span>
+        <span class="k">return</span> <span class="mf">2.</span><span class="o">/</span><span class="mf">3.</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">moment</span><span class="p">())</span> <span class="o">-</span> <span class="mf">9.1</span><span class="p">)</span></div></div>
+
+
+    <span class="c1">#def to_lune(self):</span>
+    <span class="c1">#    raise NotImplementedError</span>
+
+
+
+<div class="viewcode-block" id="Force"><a class="viewcode-back" href="../../library/generated/mtuq.Force.html#mtuq.Force">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Force</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Force source</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        The constructor accepts three-element arrays in any ObsPy `basis convention &lt;https://docs.obspy.org/packages/autogen/obspy.imaging.mopad_wrapper.beach.html#supported-basis-systems&gt;`_.</span>
+<span class="sd">        Forces are then converted to and internally represented in the</span>
+<span class="sd">        ``up-south-east`` convention.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">convention</span><span class="o">=</span><span class="s1">&#39;USE&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">array</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+               <span class="s2">&quot;Missing argument: forces must be given as a &quot;</span>
+               <span class="s2">&quot;NumPy array&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;Couldn&#39;t cast input argument as NumPy array.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">array</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Unexpected array size: forces must be given as a &quot;</span>
+                <span class="s2">&quot;NumPy array with three elements&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">convention</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;USE&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">=</span> <span class="n">array</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;So far, only up-south-east convention is implemented&quot;</span><span class="p">)</span>
+
+            <span class="c1">#self._array = _change_convention_mt(asarray(array),</span>
+            <span class="c1">#    asarray(array), convention, &#39;USE&#39;)</span>
+
+
+<div class="viewcode-block" id="Force.as_dict"><a class="viewcode-back" href="../../library/generated/mtuq.Force.as_dict.html#mtuq.Force.as_dict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns dictionary in `up-south-east` convention</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;Fr&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s1">&#39;Ft&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="s1">&#39;Fp&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Force.as_vector"><a class="viewcode-back" href="../../library/generated/mtuq.Force.as_vector.html#mtuq.Force.as_vector">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">as_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns 1D NumPy array in `up-south-east` convention</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span></div>
+
+
+<div class="viewcode-block" id="Force.cast"><a class="viewcode-back" href="../../library/generated/mtuq.Force.cast.html#mtuq.Force.cast">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">cast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">convention</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns 1D NumPy array in given basis convention</span>
+
+<span class="sd">            .. rubric :: Input arguments</span>
+
+<span class="sd">            ``convention`` (`str`):</span>
+<span class="sd">            ObsPy `basis convention &lt;https://docs.obspy.org/packages/autogen/obspy.imaging.mopad_wrapper.beach.html#supported-basis-systems&gt;`_</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_change_convention_force</span><span class="p">(</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">,</span> <span class="s1">&#39;USE&#39;</span><span class="p">,</span> <span class="n">convention</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span></div></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CompositeSource</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sources</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Constructor method</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">arrays</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">MomentTensor</span><span class="p">,</span> <span class="n">Force</span><span class="p">]</span>
+            <span class="n">arrays</span> <span class="o">+=</span> <span class="p">[</span><span class="n">source</span><span class="o">.</span><span class="n">as_array</span><span class="p">()]</span>
+            <span class="n">size</span> <span class="o">+=</span> <span class="n">arrays</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sources</span> <span class="o">=</span> <span class="n">sources</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">arrays</span><span class="p">)</span>
+
+
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

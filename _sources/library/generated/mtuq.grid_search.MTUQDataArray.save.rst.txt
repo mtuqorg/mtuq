@@ -1,0 +1,6 @@
+mtuq.grid_search.MTUQDataArray.save
+===================================
+
+.. currentmodule:: mtuq.grid_search
+
+.. automethod:: MTUQDataArray.save

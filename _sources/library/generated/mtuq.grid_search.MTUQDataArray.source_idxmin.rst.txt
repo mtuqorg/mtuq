@@ -1,0 +1,6 @@
+mtuq.grid_search.MTUQDataArray.source_idxmin
+============================================
+
+.. currentmodule:: mtuq.grid_search
+
+.. automethod:: MTUQDataArray.source_idxmin

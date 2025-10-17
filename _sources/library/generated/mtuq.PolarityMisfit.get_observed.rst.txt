@@ -1,0 +1,6 @@
+mtuq.PolarityMisfit.get_observed
+================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: PolarityMisfit.get_observed

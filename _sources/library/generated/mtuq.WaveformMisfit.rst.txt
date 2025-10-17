@@ -1,0 +1,120 @@
+﻿mtuq.WaveformMisfit
+===================
+
+.. currentmodule:: mtuq
+.. autoclass:: WaveformMisfit
+  :show-inheritance:
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  .. rubric:: Public Methods
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~WaveformMisfit.collect_attributes
+     ~WaveformMisfit.collect_synthetics
+  
+
+  
+  .. rubric:: Private Methods
+
+  .. warning::
+
+       Private methods are mainly for internal/developer use and their API might change without notice.
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~WaveformMisfit._description
+  
+
+  
+  

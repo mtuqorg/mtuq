@@ -1,0 +1,6 @@
+﻿mtuq.grid.DeviatoricGridSemiregular
+===================================
+
+.. currentmodule:: mtuq.grid
+
+.. autofunction:: DeviatoricGridSemiregular

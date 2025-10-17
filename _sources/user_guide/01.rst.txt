@@ -1,0 +1,7 @@
+Learning Python and ObsPy
+=========================
+
+To avoid reinventing the wheel, MTUQ makes extensive use of `ObsPy <https://github.com/obspy/obspy/wiki>`_, a Python package for seismology.  An excellent way to become familiar with Python and ObsPy is by browsing the `ObsPy tutorial <http://docs.obspy.org/tutorial/index.html>`_.
+
+
+

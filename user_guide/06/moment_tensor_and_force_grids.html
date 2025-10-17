@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Moment tensor and force grids &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Reading and writing grid search results" href="reading_writing_results.html" />
+    <link rel="prev" title="Grid search data structures" href="grid_structures.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../05.html">Visualization galleries</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Moment tensor and force grids</a><ul>
+<li><a class="reference internal" href="#currently-implemented-moment-tensor-grids">Currently implemented moment tensor grids</a></li>
+<li><a class="reference internal" href="#currently-implemented-force-grids">Currently implemented force grids</a></li>
+<li><a class="reference internal" href="#using-moment-tensor-grids">Using moment tensor grids</a></li>
+<li><a class="reference internal" href="#using-force-grids">Using force grids</a></li>
+<li><a class="reference internal" href="#more-details">More details</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="grid_structures.html" title="Previous Chapter: Grid search data structures"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Grid search d...</span>
+    </a>
+  </li>
+  <li>
+    <a href="reading_writing_results.html" title="Next Chapter: Reading and writing grid search results"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Reading and w... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="moment-tensor-and-force-grids">
+<h1>Moment tensor and force grids<a class="headerlink" href="#moment-tensor-and-force-grids" title="Permalink to this headline">¶</a></h1>
+<section id="currently-implemented-moment-tensor-grids">
+<h2>Currently implemented moment tensor grids<a class="headerlink" href="#currently-implemented-moment-tensor-grids" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.grid.FullMomentTensorGridRandom.html">Randomly-drawn full moment tensors</a></p></li>
+<li><p><a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.grid.FullMomentTensorGridSemiregular.html">Regularly-spaced full moment tensors</a></p></li>
+<li><p><a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.grid.DoubleCoupleGridRandom.html">Randomly-drawn double couples</a></p></li>
+<li><p><a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.grid.DoubleCoupleGridRegular.html">Regularly-spaced double couples</a></p></li>
+<li><p><a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.grid.DeviatoricGridRandom.html">Randomly-drawn deviatoric moment tensors</a></p></li>
+<li><p><a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.grid.DeviatoricGridSemiregular.html">Regularly-spaced deviatoric moment tensors</a></p></li>
+</ul>
+</section>
+<section id="currently-implemented-force-grids">
+<h2>Currently implemented force grids<a class="headerlink" href="#currently-implemented-force-grids" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.grid.ForceGridRandom.html">Randomly-drawn forces</a></p></li>
+<li><p><a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.grid.ForceGridRegular.html">Regularly-spaced forces</a></p></li>
+</ul>
+</section>
+<section id="using-moment-tensor-grids">
+<h2>Using moment tensor grids<a class="headerlink" href="#using-moment-tensor-grids" title="Permalink to this headline">¶</a></h2>
+<p>Moment tensor grids created in the above manner can be iterated over like a NumPy array or list, or individual grid points can be accessed by the following methods:</p>
+<ul class="simple">
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">get(i)</span></code> to return the <cite>i</cite>-th moment tensor as a <cite>MomentTensor</cite> object</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">get(i).as_vector()</span></code> to return the <cite>i</cite>-th moment tensor as a NumPy array <cite>(Mrr, Mtt, Mpp, Mrp, Mrt, Mtp)</cite></p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">get_dict(i)</span></code> to return the <cite>i</cite>-th moment tensor as dictionary of Tape2015 parameters <cite>rho, v, w, kappa, sigma, h</cite></p></li>
+</ul>
+</section>
+<section id="using-force-grids">
+<h2>Using force grids<a class="headerlink" href="#using-force-grids" title="Permalink to this headline">¶</a></h2>
+<p>Force grids created in the above manner can be iterated over like a NumPy array or list, or individual grid points can be accessed by the following methods:</p>
+<ul class="simple">
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">get(i)</span></code> to return the <cite>i</cite>-th force as a <cite>Force</cite> object</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">get(i).as_vector()</span></code> to return the <cite>i</cite>-th force as a NumPy array <cite>(Fr, Ft, Fp)</cite></p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">get_dict(i)</span></code> to return the <cite>i</cite>-th force as dictionary of parameters <cite>F0, phi, h</cite></p></li>
+</ul>
+</section>
+<section id="more-details">
+<h2>More details<a class="headerlink" href="#more-details" title="Permalink to this headline">¶</a></h2>
+<p>For additional usage information, see <a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.grid.Grid.html">Grid</a> for regularly-spaced grids or <a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.grid.UnstructuredGrid.html">UnstructuredGrid</a> for randomly-drawn grids.</p>
+<p>Moment tensor grids are implemented using the <cite>rho, v, w, kappa, sigma, h</cite> parameterization from <a class="reference external" href="https://mtuqorg.github.io/mtuq/references.html">Tape2015</a>.</p>
+<p>Force grids are implemented using parameters <cite>F0, phi, h</cite>, which are related to <cite>r, phi, theta</cite> spherical coordinates (physics convention) by <cite>F0 = r</cite>, <cite>phi = phi</cite>, <cite>h = cos(theta)</cite>.  In addition, <cite>F0, phi, h</cite> are related to geographic directions by these <a class="reference external" href="https://mtuqorg.github.io/mtuq/_modules/mtuq/util/math.html#to_rtp">formulas</a>.</p>
+<p>Random moment tensors are drawn from the uniform distributions described by <a class="reference external" href="https://mtuqorg.github.io/mtuq/references.html">Tape2015</a>.</p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.misfit.polarity &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/style.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.misfit.polarity</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">mtuq</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttribDict</span><span class="p">,</span> <span class="n">Null</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">warn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.misfit.waveform.level2</span><span class="w"> </span><span class="kn">import</span> <span class="n">_to_array</span><span class="p">,</span> <span class="n">_type</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">obspy.taup</span><span class="w"> </span><span class="kn">import</span> <span class="n">TauPyModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">m_to_deg</span>
+
+
+<div class="viewcode-block" id="PolarityMisfit"><a class="viewcode-back" href="../../../library/generated/mtuq.PolarityMisfit.html#mtuq.PolarityMisfit">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">PolarityMisfit</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Polarity misfit function</span>
+
+<span class="sd">    .. rubric:: Usage</span>
+
+<span class="sd">    Evaluating polarity misfit is a two-step procedure.</span>
+
+<span class="sd">    First, the user supplies parameters such as the method used to calculate</span>
+<span class="sd">    predicted polarities (see below for detailed parameter descriptions):</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        polarity_misfit = PolarityMisfit(**parameters)</span>
+
+<span class="sd">    Second, the user invokes the misfit function:</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        values = polarity_misfit(data, greens, sources)</span>
+
+<span class="sd">    During misfit evaluation</span>
+
+<span class="sd">    - observed polarities are collected from the `data` argument, which can be</span>
+<span class="sd">      either a list of integers or a `Dataset` with observed polarity values</span>
+<span class="sd">      attached (see convention below for more information)</span>
+
+<span class="sd">    - predicted polarities are calculated from the `greens` argument (see </span>
+<span class="sd">      parameter descriptions below for more information)</span>
+
+<span class="sd">    - a NumPy array of length `len(sources)` is returned, giving the number of</span>
+<span class="sd">      mismatches between observed and predicted</span>
+
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    ``method`` (`str`)</span>
+
+<span class="sd">    - ``&#39;taup&#39;``</span>
+<span class="sd">      Calculate polarities using Taup-P</span>
+
+<span class="sd">    - ``&#39;FK_metadata&#39;``</span>
+<span class="sd">      Read polarities from FK database</span>
+
+<span class="sd">    - ``&#39;CPS_metadata&#39;``</span>
+<span class="sd">      Read polarities from CPS database</span>
+
+<span class="sd">    - ``&#39;waveform&#39;``</span>
+<span class="sd">      Determine polarity from full-waveform synthetics (not implemented yet)</span>
+
+
+<span class="sd">    .. rubric:: Other input arguments that may be required, depending on the above</span>
+
+<span class="sd">    ``taup_model`` (`str`): Name of built-in ObsPy TauP model or path to custom</span>
+<span class="sd">    ObsPy TauP model, required for `method=taup`</span>
+
+<span class="sd">    ``FK_database`` (`str`): Path to FK database, required for for `method=FK_metadata`.</span>
+
+<span class="sd">    .. note:: </span>
+
+<span class="sd">      *Convention* : Positive vertical first motions are encoded as +1 and</span>
+<span class="sd">      negative vertical first motions are encoded as -1. Unpicked or </span>
+<span class="sd">      indeterminate first motions can be encoded as 0.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s1">&#39;taup&#39;</span><span class="p">,</span>
+        <span class="n">taup_model</span><span class="o">=</span><span class="s1">&#39;ak135&#39;</span><span class="p">,</span>
+        <span class="n">FK_database</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">FK_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">CPS_database</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">CPS_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">parameters</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">method</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Undefined parameter: method&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taup_model</span> <span class="o">=</span> <span class="n">taup_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FK_database</span> <span class="o">=</span> <span class="n">FK_database</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FK_model</span> <span class="o">=</span> <span class="n">FK_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CPS_database</span> <span class="o">=</span> <span class="n">CPS_database</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CPS_model</span> <span class="o">=</span> <span class="n">CPS_model</span>
+
+
+        <span class="c1">#</span>
+        <span class="c1"># check parameters</span>
+        <span class="c1">#</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;taup&#39;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">taup_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_taup</span> <span class="o">=</span> <span class="n">TauPyModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taup_model</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;FK_metadata&#39;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">FK_database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">assert</span> <span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FK_database</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">FK_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">FK_model</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FK_database</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;CPS_metadata&#39;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPS_database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">assert</span> <span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CPS_database</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPS_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">CPS_model</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CPS_database</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Bad parameter: method&#39;</span><span class="p">)</span>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">progress_handle</span><span class="o">=</span><span class="n">Null</span><span class="p">(),</span>
+            <span class="n">set_attributes</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="c1"># check input arguments</span>
+        <span class="n">_check</span><span class="p">(</span><span class="n">greens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">)</span>
+
+ 
+        <span class="c1">#</span>
+        <span class="c1"># evaluate misfit</span>
+        <span class="c1">#</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_observed</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">predicted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_predicted</span><span class="p">(</span><span class="n">greens</span><span class="p">,</span> <span class="n">sources</span><span class="p">)</span>
+
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">predicted</span> <span class="o">-</span> <span class="n">observed</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
+
+        <span class="c1"># mask unpicked</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">observed</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+
+        <span class="c1"># returns a NumPy array of shape (len(sources), 1)</span>
+        <span class="k">return</span> <span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PolarityMisfit.get_observed"><a class="viewcode-back" href="../../../library/generated/mtuq.PolarityMisfit.get_observed.html#mtuq.PolarityMisfit.get_observed">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_observed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Extracts observed polarities from data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">mtuq</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+            <span class="n">observed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">_get_polarity</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span> <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">observed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">observed</span> <span class="o">=</span> <span class="n">data</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span>
+
+        <span class="k">return</span> <span class="n">observed</span></div>
+
+
+<div class="viewcode-block" id="PolarityMisfit.get_predicted"><a class="viewcode-back" href="../../../library/generated/mtuq.PolarityMisfit.get_predicted.html#mtuq.PolarityMisfit.get_predicted">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_predicted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">sources</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Calculates predicted polarities</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span> <span class="o">==</span> <span class="n">mtuq</span><span class="o">.</span><span class="n">MomentTensor</span><span class="p">:</span>
+            <span class="n">sources</span> <span class="o">=</span> <span class="n">sources</span><span class="o">.</span><span class="n">as_vector</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+            <span class="n">_calculate</span> <span class="o">=</span> <span class="n">_polarities_mt</span>
+
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span> <span class="o">==</span> <span class="n">mtuq</span><span class="o">.</span><span class="n">Force</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="k">elif</span> <span class="n">_type</span><span class="p">(</span><span class="n">sources</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;MomentTensor&#39;</span><span class="p">:</span>
+            <span class="n">sources</span> <span class="o">=</span> <span class="n">_to_array</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+            <span class="n">_calculate</span> <span class="o">=</span> <span class="n">_polarities_mt</span>
+
+        <span class="k">elif</span> <span class="n">_type</span><span class="p">(</span><span class="n">sources</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;Force&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">==</span><span class="s1">&#39;taup&#39;</span><span class="p">:</span>
+            <span class="n">takeoff_angles</span> <span class="o">=</span> <span class="n">_takeoff_angles_taup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_taup</span><span class="p">,</span> <span class="n">greens</span><span class="p">)</span>
+
+            <span class="n">azimuths</span> <span class="o">=</span> <span class="n">_get_azimuths</span><span class="p">(</span><span class="n">greens</span><span class="p">)</span>
+
+            <span class="n">predicted</span> <span class="o">=</span> <span class="n">_calculate</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span> <span class="n">takeoff_angles</span><span class="p">,</span> <span class="n">azimuths</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">==</span><span class="s1">&#39;FK_metadata&#39;</span><span class="p">:</span>
+            <span class="n">takeoff_angles</span> <span class="o">=</span> <span class="n">_takeoff_angles_FK</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FK_database</span><span class="p">,</span> <span class="n">greens</span><span class="p">)</span>
+
+            <span class="n">azimuths</span> <span class="o">=</span> <span class="n">_get_azimuths</span><span class="p">(</span><span class="n">greens</span><span class="p">)</span>
+
+            <span class="n">predicted</span> <span class="o">=</span> <span class="n">_calculate</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span> <span class="n">takeoff_angles</span><span class="p">,</span> <span class="n">azimuths</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;CPS_metadata&#39;</span><span class="p">:</span>
+            <span class="n">takeoff_angles</span> <span class="o">=</span> <span class="n">_takeoff_angles_CPS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CPS_database</span><span class="p">,</span> <span class="n">greens</span><span class="p">)</span>
+
+            <span class="n">azimuths</span> <span class="o">=</span> <span class="n">_get_azimuths</span><span class="p">(</span><span class="n">greens</span><span class="p">)</span>
+
+            <span class="n">predicted</span> <span class="o">=</span> <span class="n">_calculate</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span> <span class="n">takeoff_angles</span><span class="p">,</span> <span class="n">azimuths</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">==</span><span class="s1">&#39;waveform&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="k">return</span> <span class="n">predicted</span></div>
+
+
+<div class="viewcode-block" id="PolarityMisfit.collect_attributes"><a class="viewcode-back" href="../../../library/generated/mtuq.PolarityMisfit.collect_attributes.html#mtuq.PolarityMisfit.collect_attributes">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">collect_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Collect polarity-related attributes (used for beachball plots)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">==</span><span class="s1">&#39;taup&#39;</span><span class="p">:</span>
+            <span class="n">takeoff_angles</span> <span class="o">=</span> <span class="n">_takeoff_angles_taup</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_taup</span><span class="p">,</span> <span class="n">greens</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">==</span><span class="s1">&#39;FK_metadata&#39;</span><span class="p">:</span>
+            <span class="n">takeoff_angles</span> <span class="o">=</span> <span class="n">_takeoff_angles_FK</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">FK_database</span><span class="p">,</span> <span class="n">greens</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">==</span><span class="s1">&#39;CPS_metadata&#39;</span><span class="p">:</span>
+            <span class="n">takeoff_angles</span> <span class="o">=</span> <span class="n">_takeoff_angles_CPS</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">CPS_database</span><span class="p">,</span> <span class="n">greens</span><span class="p">)</span>
+
+        <span class="n">observed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_observed</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">attrs_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">greens_tensor</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">greens</span><span class="p">):</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="n">AttribDict</span><span class="p">()</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">azimuth</span> <span class="o">=</span> <span class="n">greens_tensor</span><span class="o">.</span><span class="n">azimuth</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">distance_in_m</span> <span class="o">=</span> <span class="n">greens_tensor</span><span class="o">.</span><span class="n">distance_in_m</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">greens_tensor</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">network</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">station</span> <span class="o">=</span> <span class="n">greens_tensor</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">station</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">greens_tensor</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">location</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">latitude</span> <span class="o">=</span> <span class="n">greens_tensor</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">latitude</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">longitude</span> <span class="o">=</span> <span class="n">greens_tensor</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">longitude</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">takeoff_angle</span> <span class="o">=</span> <span class="n">takeoff_angles</span><span class="p">[</span><span class="n">_i</span><span class="p">]</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">polarity</span> <span class="o">=</span> <span class="n">observed</span><span class="p">[</span><span class="n">_i</span><span class="p">]</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+            <span class="n">attrs_list</span> <span class="o">+=</span> <span class="p">[</span><span class="n">attrs</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">attrs_list</span></div>
+
+
+<div class="viewcode-block" id="PolarityMisfit._description"><a class="viewcode-back" href="../../../library/generated/mtuq.PolarityMisfit._description.html#mtuq.PolarityMisfit._description">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s1">&#39;    Misfit function type:</span><span class="se">\n</span><span class="s1">    </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s1">&#39;    Misfit function method:</span><span class="se">\n</span><span class="s1">    </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div></div>
+
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_takeoff_angles_taup</span><span class="p">(</span><span class="n">taup</span><span class="p">,</span> <span class="n">greens</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Calculates takeoff angles from Tau-P model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">takeoff_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">greens</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">greens_tensor</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">greens</span><span class="p">):</span>
+
+        <span class="n">depth_in_km</span> <span class="o">=</span> <span class="n">greens_tensor</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">depth_in_m</span><span class="o">/</span><span class="mf">1000.</span>
+        <span class="n">distance_in_deg</span> <span class="o">=</span> <span class="n">m_to_deg</span><span class="p">(</span><span class="n">greens_tensor</span><span class="o">.</span><span class="n">distance_in_m</span><span class="p">)</span>
+
+        <span class="n">takeoff_angles</span><span class="p">[</span><span class="n">_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_takeoff_angle_taup</span><span class="p">(</span>
+            <span class="n">taup</span><span class="p">,</span> <span class="n">depth_in_km</span><span class="p">,</span> <span class="n">distance_in_deg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">takeoff_angles</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_takeoff_angle_taup</span><span class="p">(</span><span class="n">taup</span><span class="p">,</span> <span class="n">depth_in_km</span><span class="p">,</span> <span class="n">distance_in_deg</span><span class="p">):</span>
+
+    <span class="n">arrivals</span> <span class="o">=</span> <span class="n">taup</span><span class="o">.</span><span class="n">get_travel_times</span><span class="p">(</span>
+        <span class="n">depth_in_km</span><span class="p">,</span> <span class="n">distance_in_deg</span><span class="p">,</span> <span class="n">phase_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="s1">&#39;P&#39;</span><span class="p">])</span>
+    
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arrivals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sorted_arrivals</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">arrivals</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">arrival</span><span class="p">:</span> <span class="n">arrival</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sorted_arrivals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">takeoff_angle</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_polarities_mt</span><span class="p">(</span><span class="n">mt_array</span><span class="p">,</span> <span class="n">takeoff</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">):</span>
+
+    <span class="n">n1</span><span class="p">,</span><span class="n">n2</span> <span class="o">=</span> <span class="n">mt_array</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">if</span> <span class="n">n2</span><span class="o">!=</span> <span class="mi">6</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Inconsistent dimensions&#39;</span><span class="p">)</span>
+
+    <span class="n">n3</span><span class="p">,</span><span class="n">n4</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">takeoff</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">azimuth</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n3</span><span class="o">!=</span><span class="n">n4</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Inconsistent dimensions&#39;</span><span class="p">)</span>
+
+    <span class="c1"># prepare arrays</span>
+    <span class="n">polarities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span><span class="n">n3</span><span class="p">))</span>
+    <span class="n">drc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">takeoff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">takeoff</span><span class="p">)</span>
+    <span class="n">azimuth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">azimuth</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">angles</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">takeoff</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">)):</span>
+        <span class="n">sth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angles</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">cth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angles</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">sphi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angles</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">cphi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angles</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">drc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sth</span><span class="o">*</span><span class="n">cphi</span>
+        <span class="n">drc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">sth</span><span class="o">*</span><span class="n">sphi</span>
+        <span class="n">drc</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cth</span>
+
+        <span class="c1"># Aki &amp; Richards 2ed, p. 108, eq. 4.88</span>
+        <span class="n">cth</span> <span class="o">=</span> <span class="n">mt_array</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">drc</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">drc</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span>\
+              <span class="n">mt_array</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">drc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">drc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span>\
+              <span class="n">mt_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">drc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">drc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span>\
+           <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">mt_array</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span><span class="o">*</span><span class="n">drc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">drc</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span>
+              <span class="n">mt_array</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span><span class="o">*</span><span class="n">drc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">drc</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span>
+              <span class="n">mt_array</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">]</span><span class="o">*</span><span class="n">drc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">drc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">polarities</span><span class="p">[</span><span class="n">cth</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">_i</span><span class="p">]</span> <span class="o">=</span> <span class="o">+</span><span class="mi">1</span>
+        <span class="n">polarities</span><span class="p">[</span><span class="n">cth</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">_i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">polarities</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_polarities_force</span><span class="p">(</span><span class="n">force_array</span><span class="p">,</span> <span class="n">takeoff_array</span><span class="p">,</span> <span class="n">azimuth_array</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_azimuths</span><span class="p">(</span><span class="n">greens</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">stream</span><span class="o">.</span><span class="n">azimuth</span> <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">greens</span><span class="p">])</span>
+
+
+<span class="c1">#</span>
+<span class="c1"># input argument checking</span>
+<span class="c1">#</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_model_type</span><span class="p">(</span><span class="n">greens</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">solver</span> <span class="o">=</span> <span class="n">greens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">solver</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">solver</span> <span class="o">=</span> <span class="s1">&#39;Unknown&#39;</span>
+
+    <span class="k">if</span> <span class="n">solver</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;AxiSEM&#39;</span><span class="p">,</span> <span class="s1">&#39;FK&#39;</span><span class="p">,</span> <span class="s1">&#39;CPS&#39;</span><span class="p">,</span> <span class="s1">&#39;syngine&#39;</span><span class="p">):</span>
+        <span class="n">model_type</span> <span class="o">=</span> <span class="s1">&#39;1D model&#39;</span>
+
+    <span class="k">elif</span> <span class="n">solver</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;SPECFEM3D&#39;</span><span class="p">,</span> <span class="s1">&#39;SPECFEM3D_GLOBE&#39;</span><span class="p">):</span>
+        <span class="n">model_type</span> <span class="o">=</span> <span class="s1">&#39;3D model&#39;</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">model_type</span> <span class="o">=</span> <span class="s1">&#39;Unknown model&#39;</span>
+
+    <span class="k">return</span> <span class="n">model_type</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check</span><span class="p">(</span><span class="n">greens</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+    <span class="k">return</span>
+
+    <span class="c1">#model = _model_type(greens)</span>
+    <span class="c1">#method = _method_type(method)</span>
+
+    <span class="c1">#if model != method:</span>
+    <span class="c1">#    print()</span>
+    <span class="c1">#    print(&#39;  Possible inconsistency?&#39;)</span>
+    <span class="c1">#    print(&#39;  Green&#39;&#39;s functions are from: %s&#39; % model)</span>
+    <span class="c1">#    print(&#39;  Polarities are from: %s&#39; % method)</span>
+    <span class="c1">#    print()</span>
+
+
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

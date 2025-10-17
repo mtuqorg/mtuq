@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.io.clients.SPECFEM3D_SGT &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/style.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.io.clients.SPECFEM3D_SGT</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seisgen</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">obspy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.greens_tensor.SPECFEM3D</span><span class="w"> </span><span class="kn">import</span> <span class="n">GreensTensor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.io.clients.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span> <span class="k">as</span> <span class="n">ClientBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">resample</span>
+
+
+<div class="viewcode-block" id="Client"><a class="viewcode-back" href="../../../../library/generated/mtuq.io.clients.SPECFEM3D_SGT.Client.html#mtuq.io.clients.SPECFEM3D_SGT.Client">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Client</span><span class="p">(</span><span class="n">ClientBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; SPECFEM3D strain Green&#39;s tensor database client based on `seisgen</span>
+<span class="sd">    &lt;https://github.com/Liang-Ding/seisgen&gt;`_</span>
+
+<span class="sd">    .. rubric:: Usage</span>
+
+<span class="sd">    To instantiate a database client, supply a path or url:</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        from mtuq.io.clients.SPECFEM3D_SGT import Client</span>
+<span class="sd">        db = Client(path_or_url)</span>
+
+<span class="sd">    Then the database client can be used to generate GreensTensors:</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        greens_tensors = db.get_greens_tensors(stations, origin)</span>
+
+
+<span class="sd">    .. note ::</span>
+
+<span class="sd">        For instructions on creating SPECFEM3D/3D_GLOBE strain Green&#39;s tensor</span>
+<span class="sd">        databases, see `seisgen documentation </span>
+<span class="sd">        &lt;https://github.com/Liang-Ding/seisgen&gt;`_</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_or_url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">include_mt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">include_force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path_or_url</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">model</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">path_or_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_mt</span> <span class="o">=</span> <span class="n">include_mt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_force</span> <span class="o">=</span> <span class="n">include_force</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">b_initial_db</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b_new_origin</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="Client.set_local_db"><a class="viewcode-back" href="../../../../library/generated/mtuq.io.clients.SPECFEM3D_SGT.Client.set_local_db.html#mtuq.io.clients.SPECFEM3D_SGT.Client.set_local_db">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_local_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sgt_database_folder</span><span class="p">,</span> <span class="n">model3D_folder</span><span class="p">,</span> <span class="n">info_grid_file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Set and utilize the local database. &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sgtMgr</span> <span class="o">=</span> <span class="n">seisgen</span><span class="o">.</span><span class="n">DSGTMgr</span><span class="p">(</span><span class="n">sgt_database_folder</span><span class="p">,</span> <span class="n">model3D_folder</span><span class="p">,</span> <span class="n">info_grid_file</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b_initial_db</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span></div>
+
+<div class="viewcode-block" id="Client.set_remote_db"><a class="viewcode-back" href="../../../../library/generated/mtuq.io.clients.SPECFEM3D_SGT.Client.set_remote_db.html#mtuq.io.clients.SPECFEM3D_SGT.Client.set_remote_db">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_remote_db</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Set and utilize the remote database. &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="Client.get_greens_tensors"><a class="viewcode-back" href="../../../../library/generated/mtuq.io.clients.SPECFEM3D_SGT.Client.get_greens_tensors.html#mtuq.io.clients.SPECFEM3D_SGT.Client.get_greens_tensors">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_greens_tensors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stations</span><span class="o">=</span><span class="p">[],</span> <span class="n">origins</span><span class="o">=</span><span class="p">[],</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Extracts Green&#39;s tensors from database</span>
+
+<span class="sd">        Returns a ``GreensTensorList`` in which each element corresponds to a</span>
+<span class="sd">        (station, origin) pair from the given lists</span>
+
+<span class="sd">        .. rubric :: Input arguments</span>
+
+<span class="sd">        ``stations`` (`list` of `mtuq.Station` objects)</span>
+
+<span class="sd">        ``origins`` (`list` of `mtuq.Origin` objects)</span>
+
+<span class="sd">        ``verbose`` (`bool`)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Client</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_greens_tensors</span><span class="p">(</span><span class="n">stations</span><span class="p">,</span> <span class="n">origins</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Client._get_greens_tensor"><a class="viewcode-back" href="../../../../library/generated/mtuq.io.clients.SPECFEM3D_SGT.Client._get_greens_tensor.html#mtuq.io.clients.SPECFEM3D_SGT.Client._get_greens_tensor">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">_get_greens_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Missing station input argument&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">origin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Missing station input argument&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_mt</span><span class="p">:</span>
+            <span class="c1"># Check if the Green&#39;s Function (GF) exists,</span>
+            <span class="c1"># Read from the PKL file storing the GF or generate from SGT.</span>
+
+            <span class="n">prefix</span> <span class="o">=</span> <span class="n">station</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">data_type</span> <span class="o">=</span> <span class="s1">&#39;3DGF&#39;</span>
+            <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;PKL&#39;</span>
+            <span class="n">GF_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.</span><span class="si">%.6f</span><span class="s1">.</span><span class="si">%.6f</span><span class="s1">.</span><span class="si">%.2f</span><span class="s1">.</span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span>
+                                                   <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+                                                   <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+                                                   <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">depth_in_m</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                                                   <span class="n">data_type</span><span class="p">,</span>
+                                                   <span class="n">fmt</span><span class="p">)</span>
+            <span class="n">GF_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">GF_name</span><span class="p">))</span>
+
+            <span class="n">b_exist</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">b_generate</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">b_exist</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">GF_file_path</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">b_exist</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">if</span> <span class="n">b_exist</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">GF_file_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="n">stream</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                        <span class="n">b_generate</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">b_exist</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="n">b_generate</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">GF_file_path</span><span class="p">)</span>
+                    <span class="k">except</span><span class="p">:</span>
+                        <span class="k">pass</span>
+
+            <span class="k">if</span> <span class="n">b_generate</span><span class="p">:</span>
+                <span class="c1"># Generate Green&#39;s function from SGT.</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_initial_db</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_new_origin</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;latitude&#39;</span><span class="p">,</span><span class="s1">&#39;longitude&#39;</span><span class="p">,</span><span class="s1">&#39;depth_in_m&#39;</span><span class="p">,</span><span class="s1">&#39;elevation_in_m&#39;</span><span class="p">):</span>
+                            <span class="k">assert</span> <span class="n">origin</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="k">except</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">b_new_origin</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="n">stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sgtMgr</span><span class="o">.</span><span class="n">get_greens_function</span><span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">b_new_origin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">b_new_origin</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_new_origin</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">origin</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">b_new_origin</span> <span class="o">=</span> <span class="kc">False</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># save the GF as pickle file for future use.</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">GF_file_path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;! Unable to dump Green&#39;s function at </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">GF_file_path</span><span class="p">))</span>
+
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_force</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+        <span class="c1"># what are the start and end times of the data?</span>
+        <span class="n">t1_new</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">station</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span>
+        <span class="n">t2_new</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">station</span><span class="o">.</span><span class="n">endtime</span><span class="p">)</span>
+        <span class="n">dt_new</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">station</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
+
+        <span class="c1"># what are the start and end times of the Green&#39;s function?</span>
+        <span class="n">t1_old</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="p">)</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span>
+        <span class="n">t2_old</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="p">)</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="p">)</span>
+        <span class="n">dt_old</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="c1"># resample Green&#39;s functions</span>
+            <span class="n">data_old</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">data</span>
+            <span class="n">data_new</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span><span class="n">data_old</span><span class="p">,</span> <span class="n">t1_old</span><span class="p">,</span> <span class="n">t2_old</span><span class="p">,</span> <span class="n">dt_old</span><span class="p">,</span>
+                                          <span class="n">t1_new</span><span class="p">,</span> <span class="n">t2_new</span><span class="p">,</span> <span class="n">dt_new</span><span class="p">)</span>
+            <span class="n">trace</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data_new</span>
+            <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">=</span> <span class="n">t1_new</span>
+            <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">dt_new</span>
+            <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_new</span><span class="p">)</span>
+
+        <span class="n">tags</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;model:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="s1">&#39;solver:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="s1">&#39;SPECFEM3D&#39;</span><span class="p">,</span>
+             <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">GreensTensor</span><span class="p">(</span><span class="n">traces</span><span class="o">=</span><span class="p">[</span><span class="n">trace</span> <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">],</span>
+            <span class="n">station</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span>
+            <span class="n">include_mt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">include_mt</span><span class="p">,</span> <span class="n">include_force</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">include_force</span><span class="p">)</span></div></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

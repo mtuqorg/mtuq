@@ -1,0 +1,6 @@
+﻿mtuq.graphics._plot_latlon
+==========================
+
+.. currentmodule:: mtuq.graphics
+
+.. autofunction:: _plot_latlon

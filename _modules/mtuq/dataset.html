@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.dataset &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.dataset</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">obspy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy</span><span class="p">,</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.event</span><span class="w"> </span><span class="kn">import</span> <span class="n">Origin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.station</span><span class="w"> </span><span class="kn">import</span> <span class="n">Station</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">obspy</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stream</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">obspy.geodetics</span><span class="w"> </span><span class="kn">import</span> <span class="n">gps2dist_azimuth</span>
+
+
+
+<div class="viewcode-block" id="Dataset"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.html#mtuq.Dataset">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Dataset</span><span class="p">(</span><span class="nb">list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Seismic data container</span>
+
+<span class="sd">    A list of ObsPy streams in which each stream corresponds to a single</span>
+<span class="sd">    seismic station</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        Each supported file format has a corresponding reader that creates</span>
+<span class="sd">        Datasets (see ``mtuq.io.readers``).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">streams</span><span class="o">=</span><span class="p">[],</span> <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Constructor method</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
+
+        <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">copy</span><span class="p">(</span><span class="n">tags</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tag_add</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+
+
+
+<div class="viewcode-block" id="Dataset.append"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.append.html#mtuq.Dataset.append">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Appends stream to Dataset</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">stream</span><span class="p">),</span> <span class="n">Stream</span><span class="p">),</span>\
+            <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only Streams can be appended to a Dataset&quot;</span><span class="p">)</span>
+
+        <span class="c1"># create unique identifier</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="s1">&#39;station&#39;</span><span class="p">):</span>
+            <span class="n">stream</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+                <span class="n">stream</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">network</span><span class="p">,</span>
+                <span class="n">stream</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+                <span class="n">stream</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">location</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">stream</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+                <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">network</span><span class="p">,</span>
+                <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+                <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">location</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stream</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">):</span>
+            <span class="n">stream</span><span class="o">.</span><span class="n">tags</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="c1"># optional origin and station metadata warnings</span>
+        <span class="n">_warnings</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_warnings&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="s1">&#39;station&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_warnings</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Stream lacks station metadata&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="s1">&#39;origin&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_warnings</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Stream lacks origin metadata&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="s1">&#39;station&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="s1">&#39;origin&#39;</span><span class="p">):</span>
+            <span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">distance_in_m</span><span class="p">,</span> <span class="n">stream</span><span class="o">.</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span>\
+                <span class="n">gps2dist_azimuth</span><span class="p">(</span>
+                    <span class="n">stream</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+                    <span class="n">stream</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
+                    <span class="n">stream</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+                    <span class="n">stream</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">longitude</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">Dataset</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Dataset.select"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.select.html#mtuq.Dataset.select">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Selects streams that match the given station or origin</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Station</span><span class="p">:</span>
+           <span class="n">selected</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">stream</span><span class="p">:</span> <span class="n">stream</span><span class="o">.</span><span class="n">station</span><span class="o">==</span><span class="n">selector</span>
+
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Origin</span><span class="p">:</span>
+           <span class="n">selected</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">stream</span><span class="p">:</span> <span class="n">stream</span><span class="o">.</span><span class="n">origin</span><span class="o">==</span><span class="n">selector</span>
+
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+           <span class="n">selected</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">stream</span><span class="p">:</span> <span class="n">stream</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="n">selector</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;`selector` must be a `Station`, `Origin` or list thereof&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+            <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">streams</span><span class="o">=</span><span class="nb">filter</span><span class="p">(</span><span class="n">selected</span><span class="p">,</span> <span class="bp">self</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Dataset.apply"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.apply.html#mtuq.Dataset.apply">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Applies a function to all streams</span>
+
+<span class="sd">        .. warning ::</span>
+
+<span class="sd">            Although ``apply`` returns a new `Dataset`, contents of the</span>
+<span class="sd">            original `Dataset` may still be overwritten, depending on</span>
+<span class="sd">            the function. To preserve the original, consider making a </span>
+<span class="sd">            `copy` first.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">processed</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">processed</span> <span class="o">+=</span> <span class="p">[</span><span class="n">function</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+            <span class="n">processed</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Dataset.map"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.map.html#mtuq.Dataset.map">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="o">*</span><span class="n">sequences</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Maps function to all streams</span>
+
+<span class="sd">        Maps a function to all streams in the Dataset. If one or more optional</span>
+<span class="sd">        sequences are given, the function is called with an argument list </span>
+<span class="sd">        consisting of corresponding items of each sequence, just like the </span>
+<span class="sd">        Python built-in ``map``.</span>
+
+<span class="sd">        .. warning ::</span>
+
+<span class="sd">            Although ``map`` returns a new `Dataset`, contents of the</span>
+<span class="sd">            original `Dataset` may still be overwritten, depending on</span>
+<span class="sd">            the function. To preserve the original, consider making a </span>
+<span class="sd">            `copy` first.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">processed</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">stream</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">sequence</span><span class="p">[</span><span class="n">_i</span><span class="p">]</span> <span class="k">for</span> <span class="n">sequence</span> <span class="ow">in</span> <span class="n">sequences</span><span class="p">]</span>
+            <span class="n">processed</span> <span class="o">+=</span> <span class="p">[</span><span class="n">function</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+            <span class="n">processed</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Dataset.max"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.max.html#mtuq.Dataset.max">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns maximum absolute amplitude over all traces</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">max_all</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="s1">&#39;weight&#39;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">max_all</span><span class="p">:</span>
+                    <span class="n">max_all</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">max_all</span></div>
+
+
+<div class="viewcode-block" id="Dataset.sort_by_distance"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.sort_by_distance.html#mtuq.Dataset.sort_by_distance">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">sort_by_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sorts in-place by hypocentral distance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sort_by_function</span><span class="p">(</span><span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">distance_in_m</span><span class="p">,</span>
+            <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Dataset.sort_by_azimuth"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.sort_by_azimuth.html#mtuq.Dataset.sort_by_azimuth">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">sort_by_azimuth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sorts in-place by source-receiver azimuth</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sort_by_function</span><span class="p">(</span><span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">azimuth</span><span class="p">,</span>
+            <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Dataset.sort_by_function"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.sort_by_function.html#mtuq.Dataset.sort_by_function">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">sort_by_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sorts in-place by user-supplied function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">function</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Dataset.get_components"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.get_components.html#mtuq.Dataset.get_components">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns `list` of components from all streams</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">components</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">components</span> <span class="o">+=</span> <span class="p">[[]]</span>
+            <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+                <span class="n">components</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="n">components</span></div>
+
+
+<div class="viewcode-block" id="Dataset.get_stations"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.get_stations.html#mtuq.Dataset.get_stations">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_stations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns station metadata from all streams as a `list` of</span>
+<span class="sd">        `mtuq.station.Stations` objects</span>
+
+<span class="sd">        .. note ::</span>
+
+<span class="sd">          For Datasets created using ``mtuq.io.readers``, SAC header metadata</span>
+<span class="sd">          is used to populate the Station attributes</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">stations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">stations</span> <span class="o">+=</span> <span class="p">[</span><span class="n">stream</span><span class="o">.</span><span class="n">station</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">stations</span></div>
+
+
+<div class="viewcode-block" id="Dataset.get_stats"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.get_stats.html#mtuq.Dataset.get_stats">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns trace metadata in nested lists</span>
+<span class="sd">        </span>
+<span class="sd">        .. note ::</span>
+<span class="sd">                </span>
+<span class="sd">          For Datasets created using ``mtuq.io.readers``, SAC header metadata</span>
+<span class="sd">          is used to populate the Station attributes</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">stats</span> <span class="o">+=</span> <span class="p">[[]]</span>
+            <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+                <span class="n">stats</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">stats</span></div>
+
+
+<div class="viewcode-block" id="Dataset.get_origins"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.get_origins.html#mtuq.Dataset.get_origins">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_origins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns origin metadata from all streams as a `list` of </span>
+<span class="sd">        `mtuq.event.Origin` objects</span>
+
+<span class="sd">        .. note ::</span>
+
+<span class="sd">          - For Datasets created using ``mtuq.io.readers.sac``, origin </span>
+<span class="sd">            metadata represent catalog information read from SAC headers</span>
+
+<span class="sd">          - For Datasets created using ``GreensTensor.get_synthetics``,</span>
+<span class="sd">            origin metadata are inherited from the GreensTensor</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">origins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">origins</span> <span class="o">+=</span> <span class="p">[</span><span class="n">stream</span><span class="o">.</span><span class="n">origin</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_warnings&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">stream</span><span class="o">.</span><span class="n">origin</span><span class="o">!=</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">origin</span><span class="p">:</span>
+                    <span class="n">warn</span><span class="p">(</span>
+                        <span class="s2">&quot;Different streams in the Dataset correpond to &quot;</span>
+                        <span class="s2">&quot;different events.</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+                        <span class="s2">&quot;This may be intentional. Feel free to disable this &quot;</span>
+                        <span class="s2">&quot;warning by setting Dataset._warnings=False&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">origins</span></div>
+
+
+<div class="viewcode-block" id="Dataset.tag_add"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.tag_add.html#mtuq.Dataset.tag_add">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">tag_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Appends string to tags list</span>
+<span class="sd">       </span>
+<span class="sd">       Tags can be used to support customized uses, such as storing metdata not</span>
+<span class="sd">       included in ``Station`` or ``Origin`` objects</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+       <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span><span class="o">!=</span><span class="nb">str</span><span class="p">:</span>
+           <span class="k">raise</span> <span class="ne">TypeError</span>
+
+       <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+           <span class="k">if</span> <span class="n">tag</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stream</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+               <span class="n">stream</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Dataset.tag_remove"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.tag_remove.html#mtuq.Dataset.tag_remove">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">tag_remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Removes string from tags list</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+       <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+           <span class="k">if</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">stream</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+               <span class="n">stream</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">new_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="o">+</span><span class="s1">&#39;_copy&#39;</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">new_id</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">new_ds</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="nb">id</span><span class="o">=</span><span class="n">new_id</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">new_ds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">stream</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">new_ds</span>
+
+
+<div class="viewcode-block" id="Dataset.copy"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.copy.html#mtuq.Dataset.copy">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__copy__</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Dataset.write"><a class="viewcode-back" href="../../library/generated/mtuq.Dataset.write.html#mtuq.Dataset.write">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;sac&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes dataset to disk</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">format</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;pickle&#39;</span><span class="p">:</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+               <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">format</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;sac&#39;</span><span class="p">:</span>
+
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+
+                    <span class="n">keys</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;network&#39;</span><span class="p">,</span><span class="s1">&#39;station&#39;</span><span class="p">,</span><span class="s1">&#39;location&#39;</span><span class="p">,</span><span class="s1">&#39;channel&#39;</span><span class="p">)</span>
+                    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">])</span>
+
+                    <span class="n">fullpath</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="s1">&#39;sac&#39;</span><span class="p">)</span>
+                    <span class="n">trace</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fullpath</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;sac&#39;</span><span class="p">)</span>
+                    
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unrecognized file format&#39;</span><span class="p">)</span></div></div>
+        
+
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

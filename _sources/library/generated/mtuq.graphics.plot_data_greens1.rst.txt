@@ -1,0 +1,6 @@
+﻿mtuq.graphics.plot_data_greens1
+===============================
+
+.. currentmodule:: mtuq.graphics
+
+.. autofunction:: plot_data_greens1

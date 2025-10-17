@@ -1,0 +1,6 @@
+mtuq.Dataset.sort_by_distance
+=============================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Dataset.sort_by_distance

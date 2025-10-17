@@ -1,0 +1,6 @@
+mtuq.io.clients.FK_SAC.Client.get_greens_tensors
+================================================
+
+.. currentmodule:: mtuq.io.clients.FK_SAC
+
+.. automethod:: Client.get_greens_tensors

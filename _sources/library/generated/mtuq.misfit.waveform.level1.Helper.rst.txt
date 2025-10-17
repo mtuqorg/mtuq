@@ -1,0 +1,110 @@
+mtuq.misfit.waveform.level1.Helper
+==================================
+
+.. currentmodule:: mtuq.misfit.waveform.level1
+.. autoclass:: Helper
+  :show-inheritance:
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  .. rubric:: Public Methods
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~Helper.get_L1_norm
+     ~Helper.get_L2_norm
+     ~Helper.get_synthetics
+     ~Helper.get_time_shift
+  
+
+  
+
+  
+  

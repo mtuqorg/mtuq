@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>mtuq.ProcessData &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">mtuq.ProcessData</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="mtuq-processdata">
+<h1>mtuq.ProcessData<a class="headerlink" href="#mtuq-processdata" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="mtuq.ProcessData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtuq.</span></span><span class="sig-name descname"><span class="pre">ProcessData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pick_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_statics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_shift_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_shift_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_scaling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling_power</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling_coefficient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capuaf_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taup_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FK_database</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FK_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CPS_database</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CPS_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mtuq/process_data.html#ProcessData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtuq.ProcessData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An attempt at a one-size-fits-all data processing class</p>
+<p class="rubric">Usage</p>
+<p>Processing data is a two-step procedure. First, the user supplies parameters
+(see available choices below) to create a data processing function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">function</span> <span class="o">=</span> <span class="n">ProcessData</span><span class="p">(</span><span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Second, an ObsPy stream is given as input to the data processing function
+and a processed stream returned as output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">processed_stream</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Data processing can also be applied to an entire <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> at once:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">processed_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See <cite>mtuq/examples/</cite> for further illustration.</p>
+<p class="rubric">Parameters</p>
+<p><code class="docutils literal notranslate"><span class="pre">filter_type</span></code> (<cite>str</cite>)</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'bandpass'</span></code>
+Butterworth-Bandpass (uses <cite>obspy.signal.filter.bandpass</cite>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'lowpass'</span></code>
+Butterworth-Lowpass (uses <cite>obspy.signal.filter.lowpass</cite>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'highpass'</span></code>
+Butterworth-Highpass (uses <cite>obspy.signal.filter.highpass</cite>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code>
+no filter will be applied</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">pick_type</span></code> (<cite>str</cite>)</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'taup'</span></code>
+calculates P, S travel times from Tau-P model
+(uses <cite>obspy.taup.TauPyModel.get_arrival_times</cite>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'FK_metadata'</span></code>
+reads P, S travel times from FK metadata</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'SAC_metadata'</span></code>
+reads P, S travel times from SAC metadata fields <cite>t5</cite>, <cite>t6</cite></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'user_supplied'</span></code>
+reads P, S travel times from columns 8, 10 of <cite>capuaf_file</cite></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code>
+no P,S travel times will be calculated</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">window_type</span></code> (<cite>str</cite>)</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'body_wave'</span></code>
+regional-distance body-wave window</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'surface_wave'</span></code>
+regional-distance surface-wave window</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'group_velocity'</span></code>
+surface-wave window centered on given group velocity</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code>
+no windows will be applied</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">apply_statics</span></code> (<cite>bool</cite>)
+Whether or not to apply static time shifts from columns 11-12 of <cite>capuaf_file</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">apply_weights</span></code> (<cite>bool</cite>)
+Whether or not to apply objective function weights from columns 3-8 of <cite>capuaf_file</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">apply_scaling</span></code> (<cite>bool</cite>)
+Whether or not to apply distance-dependent amplitude scaling</p>
+<p><code class="docutils literal notranslate"><span class="pre">apply_padding</span></code> (<cite>bool</cite>)
+Whether or not to use longer Green’s window relative to observed data 
+window (allows for more accurate cross-correlations)</p>
+<p class="rubric">Other input arguments that may be required, depending on the above</p>
+<p><code class="docutils literal notranslate"><span class="pre">freq_min</span></code> (<cite>float</cite>)
+Required for <cite>filter_type=bandpass</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">freq_max</span></code> (<cite>float</cite>)
+Required for <cite>filter_type=bandpass</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">freq</span></code> (<cite>float</cite>)
+Required for <cite>filter_type=lowpass</cite> or <cite>filter_type=highpass</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">window_length</span></code> (<cite>float</cite>)
+Window length in seconds</p>
+<p><code class="docutils literal notranslate"><span class="pre">group_velocity</span></code> (<cite>float</cite>)
+Group velocity in m/s, required for <cite>window_type=group_velocity</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">window_alignment</span></code> (<cite>float</cite>)
+Optional window alignment for <cite>window_type=group_velocity</cite>
+(<cite>float</cite> between 0. and 1.)</p>
+<p><code class="docutils literal notranslate"><span class="pre">time_shift_min</span></code> (<cite>float</cite>)
+Required for <cite>apply_padding=True</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">time_shift_max</span></code> (<cite>float</cite>)
+Required for <cite>apply_padding=True</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">taup_model</span></code> (<cite>str</cite>)
+Name of built-in ObsPy TauP model or path to custom ObsPy TauP model,
+required for <cite>pick_type=taup</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">FK_database</span></code> (<cite>str</cite>)
+Path to FK database, required for <cite>pick_type=FK_metadata</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">CPS_database</span></code> (<cite>str</cite>)
+Path to CPS database, required for <cite>pick_type=CPS_metadata</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">capuaf_file</span></code> (<cite>str</cite>)
+Path to <cite>CAPUAF</cite>-style text file, required for <cite>pick_type=user_supplied</cite></p>
+</dd></dl>
+
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

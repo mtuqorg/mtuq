@@ -1,0 +1,121 @@
+﻿mtuq.Wavelet
+============
+
+.. currentmodule:: mtuq
+.. autoclass:: Wavelet
+  :show-inheritance:
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  .. rubric:: Public Methods
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~Wavelet.convolve
+     ~Wavelet.evaluate
+  
+
+  
+  .. rubric:: Private Methods
+
+  .. warning::
+
+       Private methods are mainly for internal/developer use and their API might change without notice.
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~Wavelet._convolve_array
+     ~Wavelet._evaluate_on_interval
+  
+
+  
+  

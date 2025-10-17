@@ -1,0 +1,6 @@
+mtuq.Dataset.tag_add
+====================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Dataset.tag_add

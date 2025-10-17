@@ -1,0 +1,6 @@
+mtuq.GreensTensorList.copy
+==========================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensorList.copy

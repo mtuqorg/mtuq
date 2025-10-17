@@ -1,0 +1,6 @@
+mtuq.GreensTensor._allocate_stream
+==================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensor._allocate_stream

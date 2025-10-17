@@ -1,0 +1,6 @@
+mtuq.io.clients.AxiSEM_NetCDF.Client.get_greens_tensors
+=======================================================
+
+.. currentmodule:: mtuq.io.clients.AxiSEM_NetCDF
+
+.. automethod:: Client.get_greens_tensors

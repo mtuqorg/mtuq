@@ -1,0 +1,110 @@
+﻿mtuq.misfit.waveform.level2
+===========================
+
+.. currentmodule:: mtuq.misfit.waveform.level2
+.. automodule:: mtuq.misfit.waveform.level2
+
+   .. comment to end block
+
+   
+
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+
+   
+   .. rubric:: Public Functions
+
+   .. autosummary::
+      :toctree: .
+      :nosignatures:
+
+   
+      misfit
+   
+
+   
+   .. rubric:: Private Functions
+
+   .. warning::
+
+       Private functions are mainly for internal/developer use and their API might change without notice.
+
+   .. autosummary::
+     :toctree: .
+     :nosignatures:
+   
+       _autocorr_1
+       _autocorr_2
+       _check
+       _corr_1_2
+       _get_components
+       _get_data
+       _get_greens
+       _get_groups
+       _get_mask
+       _get_padding
+       _get_stations
+       _get_time_sampling
+       _get_weights
+       _to_array
+       _type
+   
+
+   
+
+   
+   
+   
+
+   
+   
+   

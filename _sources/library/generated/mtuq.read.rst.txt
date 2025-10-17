@@ -1,0 +1,6 @@
+﻿mtuq.read
+=========
+
+.. currentmodule:: mtuq
+
+.. autofunction:: read

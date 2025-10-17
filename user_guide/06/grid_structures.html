@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Grid search data structures &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Moment tensor and force grids" href="moment_tensor_and_force_grids.html" />
+    <link rel="prev" title="Miscellaneous" href="../06.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../05.html">Visualization galleries</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Grid search data structures</a><ul>
+<li><a class="reference internal" href="#input-data-structures">Input data structures</a></li>
+<li><a class="reference internal" href="#output-data-structures">Output data structures</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="../06.html" title="Previous Chapter: Miscellaneous"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Miscellaneous</span>
+    </a>
+  </li>
+  <li>
+    <a href="moment_tensor_and_force_grids.html" title="Next Chapter: Moment tensor and force grids"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Moment tensor... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="grid-search-data-structures">
+<h1>Grid search data structures<a class="headerlink" href="#grid-search-data-structures" title="Permalink to this headline">¶</a></h1>
+<p>During a grid search</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="n">grid_search</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">misfit</span><span class="p">,</span> <span class="n">origins</span><span class="p">,</span> <span class="n">sources</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>the misfit function is evaluated over all <cite>origins</cite> and <cite>sources</cite>.</p>
+<p>The result is a data strucutre <cite>ds</cite> containing both misfit values and grid points.</p>
+<section id="input-data-structures">
+<h2>Input data structures<a class="headerlink" href="#input-data-structures" title="Permalink to this headline">¶</a></h2>
+<p>The <cite>origins</cite> data structure</p>
+<ul class="simple">
+<li><p>Is simply a list of <cite>Origin</cite> objects</p></li>
+<li><p>Allows for searching over depth, latitude, longitude and/or origin time, as specified by the attributes of the <cite>Origin</cite> objects in the list</p></li>
+</ul>
+<p>The <cite>sources</cite> data structure</p>
+<ul class="simple">
+<li><p>Can be either a regularly-spaced <cite>Grid</cite> or an irregularly-spaced <cite>UnstructuredGrid</cite></p></li>
+<li><p>Allows for searching over any subset of moment tensor space or force space, including these currently-implemented <a class="reference external" href="https://mtuqorg.github.io/mtuq/user_guide/06/moment_tensor_and_force_grids.html#currently-implemented-moment-tensor-grids">moment tensor grids</a> and <a class="reference external" href="https://mtuqorg.github.io/mtuq/user_guide/06/moment_tensor_and_force_grids.html#currently-implemented-force-grids">force grids</a></p></li>
+</ul>
+</section>
+<section id="output-data-structures">
+<h2>Output data structures<a class="headerlink" href="#output-data-structures" title="Permalink to this headline">¶</a></h2>
+<p>If <cite>sources</cite> is regularly spaced, the output <cite>ds</cite> will be a subclass of <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html">xarray DataArray</a>.</p>
+<p>If <cite>sources</cite> is irregularly spaced, the output <cite>ds</cite> will be a subclass of <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html">pandas DataFrame</a>.</p>
+<p>See also <a class="reference external" href="https://mtuqorg.github.io/mtuq/user_guide/06/reading_writing_results.html">reading and writing grid search results</a>.</p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

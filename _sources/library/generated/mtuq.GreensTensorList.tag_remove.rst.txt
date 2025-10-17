@@ -1,0 +1,6 @@
+mtuq.GreensTensorList.tag_remove
+================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensorList.tag_remove

@@ -1,0 +1,6 @@
+mtuq.GreensTensor._preallocate
+==============================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensor._preallocate

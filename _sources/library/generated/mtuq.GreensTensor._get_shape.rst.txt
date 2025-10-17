@@ -1,0 +1,6 @@
+mtuq.GreensTensor._get_shape
+============================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensor._get_shape

@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.graphics.attrs &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/style.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.graphics.attrs</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">join</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaults</span><span class="p">,</span> <span class="n">warn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics._pygmt</span><span class="w"> </span><span class="kn">import</span> <span class="n">exists_pygmt</span><span class="p">,</span> <span class="n">PyGMTUtilities</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.event</span><span class="w"> </span><span class="kn">import</span> <span class="n">MomentTensor</span>
+
+
+<div class="viewcode-block" id="plot_time_shifts"><a class="viewcode-back" href="../../../library/generated/mtuq.graphics.plot_time_shifts.html#mtuq.graphics.plot_time_shifts">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">plot_time_shifts</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;total_shift&#39;</span><span class="p">,</span> 
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Plots how time shifts vary by location and component</span>
+
+<span class="sd">    By default, total time shifts are plotted. To plot just static or</span>
+<span class="sd">    cross-correlation time shifts, use ``key=&#39;static_shift&#39;`` or </span>
+<span class="sd">    ``key=&#39;time_shift&#39;``, respectively</span>
+
+<span class="sd">    .. note ::</span>
+
+<span class="sd">        MTUQ distinguishes between the following different types of time shifts:</span>
+
+<span class="sd">        - `static_shift` is an initial user-supplied time shift applied during data processing</span>
+<span class="sd">        </span>
+<span class="sd">        - `time_shift` is a subsequent cross-correlation time shift applied during misfit evaluation</span>
+<span class="sd">        </span>
+<span class="sd">        - `total_shift` is the total correction, or in other words the sum of static and cross-correlation time shifts</span>
+
+
+<span class="sd">    .. rubric :: Required input arguments</span>
+
+<span class="sd">    ``dirname`` (`str`):</span>
+<span class="sd">    Directory in which figures will be written</span>
+
+<span class="sd">    ``attrs`` (`list` of `AttribDict`):</span>
+<span class="sd">    List returned by misfit function&#39;s `collect_attributes` method</span>
+
+<span class="sd">    ``stations`` (`list` of `mtuq.Station` objects):</span>
+<span class="sd">    Used to plot station locations</span>
+
+<span class="sd">    ``origin`` (`mtuq.Origin` object):</span>
+<span class="sd">    Used to plot origin location</span>
+
+
+<span class="sd">    .. rubric :: Optional input arguments</span>
+
+<span class="sd">    For optional argument descriptions, </span>
+<span class="sd">    `see here &lt;mtuq.graphics._plot_attrs.html&gt;`_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">defaults</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;Time shift (s)&#39;</span><span class="p">,</span>
+        <span class="p">})</span>
+
+    <span class="n">_plot_attrs</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="plot_cc_max"><a class="viewcode-back" href="../../../library/generated/mtuq.graphics.plot_cc_max.html#mtuq.graphics.plot_cc_max">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">plot_cc_max</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;normalized_cc_max&#39;</span><span class="p">,</span> 
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Plots how maximum correlation coefficient varies by location and component</span>
+
+<span class="sd">    By default, normalized correlation coefficient values (between 0 and 1) are plotted.</span>
+<span class="sd">    To plot unnormalized values instead, use ``key=&#39;cc_max&#39;``</span>
+
+
+<span class="sd">    .. rubric :: Required input arguments</span>
+
+<span class="sd">    ``dirname`` (`str`):</span>
+<span class="sd">    Directory in which figures will be written</span>
+
+<span class="sd">    ``attrs`` (`list` of `AttribDict`):</span>
+<span class="sd">    List returned by misfit function&#39;s `collect_attributes` method</span>
+
+<span class="sd">    ``stations`` (`list` of `mtuq.Station` objects):</span>
+<span class="sd">    Used to plot station locations</span>
+
+<span class="sd">    ``origin`` (`mtuq.Origin` object):</span>
+<span class="sd">    Used to plot origin location</span>
+
+
+<span class="sd">    .. rubric :: Optional input arguments</span>
+
+<span class="sd">    For optional argument descriptions, </span>
+<span class="sd">    `see here &lt;mtuq.graphics._plot_attrs.html&gt;`_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">defaults</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;Maximum normalized CC&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;zero_centered&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s1">&#39;colormap&#39;</span><span class="p">:</span> <span class="s1">&#39;inferno&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;min_val&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s1">&#39;max_val&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="p">})</span>
+
+    <span class="n">_plot_attrs</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="plot_amplitude_ratios"><a class="viewcode-back" href="../../../library/generated/mtuq.graphics.plot_amplitude_ratios.html#mtuq.graphics.plot_amplitude_ratios">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">plot_amplitude_ratios</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;amplitude_ratio&#39;</span><span class="p">,</span>
+<span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Plots how Aobs/Asyn varies by location and component</span>
+
+<span class="sd">    To plot ln(Aobs/Asyn) instead, use ``key=&#39;log_amplitude_ratio&#39;``</span>
+
+<span class="sd">    .. rubric :: Required input arguments</span>
+
+<span class="sd">    ``dirname`` (`str`):</span>
+<span class="sd">    Directory in which figures will be written</span>
+
+<span class="sd">    ``attrs`` (`list` of `AttribDict`):</span>
+<span class="sd">    List returned by misfit function&#39;s `collect_attributes` method</span>
+
+<span class="sd">    ``stations`` (`list` of `mtuq.Station` objects):</span>
+<span class="sd">    Used to plot station locations</span>
+
+<span class="sd">    ``origin`` (`mtuq.Origin` object):</span>
+<span class="sd">    Used to plot origin location</span>
+
+
+<span class="sd">    .. rubric :: Optional input arguments</span>
+
+<span class="sd">    For optional argument descriptions, </span>
+<span class="sd">    `see here &lt;mtuq.graphics._plot_attrs.html&gt;`_</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">key</span><span class="o">==</span><span class="s1">&#39;amplitude_ratio&#39;</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;$A_</span><span class="si">{obs}</span><span class="s1">/A_</span><span class="si">{syn}</span><span class="s1">$&#39;</span>
+
+    <span class="k">elif</span> <span class="n">key</span><span class="o">==</span><span class="s1">&#39;log_amplitude_ratio&#39;</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">ln(A_</span><span class="si">{obs}</span><span class="s1">/A_</span><span class="si">{syn}</span><span class="s1">)$&#39;</span>
+
+    <span class="n">defaults</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s1">&#39;colormap&#39;</span><span class="p">:</span> <span class="s1">&#39;inferno&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;label&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;zero_centered&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="p">})</span>
+
+    <span class="n">_plot_attrs</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_plot_attrs"><a class="viewcode-back" href="../../../library/generated/mtuq.graphics._plot_attrs.html#mtuq.graphics._plot_attrs">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_plot_attrs</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span>
+    <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span> <span class="s1">&#39;R&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Reads the attribute given by `key` from the `attrs` data structure, and</span>
+<span class="sd">    plots how this attribute varies</span>
+
+<span class="sd">    Within the specified directory, a separate figure will be created for each</span>
+<span class="sd">    component, e.g. `Z.png`, `R.png`, `T.png`.</span>
+
+
+<span class="sd">    .. rubric ::  Keyword arguments</span>
+
+<span class="sd">    ``components`` (`list`):</span>
+<span class="sd">    Generate figures for the given components</span>
+
+<span class="sd">    ``format`` (`str`):</span>
+<span class="sd">    Image file format (defaults to `png`)</span>
+
+<span class="sd">    ``backend`` (`function`):</span>
+<span class="sd">    Backend function</span>
+
+
+<span class="sd">    .. rubric :: Backend function</span>
+
+<span class="sd">    To customize figure appearance, users can pass their own backend function.</span>
+<span class="sd">    See `online documentation </span>
+<span class="sd">    &lt;https://mtuqorg.github.io/mtuq/user_guide/06/customizing_figures.html&gt;`_</span>
+<span class="sd">    for details. Otherwise, defaults to a generic matplotlib `backend</span>
+<span class="sd">    &lt;mtuq.graphics.attrs._default_backend.html&gt;`_.</span>
+
+<span class="sd">    </span>
+<span class="sd">    .. rubric ::  Standard pygmt backend</span>
+
+<span class="sd">    The standard `pygmt backend &lt;mtuq.graphics.attrs._pygmt_backend.html&gt;`_ is used to </span>
+<span class="sd">    plot station attributes over a hillshaded map. Default calls to front_end functions </span>
+<span class="sd">    can be supplemented with optional keyword arguments to customize the appearance of the plot. </span>
+
+<span class="sd">    .. code ::</span>
+<span class="sd">        </span>
+<span class="sd">        from mtuq.graphics.attrs import _pygmt_backend</span>
+<span class="sd">        plot_time_shifts(&#39;./SW/tshift&#39;, attributes_sw, stations, origin,</span>
+<span class="sd">                        moment_tensor=best_mt, process=process_sw, backend=_pygmt_backend)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">backend</span> <span class="o">=</span> <span class="n">_default_backend</span>
+
+    <span class="k">elif</span> <span class="n">backend</span> <span class="o">==</span> <span class="n">_pygmt_backend</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">exists_pygmt</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">backend</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">components</span><span class="p">:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">active_stations_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">station</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stations</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">component</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">[</span><span class="n">_i</span><span class="p">]:</span>
+                <span class="k">continue</span>
+
+            <span class="n">values</span> <span class="o">+=</span> <span class="p">[</span><span class="n">attrs</span><span class="p">[</span><span class="n">_i</span><span class="p">][</span><span class="n">component</span><span class="p">][</span><span class="n">key</span><span class="p">]]</span>
+            <span class="n">active_stations_list</span> <span class="o">+=</span> <span class="p">[</span><span class="n">stations</span><span class="p">[</span><span class="n">_i</span><span class="p">]]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">component</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="o">+</span><span class="nb">format</span><span class="p">)</span>
+            <span class="n">backend</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">active_stations_list</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">stations_list</span> <span class="o">=</span> <span class="n">stations</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="c1">#</span>
+<span class="c1"># low-level function for plotting trace attributes</span>
+<span class="c1">#</span>
+
+<div class="viewcode-block" id="_default_backend"><a class="viewcode-back" href="../../../library/generated/mtuq.graphics.attrs._default_backend.html#mtuq.graphics._default_backend">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_default_backend</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span>
+    <span class="n">colormap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">,</span> <span class="n">zero_centered</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Default backend for all frontend `mtuq.graphics.attrs` functions</span>
+
+<span class="sd">    The frontend functions perform only data manipulation. All graphics library</span>
+<span class="sd">    calls occur in the backend</span>
+
+<span class="sd">    By isolating the graphics function calls in this way, users can completely</span>
+<span class="sd">    interchange graphics libraries (matplotlib, GMT, PyGMT, and so on)</span>
+
+<span class="sd">    .. rubric ::  Keyword arguments</span>
+
+<span class="sd">    ``colormap`` (`str`):</span>
+<span class="sd">    Matplotlib color palette</span>
+
+<span class="sd">    ``zero_centered`` (`bool`):</span>
+<span class="sd">    Whether or not the colormap is centered on zero</span>
+
+<span class="sd">    ``colorbar`` (`bool`):</span>
+<span class="sd">    Whether or not to display a colorbar</span>
+
+<span class="sd">    ``label`` (`str`):</span>
+<span class="sd">    Optional colorbar label</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">pyplot</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
+
+
+    <span class="c1"># generate colormap</span>
+    <span class="n">cmap</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">colormap</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">zero_centered</span><span class="p">:</span>
+        <span class="n">min_val</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+        <span class="n">max_val</span> <span class="o">=</span> <span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">min_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">max_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+    <span class="c1"># plot stations</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">pyplot</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">station</span><span class="o">.</span><span class="n">longitude</span> <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">stations</span><span class="p">],</span>
+        <span class="p">[</span><span class="n">station</span><span class="o">.</span><span class="n">latitude</span> <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">stations</span><span class="p">],</span> 
+        <span class="n">s</span><span class="o">=</span><span class="mf">80.</span><span class="p">,</span>
+        <span class="n">c</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> 
+        <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> 
+        <span class="n">vmin</span><span class="o">=</span><span class="n">min_val</span><span class="p">,</span>
+        <span class="n">vmax</span><span class="o">=</span><span class="n">max_val</span><span class="p">,</span>
+        <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;^&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># plot line segments</span>
+    <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">station</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stations</span><span class="p">):</span>
+
+        <span class="n">scaled</span> <span class="o">=</span> <span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">_i</span><span class="p">]</span><span class="o">-</span><span class="n">min_val</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">max_val</span><span class="o">-</span><span class="n">min_val</span><span class="p">)</span>
+        <span class="n">rgb</span> <span class="o">=</span> <span class="n">cmap</span><span class="p">(</span><span class="n">scaled</span><span class="p">)</span>
+
+        <span class="n">pyplot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">origin</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span> <span class="n">station</span><span class="o">.</span><span class="n">longitude</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">origin</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="n">station</span><span class="o">.</span><span class="n">latitude</span><span class="p">],</span>
+            <span class="n">marker</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="n">rgb</span><span class="p">,</span>
+            <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span>
+            <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="c1"># plot origin</span>
+    <span class="n">pyplot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">origin</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
+        <span class="n">origin</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+        <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span>
+        <span class="n">markersize</span><span class="o">=</span><span class="mf">15.</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># adjust ticks</span>
+    <span class="n">pyplot</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">labeltop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">labelright</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">pyplot</span><span class="o">.</span><span class="n">locator_params</span><span class="p">(</span><span class="n">nbins</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="c1"># add colorbar</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">label</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;horizontal&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+
+    <span class="n">pyplot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">pyplot</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="_pygmt_backend"><a class="viewcode-back" href="../../../library/generated/mtuq.graphics.attrs._pygmt_backend.html#mtuq.graphics._pygmt_backend">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_pygmt_backend</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">active_stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span>
+                <span class="n">colormap</span><span class="o">=</span><span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="n">zero_centered</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">display_topo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">moment_tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">process</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">stations_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">station_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">min_val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Default PyGMT backend for geographic plots over a hillshaded map.</span>
+<span class="sd">    </span>
+
+<span class="sd">    .. rubric ::  Required input arguments</span>
+
+<span class="sd">    ``filename`` (`str`):</span>
+<span class="sd">    The name of the file to which the figure will be saved. This should be passed by the frontend function. </span>
+<span class="sd">    Expected filenames are in the format `component.png`, where `component` is the component of the data being plotted. </span>
+<span class="sd">    This might be revised in the future to allow for more flexible naming conventions.</span>
+
+<span class="sd">    ``values`` (`list` of `float`):</span>
+<span class="sd">    List of values to be plotted for each station. The length of the list should match the number of stations.</span>
+
+<span class="sd">    ``active_stations`` (`list` of `mtuq.Station` objects):</span>
+<span class="sd">    List of stations to be plotted, with a value entry for each station in the `values` list.</span>
+
+<span class="sd">    ``origin`` (`mtuq.Origin` object):</span>
+<span class="sd">    Origin object used to plot the origin location.</span>
+
+<span class="sd">    .. rubric ::  Keyword arguments</span>
+<span class="sd">    </span>
+<span class="sd">    ``colormap`` (`str`):</span>
+<span class="sd">    GMT colormap name - see `GMT documentation &lt;https://docs.generic-mapping-tools.org/6.5/reference/cpts.html&gt;`</span>
+
+<span class="sd">    ``zero_centered`` (`bool`):</span>
+<span class="sd">    Whether or not the colormap is centered on zero</span>
+
+<span class="sd">    ``display_topo`` (`bool`):</span>
+<span class="sd">    Whether or not to display topography in the background -- will download the ETOPO1 topography file if not found</span>
+
+<span class="sd">    ``label`` (`str`):</span>
+<span class="sd">    Optional colorbar text label -- supports LaTeX expressions</span>
+
+<span class="sd">    ``width`` (`float`):</span>
+<span class="sd">    Width of the figure in inches -- default is 5 inches</span>
+
+<span class="sd">    ``moment_tensor`` (`mtuq.event.MomentTensor` or `np.ndarray`):</span>
+<span class="sd">    Moment tensor to plot as a beachball -- will plot a star at the origin if not provided</span>
+<span class="sd">    Can be either a `mtuq.event.MomentTensor` object or a 1D numpy array with the six independent components</span>
+<span class="sd">    [m_rr, m_tt, m_pp, m_rt, m_rp, m_tp]</span>
+
+<span class="sd">    ``process`` (`mtuq.ProcessData`):</span>
+<span class="sd">    ProcessData object used to determine the type of waves used for the window</span>
+
+<span class="sd">    ``stations_list`` (`list` of `mtuq.Station` objects):</span>
+<span class="sd">    List of all stations available before data processing -- will plot only active stations if not provided</span>
+
+<span class="sd">    ``station_labels`` (`bool`):</span>
+<span class="sd">    Whether or not to plot station labels -- default is True</span>
+
+<span class="sd">    ``min_val`` (`float`):</span>
+<span class="sd">    Minimum value for the colorbar -- will be determined automatically if not provided</span>
+
+<span class="sd">    ``max_val`` (`float`):</span>
+<span class="sd">    Maximum value for the colorbar -- will be determined automatically if not provided</span>
+
+<span class="sd">    .. rubric ::  Backend specific utility class</span>
+
+<span class="sd">    The PyGMTUtilities class is a utility class designed to enhance and simplify the usage of PyGMT for plotting.</span>
+<span class="sd">    It includes methods for calculating plotting regions with buffers, configuring colormaps, preparing LaTeX</span>
+<span class="sd">    annotations for PyGMT, and generating standardized headers for plots. Documentation for the PyGMTUtilities </span>
+<span class="sd">    class can be found in the `PyGMTUtilities &lt;mtuq.graphics.attrs.PyGMTUtilities.html&gt;`_ module.</span>
+
+
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pygmt</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">stations_list</span><span class="p">:</span>
+        <span class="n">stations_list</span> <span class="o">=</span> <span class="n">active_stations</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Complete station list not passed to pygmt plotting backend </span><span class="se">\n</span><span class="s1">Will plot only active stations&#39;</span><span class="p">)</span>
+    <span class="c1"># Collection of longitudes and latitudes from all available stations</span>
+    <span class="n">longitudes</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">longitude</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stations_list</span> <span class="o">+</span> <span class="p">[</span><span class="n">origin</span><span class="p">]]</span>
+    <span class="n">latitudes</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">latitude</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stations_list</span> <span class="o">+</span> <span class="p">[</span><span class="n">origin</span><span class="p">]]</span>
+
+    <span class="c1"># Calculate the region to display with a buffer around the stations</span>
+    <span class="n">region</span><span class="p">,</span> <span class="n">lat_buffer</span> <span class="o">=</span> <span class="n">PyGMTUtilities</span><span class="o">.</span><span class="n">calculate_plotting_region</span><span class="p">(</span><span class="n">stations_list</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">buffer_percentage</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+    
+    <span class="c1"># Setting up the figure</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">Figure</span><span class="p">()</span>
+
+    <span class="c1"># Dynamically determine the grid resolution for topography based on the range of longitudes and latitudes</span>
+    <span class="c1"># (etopo topography file will be downloaded if not found)</span>
+    <span class="n">resolution</span> <span class="o">=</span> <span class="n">PyGMTUtilities</span><span class="o">.</span><span class="n">get_resolution</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">longitudes</span><span class="p">)</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">longitudes</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">latitudes</span><span class="p">)</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">latitudes</span><span class="p">))</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">load_earth_relief</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the gradient (hillshade) grid with azimuth 0/300 and normalization t1</span>
+    <span class="c1"># &lt;https://www.pygmt.org/dev/gallery/images/grdgradient_shading.html&gt;</span>
+    <span class="n">shade</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">grdgradient</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="s2">&quot;0/300&quot;</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="s2">&quot;t1&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Define a grayscale colormap for topography</span>
+    <span class="n">normal</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">grdhisteq</span><span class="o">.</span><span class="n">equalize_grid</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">gaussian</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">gray_cmap</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">makecpt</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">series</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">normal</span><span class="o">.</span><span class="n">values</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">((</span><span class="n">normal</span><span class="o">.</span><span class="n">values</span><span class="p">))])</span>
+
+    <span class="c1"># Plot the hillshade grid as an image</span>
+    <span class="k">if</span> <span class="n">display_topo</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">grdimage</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">normal</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="n">shade</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;J</span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s1">i&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">gray_cmap</span><span class="p">,</span> <span class="n">no_clip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Overlay coastlines</span>
+    <span class="n">PyGMTUtilities</span><span class="o">.</span><span class="n">draw_coastlines</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+    <span class="c1"># Configure the colormap for station values</span>
+    <span class="n">colormap</span><span class="p">,</span> <span class="n">cmap_reverse_flag</span> <span class="o">=</span> <span class="n">PyGMTUtilities</span><span class="o">.</span><span class="n">configure_colormap</span><span class="p">(</span><span class="n">colormap</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">zero_centered</span><span class="p">:</span>
+        <span class="n">pygmt</span><span class="o">.</span><span class="n">makecpt</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="n">colormap</span><span class="p">,</span> <span class="n">series</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">values</span><span class="p">))</span><span class="o">*</span><span class="mf">1.01</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">values</span><span class="p">))</span><span class="o">*</span><span class="mf">1.01</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="n">cmap_reverse_flag</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">min_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pygmt</span><span class="o">.</span><span class="n">makecpt</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="n">colormap</span><span class="p">,</span> <span class="n">series</span><span class="o">=</span><span class="p">[</span><span class="n">min_val</span><span class="p">,</span> <span class="n">max_val</span><span class="p">],</span> <span class="n">continuous</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="n">cmap_reverse_flag</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pygmt</span><span class="o">.</span><span class="n">makecpt</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="n">colormap</span><span class="p">,</span> <span class="n">series</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">values</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">values</span><span class="p">)],</span> <span class="n">continuous</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="n">cmap_reverse_flag</span><span class="p">)</span>
+
+
+    <span class="c1"># Plotting lines from origin to stations</span>
+    <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">stations_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">active_stations</span><span class="p">:</span>
+            <span class="c1"># Plot line for active station as colored line</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">active_stations</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">station</span><span class="p">)]</span> <span class="k">if</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">active_stations</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">origin</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span> <span class="n">station</span><span class="o">.</span><span class="n">longitude</span><span class="p">],</span>
+                <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">origin</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="n">station</span><span class="o">.</span><span class="n">latitude</span><span class="p">],</span>
+                <span class="n">cmap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+                <span class="n">zvalue</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> 
+                <span class="n">pen</span><span class="o">=</span><span class="s2">&quot;thick,+z,-&quot;</span>
+            <span class="p">)</span>
+
+    <span class="c1"># Plotting stations as triangles</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">station</span><span class="o">.</span><span class="n">longitude</span> <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">active_stations</span><span class="p">],</span>
+        <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">station</span><span class="o">.</span><span class="n">latitude</span> <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">active_stations</span><span class="p">],</span>
+        <span class="n">style</span><span class="o">=</span><span class="s1">&#39;i0.8c&#39;</span><span class="p">,</span>  <span class="c1"># Triangle</span>
+        <span class="n">color</span><span class="o">=</span><span class="n">values</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">pen</span><span class="o">=</span><span class="s2">&quot;0.5p,black&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Plotting non-active stations as hollow triangles</span>
+    <span class="n">non_active_stations</span> <span class="o">=</span> <span class="p">[</span><span class="n">station</span> <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">stations_list</span> <span class="k">if</span> <span class="n">station</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">active_stations</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_active_stations</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">station</span><span class="o">.</span><span class="n">longitude</span> <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">non_active_stations</span><span class="p">],</span>
+            <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">station</span><span class="o">.</span><span class="n">latitude</span> <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">non_active_stations</span><span class="p">],</span>
+            <span class="n">style</span><span class="o">=</span><span class="s1">&#39;i0.8c&#39;</span><span class="p">,</span>  <span class="c1"># Triangle</span>
+            <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Hollow (white) triangle</span>
+            <span class="n">pen</span><span class="o">=</span><span class="s2">&quot;0.5p,black&quot;</span>  <span class="c1"># Outline color</span>
+        <span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">station</span><span class="o">.</span><span class="n">longitude</span> <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">non_active_stations</span><span class="p">],</span>
+            <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">station</span><span class="o">.</span><span class="n">latitude</span> <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">non_active_stations</span><span class="p">],</span>
+            <span class="n">style</span><span class="o">=</span><span class="s1">&#39;i0.6c&#39;</span><span class="p">,</span>  <span class="c1"># Triangle</span>
+            <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Hollow (white) triangle</span>
+            <span class="n">pen</span><span class="o">=</span><span class="s2">&quot;0.5p,white&quot;</span>  <span class="c1"># Outline color</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Plotting the origin as a star</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">origin</span><span class="o">.</span><span class="n">longitude</span><span class="p">],</span>
+        <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">origin</span><span class="o">.</span><span class="n">latitude</span><span class="p">],</span>
+        <span class="n">style</span><span class="o">=</span><span class="s1">&#39;a0.6c&#39;</span><span class="p">,</span>  <span class="c1"># Star, size 0.5 cm</span>
+        <span class="n">color</span><span class="o">=</span><span class="s1">&#39;yellow&#39;</span><span class="p">,</span>
+        <span class="n">pen</span><span class="o">=</span><span class="s2">&quot;0.5p,black&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">moment_tensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Normalize the moment tensor components to the desired exponent</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">moment_tensor</span><span class="p">)</span> <span class="ow">is</span> <span class="n">MomentTensor</span><span class="p">:</span>
+            <span class="n">moment_tensor</span> <span class="o">=</span> <span class="n">moment_tensor</span><span class="o">.</span><span class="n">as_vector</span><span class="p">()</span>
+
+        <span class="n">moment_tensor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">moment_tensor</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">moment_tensor</span><span class="p">)</span>
+
+        <span class="n">moment_tensor_spec</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;mrr&#39;</span><span class="p">:</span> <span class="n">moment_tensor</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s1">&#39;mtt&#39;</span><span class="p">:</span> <span class="n">moment_tensor</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="s1">&#39;mff&#39;</span><span class="p">:</span> <span class="n">moment_tensor</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="s1">&#39;mrt&#39;</span><span class="p">:</span> <span class="n">moment_tensor</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+            <span class="s1">&#39;mrf&#39;</span><span class="p">:</span> <span class="n">moment_tensor</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
+            <span class="s1">&#39;mtf&#39;</span><span class="p">:</span> <span class="n">moment_tensor</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span>
+            <span class="s1">&#39;exponent&#39;</span><span class="p">:</span> <span class="mi">21</span>  <span class="c1"># Merely for size control, as the MT is normalized prior to plotting</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Plot the moment tensor as a beachball</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">meca</span><span class="p">(</span>
+            <span class="n">spec</span><span class="o">=</span><span class="n">moment_tensor_spec</span><span class="p">,</span>
+            <span class="n">scale</span><span class="o">=</span><span class="s2">&quot;1c&quot;</span><span class="p">,</span>  <span class="c1"># Sets a fixed size for the beachball plot</span>
+            <span class="n">longitude</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
+            <span class="n">latitude</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+            <span class="n">depth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>  <span class="c1"># Depth is required, even if not used, set to a small number</span>
+            <span class="n">convention</span><span class="o">=</span><span class="s2">&quot;mt&quot;</span><span class="p">,</span>  <span class="c1"># Use GMT&#39;s mt convention &lt;https://www.pygmt.org/dev/api/generated/pygmt.Figure.meca.html&gt;</span>
+            <span class="n">compressionfill</span><span class="o">=</span><span class="s2">&quot;gray15&quot;</span><span class="p">,</span>
+            <span class="n">extensionfill</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
+            <span class="n">pen</span><span class="o">=</span><span class="s2">&quot;0.5p,black&quot;</span>
+        <span class="p">)</span>
+        
+    <span class="k">if</span> <span class="n">station_labels</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="c1"># Plotting station labels</span>
+        <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">stations_list</span><span class="p">:</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">station</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">station</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+                <span class="n">text</span><span class="o">=</span><span class="n">station</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+                <span class="n">font</span><span class="o">=</span><span class="s2">&quot;5p,Helvetica-Bold,black&quot;</span><span class="p">,</span>
+                <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;LM&quot;</span><span class="p">,</span>
+                <span class="n">offset</span><span class="o">=</span><span class="s2">&quot;-0.45c/0.125c&quot;</span><span class="p">,</span>
+                <span class="n">fill</span><span class="o">=</span><span class="s1">&#39;white&#39;</span>
+            <span class="p">)</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">frame</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;+l&quot;</span><span class="si">{</span><span class="n">PyGMTUtilities</span><span class="o">.</span><span class="n">prepare_latex_annotations</span><span class="p">(</span><span class="n">label</span><span class="p">)</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s2">&quot;JMR+o1.5c/0c+w7c/0.5c&quot;</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">basemap</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;J</span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s1">i&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Now starts the header text above the plot -- It is not a title and can be modified. </span>
+    <span class="c1"># Add an integer increment to the text_line_val bellow to add a new line above.</span>
+    <span class="n">text_line_val</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">header_lines</span> <span class="o">=</span> <span class="n">PyGMTUtilities</span><span class="o">.</span><span class="n">get_header</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">process</span><span class="p">)</span>
+    
+    <span class="c1"># Add the header text to the plot</span>
+    <span class="c1"># Text spacing is based on longitude range and latitude buffer size.</span>
+    <span class="n">lon_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">longitudes</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">longitudes</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">longitudes</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">text_spacing</span> <span class="o">=</span> <span class="n">lat_buffer</span> <span class="o">/</span> <span class="mf">1.5</span>
+    <span class="k">for</span> <span class="n">header_line</span> <span class="ow">in</span> <span class="n">header_lines</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">lon_mean</span><span class="p">,</span>
+                 <span class="n">y</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">latitudes</span><span class="p">)</span> <span class="o">+</span> <span class="n">lat_buffer</span> <span class="o">+</span> <span class="n">text_line_val</span><span class="o">*</span><span class="n">text_spacing</span><span class="p">,</span>
+                 <span class="n">text</span><span class="o">=</span><span class="n">header_line</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="s2">&quot;14p,Helvetica-Bold,black&quot;</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;MC&quot;</span><span class="p">,</span> <span class="n">no_clip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">text_line_val</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># Saving the figure</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">crop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span></div>
+    
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

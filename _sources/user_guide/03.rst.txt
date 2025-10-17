@@ -1,0 +1,138 @@
+
+Acquiring Green's functions
+===========================
+
+The response of a medium to an impulsive source is called a Green's function.  This page describes the role of Green's functions in source inversions, the types of Green's functions supported by MTUQ, and how these different types can each be obtained.
+
+
+Role of Green's functions
+-------------------------
+
+By combining Green's functions, it is possible to obtain synthetics from any moment tensor or force source.  Generating synthetics in this way is useful because it provides cost savings compared with on-the-fly wavefield simulations. Synthetics can then be compared with data to determine a best-fitting source.
+
+`GreensTensor` objects
+----------------------
+
+`GreensTensor <https://mtuqorg.github.io/mtuq/library/generated/mtuq.GreensTensor.html>`_ objects provide access to a set of Green's functions describing the medium response between a given hypocenter and station.
+
+Methods built into the `GreensTensor` class allow data processing and synthetics generation.  In particular, the `get_synthetics <https://mtuqorg.github.io/mtuq/library/generated/mtuq.GreensTensor.get_synthetics.html#mtuq.GreensTensor.get_synthetics>`_ method accepts a `MomentTensor` or `Force` and returns corresponding synthetics.
+
+
+
+Green's function conventions
+----------------------------
+
+A major goal of MTUQ is to avoid exposing users to unnecessary complexity. For Green's functions, MTUQ tries to accomplish this by understanding external conventions and converting to a common internal format.  Specifically, MTUQ uses an `up-south-east` `convention <https://docs.obspy.org/packages/autogen/obspy.imaging.mopad_wrapper.beach.html#supported-basis-systems>`_ for internally storing impulse responses corresponding to  individual force couples. (Moment tensors and forces are internally represented using the same `up-south-east` basis.)
+
+Under the hood, MTUQ deals with a variety of external conventions related to (1) the symmetry of the medium (for example, 1D media require fewer independent Green's functions than 3D media); (2) the choice of local Cartesian basis convention (for example, some authors employ `up-south-east`, others `north-east-down`). A sense of what's involved can be obtained by browsing the `source code <https://github.com/mtuqorg/mtuq/tree/master/mtuq/greens_tensor>`_ and references therein.
+
+
+
+Downloading precomputed Green's functions
+-----------------------------------------
+
+An easy way to acquire Green's functions is to download them from `syngine <http://ds.iris.edu/ds/products/syngine/>`_, a web service that hosts Green's functions from the following 1D Earth models: `PREM`, `AK135`, and `iasp91`.
+
+To download AK135 Green's functions and generate MTUQ `GreensTensor` objects:
+
+.. code ::
+
+   from mtuq import download_greens_functions
+   greens_tensors = download_greens_functions(stations, origins, model="ak135f_2s")
+
+A limitation of syngine is that Green's functions can be downloaded only on a station-by-station basis, not over an entire area or volume.  An alternative that avoids this limitation is to compute your own Green's functions.
+
+
+
+
+Computing Green's functions from 1D Earth models
+------------------------------------------------
+
+MTUQ supports the following 1D Green's functions formats: AxiSEM (preferred), FK, and CPS.
+
+`AxiSEM <https://github.com/geodynamics/axisem>`_ performs spectral element wave simulations in radially-symmetric Earth models.  AxiSEM NetCDF files can be used to retrieve vertical, radial, and transverse  displacement in units of m*(N-m)^-1.
+
+To generate AxiSEM synthetics in a format MTUQ supports, follow the instructions in the `AxiSEM user manual <https://raw.githubusercontent.com/geodynamics/axisem/master/MANUAL/manual_axisem1.3.pdf>`_  under "Output wavefields in NetCDF format needed by instaseis."
+
+To open an AxiSEM database client in MTUQ:
+
+.. code ::
+
+   from mtuq import open_db
+   db = open_db(path_to_NetCDF_file, format="AxiSEM")
+
+
+`FK <https://www.eas.slu.edu/People/LZhu/home.html>`_ simulates wave propagation in horizontally-layered elastic media using a frequency-wavenumber integration method.   FK  simulations create SAC files in a directory tree organized by model, event depth, and event distance.  Each SAC file represents a vertical, radial, or transverse velocity time series in units of 10^-20*cm*(dyne-cm)^-1 s^-1.
+
+
+To open an FK database client in MTUQ:
+
+.. code ::
+
+   from mtuq import open_db
+   db = open_db(path_to_FK_directory_tree, format="FK")
+
+
+
+Once opened, an AxiSEM or FK database client can be used to generate `GreensTensor <https://mtuqorg.github.io/mtuq/library/generated/mtuq.GreensTensor.html>`_ objects as follows:
+
+.. code::
+
+   greens_tensors = db.get_greens_tensors(stations, origin)
+
+
+
+
+
+Computing Green's functions from 3D Earth models
+------------------------------------------------
+
+MTUQ currently supports 3D Green's functions from SPECFEM3D/3D_GLOBE.  
+
+To generate a full set of Green's functions for a given hypocenter and depth, six SPECFEM3D/3D_GLOBE wavefield simulations are required.  Output must be saved as/converted to SAC files at individual stations using the following filename convention, which comes from `GRD_CMT3D <https://github.com/UTCompSeismo/GRD_CMT3D/tree/master/cmt3d>`_.  Place all SAC files corresponding to a single hypocenter and depth in the same directory as follows:
+
+.. code ::
+
+  {event_id}/
+      {depth_in_km}/
+          {net}.{sta}.{loc}.Z.Mrr.sac
+          {net}.{sta}.{loc}.Z.Mtt.sac
+          {net}.{sta}.{loc}.Z.Mpp.sac
+          {net}.{sta}.{loc}.Z.Mrt.sac
+          {net}.{sta}.{loc}.Z.Mrp.sac
+          {net}.{sta}.{loc}.Z.Mtp.sac
+          {net}.{sta}.{loc}.R.Mrr.sac
+          {net}.{sta}.{loc}.R.Mtt.sac
+          {net}.{sta}.{loc}.R.Mpp.sac
+          {net}.{sta}.{loc}.R.Mrt.sac
+          {net}.{sta}.{loc}.R.Mrp.sac
+          {net}.{sta}.{loc}.R.Mtp.sac
+          {net}.{sta}.{loc}.T.Mrr.sac
+          {net}.{sta}.{loc}.T.Mtt.sac
+          {net}.{sta}.{loc}.T.Mpp.sac
+          {net}.{sta}.{loc}.T.Mrt.sac
+          {net}.{sta}.{loc}.T.Mrp.sac
+          {net}.{sta}.{loc}.T.Mtp.sac
+
+
+To open a SPECFEM3D/3D_GLOBE database client:
+
+.. code::
+
+   from mtuq import open_db
+   db = open_db(path_SPECFEM3D_output_directory, format="SPECFEM3D")
+
+
+Once opened, the database client can be used to generate `GreensTensor <https://mtuqorg.github.io/mtuq/library/generated/mtuq.GreensTensor.html>`_ objects as follows:
+
+.. code::
+
+   greens_tensors = db.get_greens_tensors(stations, origin)
+
+
+For more information, see also:
+
+`Source-side Green's function details (under construction) <https://mtuqorg.github.io/mtuq/user_guide/03/source_side.html>`_
+
+`Receiver-side Green's function details (under construction) <https://mtuqorg.github.io/mtuq/user_guide/03/receiver_side.html>`_
+

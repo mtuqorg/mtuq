@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.process_data &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.process_data</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">obspy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">listdir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">TextIOBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">obspy</span><span class="w"> </span><span class="kn">import</span> <span class="n">taup</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">obspy.geodetics</span><span class="w"> </span><span class="kn">import</span> <span class="n">gps2dist_azimuth</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">basename</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">isdir</span><span class="p">,</span> <span class="n">join</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttribDict</span><span class="p">,</span> <span class="n">warn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util.cap</span><span class="w"> </span><span class="kn">import</span> <span class="n">WeightParser</span><span class="p">,</span> <span class="n">taper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">cut</span><span class="p">,</span> <span class="n">get_arrival</span><span class="p">,</span> <span class="n">m_to_deg</span><span class="p">,</span> <span class="n">_window_warnings</span>
+
+
+<div class="viewcode-block" id="ProcessData"><a class="viewcode-back" href="../../library/generated/mtuq.ProcessData.html#mtuq.ProcessData">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ProcessData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; An attempt at a one-size-fits-all data processing class</span>
+
+
+<span class="sd">    .. rubric :: Usage</span>
+
+<span class="sd">    Processing data is a two-step procedure. First, the user supplies parameters</span>
+<span class="sd">    (see available choices below) to create a data processing function:</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        function = ProcessData(**parameters)</span>
+
+<span class="sd">    Second, an ObsPy stream is given as input to the data processing function</span>
+<span class="sd">    and a processed stream returned as output:</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        processed_stream = function(stream)</span>
+
+
+<span class="sd">    Data processing can also be applied to an entire ``Dataset`` at once:</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        processed_dataset = dataset.map(function)</span>
+
+
+<span class="sd">    See `mtuq/examples/` for further illustration.</span>
+
+
+<span class="sd">    .. rubric :: Parameters</span>
+
+<span class="sd">    ``filter_type`` (`str`)</span>
+
+<span class="sd">    - ``&#39;bandpass&#39;``</span>
+<span class="sd">      Butterworth-Bandpass (uses `obspy.signal.filter.bandpass`)</span>
+
+<span class="sd">    - ``&#39;lowpass&#39;``</span>
+<span class="sd">      Butterworth-Lowpass (uses `obspy.signal.filter.lowpass`)</span>
+
+<span class="sd">    - ``&#39;highpass&#39;``</span>
+<span class="sd">      Butterworth-Highpass (uses `obspy.signal.filter.highpass`)</span>
+
+<span class="sd">    - ``None``</span>
+<span class="sd">      no filter will be applied</span>
+
+
+<span class="sd">    ``pick_type`` (`str`)</span>
+
+<span class="sd">    - ``&#39;taup&#39;``</span>
+<span class="sd">      calculates P, S travel times from Tau-P model</span>
+<span class="sd">      (uses `obspy.taup.TauPyModel.get_arrival_times`)</span>
+
+<span class="sd">    - ``&#39;FK_metadata&#39;``</span>
+<span class="sd">      reads P, S travel times from FK metadata</span>
+
+<span class="sd">    - ``&#39;SAC_metadata&#39;``</span>
+<span class="sd">      reads P, S travel times from SAC metadata fields `t5`, `t6`</span>
+
+<span class="sd">    - ``&#39;user_supplied&#39;``</span>
+<span class="sd">      reads P, S travel times from columns 8, 10 of `capuaf_file`</span>
+
+<span class="sd">    - ``None``</span>
+<span class="sd">      no P,S travel times will be calculated</span>
+
+
+<span class="sd">    ``window_type`` (`str`)</span>
+
+<span class="sd">    - ``&#39;body_wave&#39;``</span>
+<span class="sd">      regional-distance body-wave window</span>
+
+<span class="sd">    - ``&#39;surface_wave&#39;``</span>
+<span class="sd">      regional-distance surface-wave window</span>
+
+<span class="sd">    - ``&#39;group_velocity&#39;``</span>
+<span class="sd">      surface-wave window centered on given group velocity</span>
+
+<span class="sd">    - ``None``</span>
+<span class="sd">      no windows will be applied</span>
+
+
+<span class="sd">    ``apply_statics`` (`bool`)</span>
+<span class="sd">    Whether or not to apply static time shifts from columns 11-12 of `capuaf_file`</span>
+
+
+<span class="sd">    ``apply_weights`` (`bool`)</span>
+<span class="sd">    Whether or not to apply objective function weights from columns 3-8 of `capuaf_file`</span>
+
+
+<span class="sd">    ``apply_scaling`` (`bool`)</span>
+<span class="sd">    Whether or not to apply distance-dependent amplitude scaling</span>
+
+
+<span class="sd">    ``apply_padding`` (`bool`)</span>
+<span class="sd">    Whether or not to use longer Green&#39;s window relative to observed data </span>
+<span class="sd">    window (allows for more accurate cross-correlations)</span>
+
+
+<span class="sd">    .. rubric:: Other input arguments that may be required, depending on the above</span>
+
+<span class="sd">    ``freq_min`` (`float`)</span>
+<span class="sd">    Required for `filter_type=bandpass`</span>
+
+<span class="sd">    ``freq_max`` (`float`)</span>
+<span class="sd">    Required for `filter_type=bandpass`</span>
+
+<span class="sd">    ``freq`` (`float`)</span>
+<span class="sd">    Required for `filter_type=lowpass` or `filter_type=highpass`</span>
+
+<span class="sd">    ``window_length`` (`float`)</span>
+<span class="sd">    Window length in seconds</span>
+
+<span class="sd">    ``group_velocity`` (`float`)</span>
+<span class="sd">    Group velocity in m/s, required for `window_type=group_velocity`</span>
+
+<span class="sd">    ``window_alignment`` (`float`)</span>
+<span class="sd">    Optional window alignment for `window_type=group_velocity`</span>
+<span class="sd">    (`float` between 0. and 1.)</span>
+
+<span class="sd">    ``time_shift_min`` (`float`)</span>
+<span class="sd">    Required for `apply_padding=True`</span>
+
+<span class="sd">    ``time_shift_max`` (`float`)</span>
+<span class="sd">    Required for `apply_padding=True`</span>
+
+<span class="sd">    ``taup_model`` (`str`)</span>
+<span class="sd">    Name of built-in ObsPy TauP model or path to custom ObsPy TauP model,</span>
+<span class="sd">    required for `pick_type=taup`</span>
+
+<span class="sd">    ``FK_database`` (`str`)</span>
+<span class="sd">    Path to FK database, required for `pick_type=FK_metadata`</span>
+
+<span class="sd">    ``CPS_database`` (`str`)</span>
+<span class="sd">    Path to CPS database, required for `pick_type=CPS_metadata`</span>
+
+<span class="sd">    ``capuaf_file`` (`str`)</span>
+<span class="sd">    Path to `CAPUAF`-style text file, required for `pick_type=user_supplied`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+
+                 <span class="n">filter_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">window_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">pick_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+                 <span class="c1"># for filter_type=&#39;Bandpass&#39;</span>
+                 <span class="c1"># (specify corners in terms of frequency or period, but not both)</span>
+                 <span class="n">freq_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">freq_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">period_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">period_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+                 <span class="c1"># for filter_type=&#39;Lowpass&#39; or filter_type=&#39;Highpass&#39;</span>
+                 <span class="c1"># (specify corner in terms of frequency or period, but not both)</span>
+                 <span class="n">freq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">period</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+                 <span class="c1"># window parameters</span>
+                 <span class="n">window_length</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">apply_padding</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">apply_statics</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">time_shift_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">time_shift_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+                 <span class="c1"># data weighting parameters</span>
+                 <span class="c1"># (control contribution of particular traces or components to the</span>
+                 <span class="c1"># data misfit function)</span>
+                 <span class="n">apply_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">apply_scaling</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">scaling_power</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">scaling_coefficient</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">capuaf_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+                 <span class="c1"># P and S pick parameters</span>
+                 <span class="c1"># (default body_wave and surface_wave windows are defined relative to</span>
+                 <span class="c1"># P and S picks, which can be calculated on the fly from tau-P or</span>
+                 <span class="c1"># read from FK or CPS database)</span>
+                 <span class="n">taup_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">FK_database</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">FK_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">CPS_database</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">CPS_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+                 <span class="c1"># any user-supplied keyword arguments not included above go into</span>
+                 <span class="c1"># this dictionary (can be helpful for user customization)</span>
+                 <span class="o">**</span><span class="n">parameters</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filter_type</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;No filter will be applied&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">window_type</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;No windows will be applied&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filter_type</span><span class="p">:</span>
+            <span class="n">filter_type</span> <span class="o">=</span> <span class="n">filter_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_type</span> <span class="o">=</span> <span class="n">filter_type</span>
+
+        <span class="k">if</span> <span class="n">window_type</span><span class="p">:</span>
+            <span class="n">window_type</span> <span class="o">=</span> <span class="n">window_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="o">=</span> <span class="n">window_type</span>
+
+        <span class="c1"># note that we make pick_type case sensitive</span>
+        <span class="c1"># (could be helpful because p,P s,S are meaningful differences?)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span> <span class="o">=</span> <span class="n">pick_type</span>
+
+        <span class="c1">#</span>
+        <span class="c1"># check filter parameters</span>
+        <span class="c1">#</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_type</span><span class="p">:</span>
+            <span class="c1"># nothing to check</span>
+            <span class="k">pass</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_type</span> <span class="o">==</span> <span class="s1">&#39;bandpass&#39;</span><span class="p">:</span>
+
+            <span class="c1"># filter corners can be specified in terms of either period [s]</span>
+            <span class="c1"># or frequency [Hz], but not both</span>
+            <span class="k">if</span> <span class="n">period_min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>\
+               <span class="n">period_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+                <span class="k">assert</span> <span class="n">freq_min</span> <span class="ow">is</span> <span class="kc">None</span>
+                <span class="k">assert</span> <span class="n">freq_max</span> <span class="ow">is</span> <span class="kc">None</span>
+                <span class="n">freq_min</span> <span class="o">=</span> <span class="n">period_max</span><span class="o">**-</span><span class="mi">1</span>
+                <span class="n">freq_max</span> <span class="o">=</span> <span class="n">period_min</span><span class="o">**-</span><span class="mi">1</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">freq_min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">assert</span> <span class="n">freq_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">freq_min</span>
+            <span class="k">assert</span> <span class="n">freq_min</span> <span class="o">&lt;</span> <span class="n">freq_max</span>
+            <span class="k">assert</span> <span class="n">freq_max</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">freq_min</span> <span class="o">=</span> <span class="n">freq_min</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">freq_max</span> <span class="o">=</span> <span class="n">freq_max</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_type</span> <span class="o">==</span> <span class="s1">&#39;lowpass&#39;</span> <span class="ow">or</span>\
+                <span class="bp">self</span><span class="o">.</span><span class="n">filter_type</span> <span class="o">==</span> <span class="s1">&#39;highpass&#39;</span><span class="p">:</span>
+
+            <span class="c1"># filter corner can be specified in terms of either period [s]</span>
+            <span class="c1"># or frequency [Hz], but not both</span>
+            <span class="k">if</span> <span class="n">period</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">freq</span> <span class="ow">is</span> <span class="kc">None</span>
+                <span class="n">freq</span> <span class="o">=</span> <span class="n">period</span><span class="o">*-</span><span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">freq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">freq</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">freq</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Bad parameter: filter_type&#39;</span><span class="p">)</span>
+
+        <span class="c1">#</span>
+        <span class="c1"># check window parameters</span>
+        <span class="c1">#</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span><span class="p">:</span>
+            <span class="c1"># nothing to check now</span>
+            <span class="k">pass</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="o">==</span> <span class="s1">&#39;body_wave&#39;</span><span class="p">:</span>
+            <span class="c1"># regional body-wave window in the manner of Zhu1996</span>
+            <span class="k">assert</span> <span class="n">pick_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Must be defined: pick_type&quot;</span>
+            <span class="k">assert</span> <span class="n">window_length</span> <span class="o">&gt;</span> <span class="mf">0.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window_length</span> <span class="o">=</span> <span class="n">window_length</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="o">==</span> <span class="s1">&#39;surface_wave&#39;</span><span class="p">:</span>
+            <span class="c1"># regional surface-wave window in the manner of Zhu1996</span>
+            <span class="k">assert</span> <span class="n">pick_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Must be defined: pick_type&quot;</span>
+            <span class="k">assert</span> <span class="n">window_length</span> <span class="o">&gt;</span> <span class="mf">0.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window_length</span> <span class="o">=</span> <span class="n">window_length</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="o">==</span> <span class="s1">&#39;group_velocity&#39;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="s1">&#39;group_velocity&#39;</span> <span class="ow">in</span> <span class="n">parameters</span>
+            <span class="k">assert</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;group_velocity&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">group_velocity</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;group_velocity&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window_alignment</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+                <span class="n">parameters</span><span class="p">,</span> <span class="s1">&#39;window_alignment&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="mf">0.</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_alignment</span> <span class="o">&lt;=</span> <span class="mf">1.</span>
+            <span class="k">assert</span> <span class="n">window_length</span> <span class="o">&gt;</span> <span class="mf">0.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window_length</span> <span class="o">=</span> <span class="n">window_length</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="o">==</span> <span class="s1">&#39;min_max&#39;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="s1">&#39;v_min&#39;</span> <span class="ow">in</span> <span class="n">parameters</span>
+            <span class="k">assert</span> <span class="s1">&#39;v_max&#39;</span> <span class="ow">in</span> <span class="n">parameters</span>
+            <span class="k">assert</span> <span class="mf">0.</span> <span class="o">&lt;=</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;v_min&#39;</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;v_min&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;v_max&#39;</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;v_max&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v_min</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;v_min&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v_max</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;v_max&#39;</span><span class="p">]</span>
+
+            <span class="k">assert</span> <span class="n">window_length</span> <span class="o">&gt;=</span> <span class="mf">0.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window_length</span> <span class="o">=</span> <span class="n">window_length</span>
+            <span class="n">_window_warnings</span><span class="p">(</span><span class="n">window_type</span><span class="p">,</span> <span class="n">window_length</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Bad parameter: window_type&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">apply_statics</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">apply_padding</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">,</span> \
+                <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bad parameter: time_shift_min&quot;</span><span class="p">)</span>
+
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span> <span class="o">&gt;=</span> <span class="mf">0.</span><span class="p">,</span> \
+                <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bad parameter: time_shift_max&quot;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span> <span class="o">=</span> <span class="n">time_shift_min</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span> <span class="o">=</span> <span class="n">time_shift_max</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply_padding</span> <span class="o">=</span> <span class="n">apply_padding</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply_statics</span> <span class="o">=</span> <span class="n">apply_statics</span>
+
+        <span class="c1">#</span>
+        <span class="c1"># check phase pick parameters</span>
+        <span class="c1">#</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span><span class="p">:</span>
+            <span class="c1"># nothing to check now</span>
+            <span class="k">pass</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span> <span class="o">==</span> <span class="s1">&#39;taup&#39;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">taup_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">taup_model</span> <span class="o">=</span> <span class="n">taup_model</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_taup</span> <span class="o">=</span> <span class="n">taup</span><span class="o">.</span><span class="n">TauPyModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taup_model</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span> <span class="o">==</span> <span class="s1">&#39;FK_metadata&#39;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">FK_database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">assert</span> <span class="n">exists</span><span class="p">(</span><span class="n">FK_database</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">FK_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">FK_model</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">FK_database</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">FK_database</span> <span class="o">=</span> <span class="n">FK_database</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">FK_model</span> <span class="o">=</span> <span class="n">FK_model</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span> <span class="o">==</span> <span class="s1">&#39;SAC_metadata&#39;</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span> <span class="o">==</span> <span class="s1">&#39;user_supplied&#39;</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Bad parameter: pick_type, </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span><span class="p">)</span>
+
+        <span class="c1">#</span>
+        <span class="c1"># check weight parameters</span>
+        <span class="c1">#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply_scaling</span> <span class="o">=</span> <span class="n">apply_scaling</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply_weights</span> <span class="o">=</span> <span class="n">apply_weights</span>
+
+        <span class="k">if</span> <span class="n">apply_scaling</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="o">==</span> <span class="s1">&#39;body_wave&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">scaling_power</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">scaling_power</span> <span class="o">=</span> <span class="mf">1.</span>
+
+                <span class="k">if</span> <span class="n">scaling_coefficient</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">scaling_coefficient</span> <span class="o">=</span> <span class="mf">1.e5</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">scaling_power</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">scaling_power</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+                <span class="k">if</span> <span class="n">scaling_coefficient</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">scaling_coefficient</span> <span class="o">=</span> <span class="mf">1.e5</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaling_power</span> <span class="o">=</span> <span class="n">scaling_power</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaling_coefficient</span> <span class="o">=</span> <span class="n">scaling_coefficient</span>
+
+        <span class="c1">#</span>
+        <span class="c1"># parse text files</span>
+        <span class="c1">#</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_statics</span> <span class="ow">or</span>\
+           <span class="bp">self</span><span class="o">.</span><span class="n">apply_weights</span> <span class="ow">or</span>\
+           <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span> <span class="o">==</span> <span class="s1">&#39;user_supplied&#39;</span><span class="p">:</span>
+
+            <span class="k">assert</span> <span class="n">capuaf_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="n">parser</span> <span class="o">=</span> <span class="n">WeightParser</span><span class="p">(</span><span class="n">capuaf_file</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_statics</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">statics</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_statics</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_weights</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_weights</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span> <span class="o">==</span> <span class="s1">&#39;user_supplied&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">picks</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_picks</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">traces</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Carries out data processing operations on ObsPy traces or</span>
+<span class="sd">        MTUQ GreensTensors</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">station</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">traces</span><span class="p">,</span> <span class="s1">&#39;station&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">origin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">origin</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">traces</span><span class="p">,</span> <span class="s1">&#39;origin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># overwrite existing data?</span>
+        <span class="k">if</span> <span class="n">overwrite</span><span class="p">:</span>
+            <span class="n">traces</span> <span class="o">=</span> <span class="n">traces</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">traces</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">traces</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">traces</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Missing station identifier&#39;</span><span class="p">)</span>
+        <span class="nb">id</span> <span class="o">=</span> <span class="n">traces</span><span class="o">.</span><span class="n">id</span>
+
+        <span class="c1"># collect location information</span>
+        <span class="n">distance_in_m</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gps2dist_azimuth</span><span class="p">(</span>
+            <span class="n">origin</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+            <span class="n">origin</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
+            <span class="n">station</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+            <span class="n">station</span><span class="o">.</span><span class="n">longitude</span><span class="p">)</span>
+
+        <span class="c1"># collect time sampling information</span>
+        <span class="n">nt</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">traces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span><span class="p">,</span> <span class="n">traces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span>
+
+        <span class="c1"># Tags can be added through dataset.add_tag to keep track of custom</span>
+        <span class="c1"># metadata or support other customized uses. Here we use tags to</span>
+        <span class="c1"># distinguish data from Green&#39;s functions and displacement time series</span>
+        <span class="c1"># from velcoity time series</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">traces</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Missing tags attribute&#39;</span><span class="p">)</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="n">traces</span><span class="o">.</span><span class="n">tags</span>
+
+        <span class="k">if</span> <span class="s1">&#39;units:m&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+            <span class="c1"># nothing to do</span>
+            <span class="k">pass</span>
+
+        <span class="k">elif</span> <span class="s1">&#39;units:cm&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+            <span class="c1"># convert to meters</span>
+            <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">:</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">data</span> <span class="o">*=</span> <span class="mf">1.e-2</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;units:cm&#39;</span><span class="p">)</span>
+            <span class="n">tags</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;units:m&#39;</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Units not specified.&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="s1">&#39;attrs&#39;</span><span class="p">):</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="n">AttribDict</span><span class="p">()</span>
+
+        <span class="c1">#</span>
+        <span class="c1"># part 1: filter traces</span>
+        <span class="c1">#</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_type</span> <span class="o">==</span> <span class="s1">&#39;bandpass&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">:</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s1">&#39;demean&#39;</span><span class="p">)</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;hann&#39;</span><span class="p">)</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s1">&#39;bandpass&#39;</span><span class="p">,</span> <span class="n">zerophase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">freqmin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">freq_min</span><span class="p">,</span>
+                             <span class="n">freqmax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">freq_max</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_type</span> <span class="o">==</span> <span class="s1">&#39;lowpass&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">:</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s1">&#39;demean&#39;</span><span class="p">)</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;hann&#39;</span><span class="p">)</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s1">&#39;lowpass&#39;</span><span class="p">,</span> <span class="n">zerophase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">freq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_type</span> <span class="o">==</span> <span class="s1">&#39;highpass&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">:</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s1">&#39;demean&#39;</span><span class="p">)</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;hann&#39;</span><span class="p">)</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s1">&#39;highpass&#39;</span><span class="p">,</span> <span class="n">zerophase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">freq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;type:velocity&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+            <span class="c1"># convert to displacement</span>
+            <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">:</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">*</span><span class="n">dt</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;type:velocity&#39;</span><span class="p">)</span>
+            <span class="n">tags</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;type:displacement&#39;</span>
+
+        <span class="c1">#</span>
+        <span class="c1"># part 2a: apply distance scaling</span>
+        <span class="c1">#</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_scaling</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">:</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">data</span> <span class="o">*=</span>\
+                    <span class="p">(</span><span class="n">distance_in_m</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">scaling_coefficient</span><span class="p">)</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scaling_power</span>
+
+        <span class="c1">#</span>
+        <span class="c1"># part 2b: apply user-supplied data weights</span>
+        <span class="c1">#</span>
+        <span class="k">if</span> <span class="s1">&#39;type:greens&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_weights</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">component</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="o">==</span> <span class="s1">&#39;body_wave&#39;</span><span class="p">:</span>
+                        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;body_wave_&#39;</span><span class="o">+</span><span class="n">component</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;surface_wave_&#39;</span><span class="o">+</span><span class="n">component</span>
+
+                    <span class="n">weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="nb">id</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">weight</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="k">if</span> <span class="n">weight</span><span class="p">:</span>
+                    <span class="n">trace</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">traces</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
+
+        <span class="c1">#</span>
+        <span class="c1"># part 3: determine phase picks</span>
+        <span class="c1">#</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span> <span class="o">==</span> <span class="s1">&#39;user_supplied&#39;</span><span class="p">:</span>
+            <span class="n">picks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">picks</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">picks</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span> <span class="o">==</span> <span class="s1">&#39;taup&#39;</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                    <span class="c1"># suppress obspy warning that gets raised even when taup is</span>
+                    <span class="c1"># used correctly (someone should submit an ObsPy fix)</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+                    <span class="n">arrivals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_taup</span><span class="o">.</span><span class="n">get_travel_times</span><span class="p">(</span>
+                        <span class="n">origin</span><span class="o">.</span><span class="n">depth_in_m</span><span class="o">/</span><span class="mf">1000.</span><span class="p">,</span>
+                        <span class="n">m_to_deg</span><span class="p">(</span><span class="n">distance_in_m</span><span class="p">),</span>
+                        <span class="n">phase_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="s1">&#39;P&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">])</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">picks</span><span class="p">[</span><span class="s1">&#39;P&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">get_arrival</span><span class="p">(</span><span class="n">arrivals</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">))</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">picks</span><span class="p">[</span><span class="s1">&#39;P&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">get_arrival</span><span class="p">(</span><span class="n">arrivals</span><span class="p">,</span> <span class="s1">&#39;P&#39;</span><span class="p">))</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">picks</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">get_arrival</span><span class="p">(</span><span class="n">arrivals</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">))</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">picks</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">get_arrival</span><span class="p">(</span><span class="n">arrivals</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">))</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span> <span class="o">==</span> <span class="s1">&#39;FK_metadata&#39;</span><span class="p">:</span>
+                <span class="n">sac_headers</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">_</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">.grn.0&#39;</span> <span class="o">%</span>
+                                         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FK_database</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">FK_model</span><span class="p">,</span>
+                                          <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">depth_in_m</span><span class="o">/</span><span class="mf">1000.</span><span class="p">))),</span>
+                                             <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">distance_in_m</span><span class="o">/</span><span class="mf">1000.</span><span class="p">)))),</span>
+                                         <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;sac&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sac</span>
+
+                <span class="n">picks</span><span class="p">[</span><span class="s1">&#39;P&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sac_headers</span><span class="o">.</span><span class="n">t1</span><span class="p">)</span>
+                <span class="n">picks</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sac_headers</span><span class="o">.</span><span class="n">t2</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span> <span class="o">==</span> <span class="s1">&#39;CPS_metadata&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="bp">NotImplemented</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pick_type</span> <span class="o">==</span> <span class="s1">&#39;SAC_metadata&#39;</span><span class="p">:</span>
+                <span class="n">sac_headers</span> <span class="o">=</span> <span class="n">traces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sac</span>
+                <span class="n">picks</span><span class="p">[</span><span class="s1">&#39;P&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sac_headers</span><span class="o">.</span><span class="n">t5</span>
+                <span class="n">picks</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sac_headers</span><span class="o">.</span><span class="n">t6</span>
+
+        <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">:</span>
+
+            <span class="c1">#</span>
+            <span class="c1"># part 4a: determine window start and end times</span>
+            <span class="c1">#</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="o">==</span> <span class="s1">&#39;body_wave&#39;</span><span class="p">:</span>
+                <span class="c1"># regional body-wave window in the manner of Zhu1996</span>
+                <span class="c1"># (closely based on CAP code)</span>
+                <span class="n">starttime</span> <span class="o">=</span> <span class="n">picks</span><span class="p">[</span><span class="s1">&#39;P&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.4</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">window_length</span>
+                <span class="n">endtime</span> <span class="o">=</span> <span class="n">starttime</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_length</span>
+
+                <span class="n">starttime</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+                <span class="n">endtime</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="o">==</span> <span class="s1">&#39;surface_wave&#39;</span><span class="p">:</span>
+                <span class="c1"># regional surface-wave window in the manner of Zhu1996</span>
+                <span class="c1"># (closely based on CAP code)</span>
+
+                <span class="n">starttime</span> <span class="o">=</span> <span class="n">picks</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.3</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">window_length</span>
+                <span class="n">endtime</span> <span class="o">=</span> <span class="n">starttime</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_length</span>
+
+                <span class="n">starttime</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+                <span class="n">endtime</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="o">==</span> <span class="s1">&#39;group_velocity&#39;</span><span class="p">:</span>
+                <span class="c1"># surface-wave window based on given group velocity [m/s]</span>
+
+                <span class="n">group_arrival</span> <span class="o">=</span> <span class="n">distance_in_m</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">group_velocity</span>
+
+                <span class="c1"># alignment=0.0 - window starts at group arrival</span>
+                <span class="c1"># alignment=0.5 - window centered on group arrival (default)</span>
+                <span class="c1"># alignment=1.0 - window ends at group arrival</span>
+                <span class="c1"># alignment = self.alignment</span>
+
+                <span class="n">starttime</span> <span class="o">=</span> <span class="n">group_arrival</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_length</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">window_alignment</span>
+                <span class="n">endtime</span> <span class="o">=</span> <span class="n">group_arrival</span> <span class="o">+</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">window_length</span><span class="o">*</span><span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">window_alignment</span><span class="p">)</span>
+
+                <span class="n">starttime</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+                <span class="n">endtime</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="o">==</span> <span class="s1">&#39;min_max&#39;</span><span class="p">:</span>
+                <span class="c1"># experimental window type defined by minimum and maximum</span>
+                <span class="c1"># group velocities [m/s]</span>
+
+                <span class="c1"># WARNING - results in distance-dependent window lengths,</span>
+                <span class="c1"># which may not work with other MTUQ functions</span>
+
+                <span class="n">starttime</span> <span class="o">=</span> <span class="n">distance_in_m</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">v_max</span>
+                <span class="n">endtime</span> <span class="o">=</span> <span class="n">distance_in_m</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">v_min</span>
+
+                <span class="c1"># optionally, enforce minimum window length</span>
+                <span class="k">if</span> <span class="n">endtime</span> <span class="o">-</span> <span class="n">starttime</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_length</span><span class="p">:</span>
+                    <span class="n">average_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">starttime</span> <span class="o">+</span> <span class="n">endtime</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
+                    <span class="n">starttime</span> <span class="o">=</span> <span class="n">average_time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_length</span><span class="o">/</span><span class="mf">2.</span>
+                    <span class="n">endtime</span> <span class="o">=</span> <span class="n">average_time</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_length</span><span class="o">/</span><span class="mf">2.</span>
+
+                <span class="n">starttime</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+                <span class="n">endtime</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">starttime</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+                <span class="n">endtime</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span>
+
+            <span class="c1">#</span>
+            <span class="c1"># part 4b: apply statics</span>
+            <span class="c1">#</span>
+
+            <span class="c1"># STATIC CONVENTION:  A positive static time shift means synthetics</span>
+            <span class="c1"># are arriving too early and need to be shifted forward in time</span>
+            <span class="c1"># (positive shift) to match the observed data</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_statics</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># _component is a custom metadata attribute added by</span>
+                    <span class="c1"># mtuq.io.clients</span>
+
+                    <span class="c1"># Even though obspy.read doesn&#39;t return a stats.component</span>
+                    <span class="c1"># attribute, &quot;component&quot; is still reserved by ObsPy,</span>
+                    <span class="c1"># thus we use &quot;_component&quot; instead</span>
+                    <span class="n">component</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">_component</span>
+
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="c1"># This way of getting the component from the channel is</span>
+                    <span class="c1"># actually what is hardwired into ObsPy, and is implemented</span>
+                    <span class="c1"># here as a fallback</span>
+                    <span class="n">component</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="o">==</span> <span class="s1">&#39;body_wave&#39;</span><span class="p">:</span>
+                        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;body_wave_&#39;</span><span class="o">+</span><span class="n">component</span>
+
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;surface_wave_&#39;</span><span class="o">+</span><span class="n">component</span>
+
+                    <span class="n">static</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">statics</span><span class="p">[</span><span class="nb">id</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+                    <span class="n">trace</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">static_shift</span> <span class="o">=</span> <span class="n">static</span>
+
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error reading static time shift: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">id</span><span class="p">)</span>
+                    <span class="n">static</span> <span class="o">=</span> <span class="mf">0.</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>\
+                   <span class="s1">&#39;type:greens&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+
+                    <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">+=</span> <span class="n">static</span>
+
+            <span class="c1">#</span>
+            <span class="c1"># part 4c: apply padding</span>
+            <span class="c1">#</span>
+
+            <span class="c1"># using a longer window for Green&#39;s functions than for data allows for</span>
+            <span class="c1"># more accurate time-shift corrections</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_padding</span> <span class="ow">and</span>\
+               <span class="s1">&#39;type:greens&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+
+                <span class="n">starttime</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span>
+                <span class="n">endtime</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span>
+
+                <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts_padding_left</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                    <span class="nb">round</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts_padding_right</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                    <span class="nb">round</span><span class="p">(</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>
+
+            <span class="c1">#</span>
+            <span class="c1"># part 4d: cut and taper trace</span>
+            <span class="c1">#</span>
+
+            <span class="c1"># cuts trace and adjusts metadata</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">cut</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_statics</span> <span class="ow">and</span> <span class="s1">&#39;type:greens&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Not implemented warning&#39;</span><span class="p">)</span>
+
+            <span class="n">taper</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">traces</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

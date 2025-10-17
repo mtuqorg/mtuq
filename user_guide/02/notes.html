@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Detailed notes &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Detailed notes</a><ul>
+<li><a class="reference internal" href="#how-data-are-read-in">How data are read in</a></li>
+<li><a class="reference internal" href="#another-way-of-stating-data-and-metadata-requirements">Another way of stating data and metadata requirements</a></li>
+<li><a class="reference internal" href="#how-metadata-are-used">How metadata are used</a></li>
+<li><a class="reference internal" href="#on-time-conventions">On time conventions</a></li>
+<li><a class="reference internal" href="#on-geographic-conventions">On geographic conventions</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="detailed-notes">
+<h1>Detailed notes<a class="headerlink" href="#detailed-notes" title="Permalink to this headline">¶</a></h1>
+<section id="how-data-are-read-in">
+<h2>How data are read in<a class="headerlink" href="#how-data-are-read-in" title="Permalink to this headline">¶</a></h2>
+<p>MTUQ natively supports only SAC file format. For reading SAC files, MTUQ uses only a thin wrapper over <cite>obspy.read</cite>.  Similarly, for storing waveform data, MTUQ uses only a thin layer over ObsPy <cite>Stream</cite>, <cite>Trace</cite> and <cite>Stats</cite> structures.</p>
+</section>
+<section id="another-way-of-stating-data-and-metadata-requirements">
+<h2>Another way of stating data and metadata requirements<a class="headerlink" href="#another-way-of-stating-data-and-metadata-requirements" title="Permalink to this headline">¶</a></h2>
+<p>Because of how data are read in, SAC files must be ObsPy compliant and enough information must be present in SAC headers to populate ObsPy structures.</p>
+<p>In the end, all that’s required is that the following ObsPy attributes are correctly determined:</p>
+<ul class="simple">
+<li><p><cite>trace.stats.network</cite></p></li>
+<li><p><cite>trace.stats.station</cite></p></li>
+<li><p><cite>trace.stats.location</cite></p></li>
+<li><p><cite>trace.stats.sac.stala</cite></p></li>
+<li><p><cite>trace.stats.sac.stlo</cite></p></li>
+<li><p><cite>trace.stats.deltat</cite></p></li>
+<li><p><cite>trace.stats.starttime</cite></p></li>
+</ul>
+</section>
+<section id="how-metadata-are-used">
+<h2>How metadata are used<a class="headerlink" href="#how-metadata-are-used" title="Permalink to this headline">¶</a></h2>
+<p>The above ObsPy attributes are used as follows:</p>
+<ul class="simple">
+<li><p><cite>network</cite>, <cite>station</cite>, and <cite>location</cite> codes are used for sorting individual waveforms into <cite>mtuq.Datasets</cite></p></li>
+<li><p>station <cite>latitude</cite> and <cite>longitude</cite> are needed to extract Green’s functions, as well as for distance-dependent data processing</p></li>
+<li><p><cite>starttimes</cite> and <cite>deltat</cite> are used to align observations with synthetics during misfit evaluation</p></li>
+</ul>
+</section>
+<section id="on-time-conventions">
+<h2>On time conventions<a class="headerlink" href="#on-time-conventions" title="Permalink to this headline">¶</a></h2>
+<p>The <cite>starttime</cite> of a SAC file is determined by combining a reference time (defined by multiple SAC headers) with an offset value (defined by the “begin time” or “B” header). Usually, the reference time represents a catalog origin time given as an actual UTC or GMT date and time.</p>
+<p>Other conventions are possible, however.  For example, synthetic inversions may involve a <cite>t=0</cite> reference time rather than an actual date and time. The only requirement is that the observed data follow the same convention as the Green’s functions and synthetic data.</p>
+</section>
+<section id="on-geographic-conventions">
+<h2>On geographic conventions<a class="headerlink" href="#on-geographic-conventions" title="Permalink to this headline">¶</a></h2>
+<p>By default, distance and azimuth calculations are performed on station latitudes and longitudes using ObsPy geodetic functions.</p>
+<p>To support local <cite>x,y</cite> coordinates, UTM coordinates, or other custom systems, these distance and azimuth functions (and by extension, the meaning of the <cite>latitude</cite> and <cite>longitude</cite> values themselves) can be overridden through modifications to MTUQ’s source code.  (We recommend an “editable” installation of MTUQ for such modifications.)</p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

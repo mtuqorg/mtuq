@@ -1,0 +1,6 @@
+﻿mtuq.grid.DoubleCoupleGridRandom
+================================
+
+.. currentmodule:: mtuq.grid
+
+.. autofunction:: DoubleCoupleGridRandom

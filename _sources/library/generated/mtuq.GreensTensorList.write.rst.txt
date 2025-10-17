@@ -1,0 +1,6 @@
+mtuq.GreensTensorList.write
+===========================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensorList.write

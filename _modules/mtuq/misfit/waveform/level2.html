@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.misfit.waveform.level2 &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/style.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.misfit.waveform.level2</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Waveform misfit module (fast Python/C version)</span>
+
+<span class="sd">See ``mtuq/misfit/waveform/__init__.py`` for more information</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.misfit.waveform._stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">_flatten</span><span class="p">,</span> <span class="n">calculate_norm_data</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.misfit.waveform.level1</span><span class="w"> </span><span class="kn">import</span> <span class="n">correlate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util.math</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_mij</span><span class="p">,</span> <span class="n">to_rtp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_components</span><span class="p">,</span> <span class="n">get_time_sampling</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.misfit.waveform</span><span class="w"> </span><span class="kn">import</span> <span class="n">ext_numba</span>
+
+
+<div class="viewcode-block" id="misfit"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2.misfit.html#mtuq.misfit.waveform.level2.misfit">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">misfit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">norm</span><span class="p">,</span> <span class="n">time_shift_groups</span><span class="p">,</span>
+    <span class="n">time_shift_min</span><span class="p">,</span> <span class="n">time_shift_max</span><span class="p">,</span> <span class="n">msg_handle</span><span class="p">,</span> <span class="n">debug_level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s1">&#39;numba&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Data misfit function (fast Python/C version)</span>
+
+<span class="sd">    See ``mtuq/misfit/waveform/__init__.py`` for more information</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+        <span class="n">components</span> <span class="o">=</span> <span class="n">_flatten</span><span class="p">(</span><span class="n">time_shift_groups</span><span class="p">)</span>
+        <span class="n">norm_data</span> <span class="o">=</span> <span class="n">calculate_norm_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">norm</span><span class="p">,</span> <span class="n">components</span><span class="p">)</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># collect metadata</span>
+    <span class="c1">#</span>
+    <span class="n">nt</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">_get_time_sampling</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">stations</span> <span class="o">=</span> <span class="n">_get_stations</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">components</span> <span class="o">=</span> <span class="n">_get_components</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+
+    <span class="c1"># collect user-supplied data weights</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">_get_weights</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">components</span><span class="p">)</span>
+
+    <span class="c1"># which components will be used to determine time shifts? (boolean array)</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="n">_get_groups</span><span class="p">(</span><span class="n">time_shift_groups</span><span class="p">,</span> <span class="n">components</span><span class="p">)</span>
+
+
+    <span class="c1">#</span>
+    <span class="c1"># collapse main structures into NumPy arrays</span>
+    <span class="c1">#</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">_get_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">components</span><span class="p">)</span>
+    <span class="n">greens</span> <span class="o">=</span> <span class="n">_get_greens</span><span class="p">(</span><span class="n">greens</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">components</span><span class="p">)</span>
+    <span class="n">sources</span> <span class="o">=</span> <span class="n">_to_array</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+
+    <span class="c1"># sanity checks</span>
+    <span class="n">_check</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">sources</span><span class="p">)</span>
+
+
+    <span class="c1">#</span>
+    <span class="c1"># cross-correlate data and synthetics</span>
+    <span class="c1">#</span>
+    <span class="n">padding</span> <span class="o">=</span> <span class="n">_get_padding</span><span class="p">(</span><span class="n">time_shift_min</span><span class="p">,</span> <span class="n">time_shift_max</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+    <span class="n">data_data</span> <span class="o">=</span> <span class="n">_autocorr_1</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">greens_greens</span> <span class="o">=</span> <span class="n">_autocorr_2</span><span class="p">(</span><span class="n">greens</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
+    <span class="n">greens_data</span> <span class="o">=</span> <span class="n">_corr_1_2</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">norm</span><span class="o">==</span><span class="s1">&#39;hybrid&#39;</span><span class="p">:</span>
+        <span class="n">hybrid_norm</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">hybrid_norm</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># collect message attributes</span>
+    <span class="c1">#</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">msg_args</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">msg_handle</span><span class="p">,</span> <span class="n">attrib</span><span class="p">)</span> <span class="k">for</span> <span class="n">attrib</span> <span class="ow">in</span> 
+            <span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;stop&#39;</span><span class="p">,</span> <span class="s1">&#39;percent&#39;</span><span class="p">]]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">msg_args</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># call extension</span>
+    <span class="c1">#</span>
+
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">norm</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;L2&#39;</span><span class="p">,</span> <span class="s1">&#39;hybrid&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">==</span><span class="s1">&#39;numba&#39;</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">ext_numba</span><span class="o">.</span><span class="n">misfit_L2</span>
+
+    <span class="k">elif</span> <span class="n">norm</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;L1&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">==</span><span class="s1">&#39;numba&#39;</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">ext_numba</span><span class="o">.</span><span class="n">misfit_L2</span>
+
+    <span class="k">elif</span> <span class="n">norm</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;L2&#39;</span><span class="p">,</span> <span class="s1">&#39;hybrid&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">==</span><span class="s1">&#39;cython&#39;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.misfit.waveform</span><span class="w"> </span><span class="kn">import</span> <span class="n">ext_cython</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">ext_cython</span><span class="o">.</span><span class="n">misfit_L2</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">handle</span><span class="p">(</span>
+       <span class="n">data_data</span><span class="p">,</span> <span class="n">greens_data</span><span class="p">,</span> <span class="n">greens_greens</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span>
+       <span class="n">hybrid_norm</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">padding</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">padding</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">debug_level</span><span class="p">,</span> <span class="o">*</span><span class="n">msg_args</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">debug_level</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">  Elapsed time (extension module) (s): </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> \
+          <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+        <span class="n">results</span> <span class="o">/=</span> <span class="n">norm_data</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+<span class="c1">#</span>
+<span class="c1"># utility functions</span>
+<span class="c1">#</span>
+
+<div class="viewcode-block" id="_get_time_sampling"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._get_time_sampling.html#mtuq.misfit.waveform.level2._get_time_sampling">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_get_time_sampling</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">get_time_sampling</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_get_padding"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._get_padding.html#mtuq.misfit.waveform.level2._get_padding">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_get_padding</span><span class="p">(</span><span class="n">time_shift_min</span><span class="p">,</span> <span class="n">time_shift_max</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+    <span class="n">padding_left</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="o">+</span><span class="n">time_shift_max</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">padding_right</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="o">-</span><span class="n">time_shift_min</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">padding_left</span><span class="p">,</span> <span class="n">padding_right</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="_get_greens"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._get_greens.html#mtuq.misfit.waveform.level2._get_greens">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_get_greens</span><span class="p">(</span><span class="n">greens</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">components</span><span class="p">):</span>
+    <span class="n">Ncomponents</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">)</span>
+    <span class="n">Nstations</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">stations</span><span class="p">)</span>
+    <span class="n">Npts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">greens</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">Ngreens</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">greens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">include_mt</span><span class="p">:</span>
+        <span class="n">Ngreens</span> <span class="o">+=</span> <span class="mi">6</span>
+    <span class="k">if</span> <span class="n">greens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">include_force</span><span class="p">:</span>
+        <span class="n">Ngreens</span> <span class="o">+=</span> <span class="mi">3</span>
+
+    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span>
+        <span class="n">Nstations</span><span class="p">,</span>
+        <span class="n">Ncomponents</span><span class="p">,</span>
+        <span class="n">Ngreens</span><span class="p">,</span>
+        <span class="n">Npts</span><span class="p">,</span>
+        <span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">station</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stations</span><span class="p">):</span>
+        <span class="n">tensor</span> <span class="o">=</span> <span class="n">greens</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">station</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># fill in array</span>
+        <span class="n">tensor</span><span class="o">.</span><span class="n">_set_components</span><span class="p">(</span><span class="n">components</span><span class="p">)</span>
+        <span class="n">array</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">_array</span>
+
+    <span class="k">return</span> <span class="n">array</span></div>
+
+
+<div class="viewcode-block" id="_get_data"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._get_data.html#mtuq.misfit.waveform.level2._get_data">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_get_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">components</span><span class="p">):</span>
+    <span class="c1"># Collects numeric trace data from all streams as a single NumPy array;</span>
+    <span class="c1"># compared with iterating over streams and traces, provides a potentially</span>
+    <span class="c1"># faster way of accessing numeric trace data</span>
+
+    <span class="c1">#.. warning::</span>
+
+    <span class="c1">#    Requires that all streams have the same time discretization</span>
+    <span class="c1">#    (or else an error is raised)</span>
+
+    <span class="n">nt</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">_get_time_sampling</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">stations</span><span class="p">)</span>
+    <span class="n">nc</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">)</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ns</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="n">nt</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">station</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stations</span><span class="p">):</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">station</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">_j</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">components</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">trace</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">component</span><span class="o">=</span><span class="n">component</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">array</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="k">return</span> <span class="n">array</span></div>
+
+
+
+<div class="viewcode-block" id="_get_components"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._get_components.html#mtuq.misfit.waveform.level2._get_components">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_get_components</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">components</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">components</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">get_components</span><span class="p">(</span><span class="n">stream</span><span class="p">))</span>
+    <span class="n">components</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">components</span><span class="p">))</span>
+
+    <span class="n">components_sorted</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="s1">&#39;Z&#39;</span> <span class="ow">in</span> <span class="n">components</span><span class="p">:</span>
+        <span class="n">components_sorted</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s1">&#39;R&#39;</span> <span class="ow">in</span> <span class="n">components</span><span class="p">:</span>
+        <span class="n">components_sorted</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;R&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s1">&#39;T&#39;</span> <span class="ow">in</span> <span class="n">components</span><span class="p">:</span>
+        <span class="n">components_sorted</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">components_sorted</span></div>
+
+
+<div class="viewcode-block" id="_get_weights"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._get_weights.html#mtuq.misfit.waveform.level2._get_weights">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_get_weights</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">components</span><span class="p">):</span>
+    <span class="c1"># user-supplied data weights</span>
+
+    <span class="n">Ncomponents</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">)</span>
+    <span class="n">Nstations</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">stations</span><span class="p">)</span>
+
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span>
+        <span class="n">Nstations</span><span class="p">,</span>
+        <span class="n">Ncomponents</span><span class="p">,</span>
+        <span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">station</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stations</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_j</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">components</span><span class="p">):</span>
+
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">station</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">component</span><span class="o">=</span><span class="n">component</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">weights</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">]</span> <span class="o">=</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">weight</span>
+                <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="c1">#warnings.warn(&#39;Weight not attached&#39;, UserWarning)</span>
+                    <span class="n">weights</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">weights</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
+
+    <span class="k">return</span> <span class="n">weights</span></div>
+
+
+<div class="viewcode-block" id="_get_mask"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._get_mask.html#mtuq.misfit.waveform.level2._get_mask">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_get_mask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">components</span><span class="p">):</span>
+    <span class="c1"># which components are absent from the data? (boolean array)</span>
+
+    <span class="n">Ncomponents</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">)</span>
+    <span class="n">Nstations</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">stations</span><span class="p">)</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span>
+        <span class="n">Nstations</span><span class="p">,</span>
+        <span class="n">Ncomponents</span><span class="p">,</span> 
+        <span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">station</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stations</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_j</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">components</span><span class="p">):</span>
+
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">station</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">component</span><span class="o">=</span><span class="n">component</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">mask</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
+
+    <span class="k">return</span> <span class="n">mask</span></div>
+
+
+<div class="viewcode-block" id="_get_stations"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._get_stations.html#mtuq.misfit.waveform.level2._get_stations">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_get_stations</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">stations</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">stations</span> <span class="o">+=</span> <span class="p">[</span><span class="n">stream</span><span class="o">.</span><span class="n">station</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">stations</span></div>
+
+
+<div class="viewcode-block" id="_get_groups"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._get_groups.html#mtuq.misfit.waveform.level2._get_groups">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_get_groups</span><span class="p">(</span><span class="n">groups</span><span class="p">,</span> <span class="n">components</span><span class="p">):</span>
+    <span class="n">Ncomponents</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">)</span>
+    <span class="n">Ngroups</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span>
+
+    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span>
+        <span class="n">Ngroups</span><span class="p">,</span> 
+        <span class="n">Ncomponents</span><span class="p">,</span> 
+        <span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">groups</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_j</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">components</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+                <span class="n">array</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">array</span></div>
+
+
+<div class="viewcode-block" id="_check"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._check.html#mtuq.misfit.waveform.level2._check">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_check</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">sources</span><span class="p">):</span>
+    <span class="c1"># array shape sanity checks</span>
+
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">greens</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of stations (data): </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of stations (Green&#39;&#39;s): </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Inconsistent shape&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">greens</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of components (data): </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of components (Green&#39;&#39;s): </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Inconsistent shape&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">greens</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="n">sources</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of Green&#39;&#39;s functions in linear combination: </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">greens</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of weights in linear combination: </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">sources</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="_to_array"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._to_array.html#mtuq.misfit.waveform.level2._to_array">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_to_array</span><span class="p">(</span><span class="n">sources</span><span class="p">):</span>
+    <span class="n">dims</span> <span class="o">=</span> <span class="n">sources</span><span class="o">.</span><span class="n">dims</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">sources</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">_type</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span><span class="o">==</span><span class="s1">&#39;MomentTensor&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">to_mij</span><span class="p">(</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;rho&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;w&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;kappa&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+            <span class="p">))</span>
+
+    <span class="k">elif</span> <span class="n">_type</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span><span class="o">==</span><span class="s1">&#39;Force&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">to_rtp</span><span class="p">(</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;F0&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;phi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+            <span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="_type"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._type.html#mtuq.misfit.waveform.level2._type">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_type</span><span class="p">(</span><span class="n">dims</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s1">&#39;rho&#39;</span> <span class="ow">in</span> <span class="n">dims</span>\
+       <span class="ow">and</span> <span class="s1">&#39;v&#39;</span> <span class="ow">in</span> <span class="n">dims</span>\
+       <span class="ow">and</span> <span class="s1">&#39;w&#39;</span> <span class="ow">in</span> <span class="n">dims</span>\
+       <span class="ow">and</span> <span class="s1">&#39;kappa&#39;</span> <span class="ow">in</span> <span class="n">dims</span>\
+       <span class="ow">and</span> <span class="s1">&#39;sigma&#39;</span> <span class="ow">in</span> <span class="n">dims</span>\
+       <span class="ow">and</span> <span class="s1">&#39;h&#39;</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;MomentTensor&#39;</span>
+
+    <span class="k">elif</span> <span class="s1">&#39;F0&#39;</span> <span class="ow">in</span> <span class="n">dims</span>\
+       <span class="ow">and</span> <span class="s1">&#39;phi&#39;</span> <span class="ow">in</span> <span class="n">dims</span>\
+       <span class="ow">and</span> <span class="s1">&#39;h&#39;</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;Force&#39;</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span></div>
+
+
+<span class="c1">#</span>
+<span class="c1"># cross-correlation utilities</span>
+<span class="c1">#</span>
+
+<div class="viewcode-block" id="_corr_1_2"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._corr_1_2.html#mtuq.misfit.waveform.level2._corr_1_2">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_corr_1_2</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">padding</span><span class="p">):</span>
+    <span class="c1"># correlates 1D and 2D data structures</span>
+    <span class="n">Ncomponents</span> <span class="o">=</span> <span class="n">greens</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">Nstations</span> <span class="o">=</span> <span class="n">greens</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">Ngreens</span> <span class="o">=</span> <span class="n">greens</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">corr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span>
+        <span class="n">Nstations</span><span class="p">,</span>
+        <span class="n">Ncomponents</span><span class="p">,</span>
+        <span class="n">Ngreens</span><span class="p">,</span>
+        <span class="n">padding</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">padding</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Nstations</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ncomponents</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">_k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ngreens</span><span class="p">):</span>
+
+                <span class="n">corr</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">,</span> <span class="n">_k</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">correlate</span><span class="p">(</span>
+                    <span class="n">greens</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">,</span> <span class="n">_k</span><span class="p">,</span> <span class="p">:],</span> <span class="n">data</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">,</span> <span class="p">:])</span>
+
+    <span class="k">return</span> <span class="n">corr</span></div>
+
+
+<div class="viewcode-block" id="_autocorr_1"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._autocorr_1.html#mtuq.misfit.waveform.level2._autocorr_1">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_autocorr_1</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="c1"># autocorrelates 1D data strucutres (reduces to dot product)</span>
+    <span class="n">Ncomponents</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">Nstations</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">corr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span>
+        <span class="n">Nstations</span><span class="p">,</span>
+        <span class="n">Ncomponents</span><span class="p">,</span>
+        <span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Nstations</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ncomponents</span><span class="p">):</span>
+            <span class="n">corr</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">,</span> <span class="p">:],</span> <span class="n">data</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">,</span> <span class="p">:])</span>
+
+    <span class="k">return</span> <span class="n">corr</span></div>
+
+
+<div class="viewcode-block" id="_autocorr_2"><a class="viewcode-back" href="../../../../library/generated/mtuq.misfit.waveform.level2._autocorr_2.html#mtuq.misfit.waveform.level2._autocorr_2">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_autocorr_2</span><span class="p">(</span><span class="n">greens</span><span class="p">,</span> <span class="n">padding</span><span class="p">):</span>
+    <span class="c1"># autocorrelates 2D data structures</span>
+
+    <span class="n">Ncomponents</span> <span class="o">=</span> <span class="n">greens</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">Nstations</span> <span class="o">=</span> <span class="n">greens</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">Ngreens</span> <span class="o">=</span> <span class="n">greens</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">Npts</span> <span class="o">=</span> <span class="n">greens</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="n">ones</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">Npts</span><span class="p">),</span> 
+        <span class="p">(</span><span class="n">padding</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">padding</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="s1">&#39;constant&#39;</span><span class="p">)</span>
+
+    <span class="n">corr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span>
+        <span class="n">Nstations</span><span class="p">,</span>
+        <span class="n">Ncomponents</span><span class="p">,</span> 
+        <span class="n">padding</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">padding</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> 
+        <span class="n">Ngreens</span><span class="p">,</span> 
+        <span class="n">Ngreens</span><span class="p">,</span>
+        <span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Nstations</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ncomponents</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">_k1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ngreens</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">_k2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ngreens</span><span class="p">):</span>
+
+                    <span class="k">if</span> <span class="n">_k1</span><span class="o">&lt;=</span><span class="n">_k2</span><span class="p">:</span>
+                        <span class="n">corr</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">,</span> <span class="p">:,</span> <span class="n">_k1</span><span class="p">,</span> <span class="n">_k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlate</span><span class="p">(</span>
+                            <span class="n">greens</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">,</span> <span class="n">_k1</span><span class="p">,</span> <span class="p">:]</span><span class="o">*</span><span class="n">greens</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">,</span> <span class="n">_k2</span><span class="p">,</span> <span class="p">:],</span>
+                            <span class="n">ones</span><span class="p">)</span>
+
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">corr</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">,</span> <span class="p">:,</span> <span class="n">_k1</span><span class="p">,</span> <span class="n">_k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">corr</span><span class="p">[</span><span class="n">_i</span><span class="p">,</span> <span class="n">_j</span><span class="p">,</span> <span class="p">:,</span> <span class="n">_k2</span><span class="p">,</span> <span class="n">_k1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">corr</span></div>
+
+
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

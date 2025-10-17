@@ -1,0 +1,6 @@
+﻿mtuq.graphics.plot_cc_max
+=========================
+
+.. currentmodule:: mtuq.graphics
+
+.. autofunction:: plot_cc_max

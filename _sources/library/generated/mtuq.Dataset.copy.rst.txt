@@ -1,0 +1,6 @@
+mtuq.Dataset.copy
+=================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Dataset.copy

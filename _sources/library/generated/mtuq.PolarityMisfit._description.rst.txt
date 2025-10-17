@@ -1,0 +1,6 @@
+mtuq.PolarityMisfit._description
+================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: PolarityMisfit._description

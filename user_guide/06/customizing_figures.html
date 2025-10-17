@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Customizing figures &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Library reference" href="../../library/index.html" />
+    <link rel="prev" title="Plotting trace attributes" href="plotting_trace_attributes.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../05.html">Visualization galleries</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Customizing figures</a><ul>
+<li><a class="reference internal" href="#time-shift-and-amplitude-ratio-figures">Time shift and amplitude ratio figures</a></li>
+<li><a class="reference internal" href="#misfit-and-likelihood-figures">Misfit and likelihood figures</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="plotting_trace_attributes.html" title="Previous Chapter: Plotting trace attributes"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Plotting trac...</span>
+    </a>
+  </li>
+  <li>
+    <a href="../../library/index.html" title="Next Chapter: Library reference"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Library reference &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="customizing-figures">
+<h1>Customizing figures<a class="headerlink" href="#customizing-figures" title="Permalink to this headline">¶</a></h1>
+<p>MTUQ plotting functions aim for generality and ease of use. Sometimes, this results in a default figure that is a bit generic.</p>
+<p>Fortunately, figure appearance is highly customizable, as illustrated below.</p>
+<section id="time-shift-and-amplitude-ratio-figures">
+<h2>Time shift and amplitude ratio figures<a class="headerlink" href="#time-shift-and-amplitude-ratio-figures" title="Permalink to this headline">¶</a></h2>
+<p>To plot how time shifts, amplitude ratios, or other <a class="reference external" href="https://mtuqorg.github.io/mtuq/user_guide/06/trace_attributes.html">trace attributes</a> vary geographically, we can pass the output of the misfit function’s <a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.Misfit.collect_attributes.html#mtuq.Misfit.collect_attributes">collect_attributes</a> method to a plotting function as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot_time_shifts</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Because we haven’t specified a map projection or other details, it’s no surprise that the resulting figure is quite generic:</p>
+<a class="reference internal image-reference" href="../../_images/20090407201255351_attrs_time_shifts_bw_Z.png"><img alt="../../_images/20090407201255351_attrs_time_shifts_bw_Z.png" src="../../_images/20090407201255351_attrs_time_shifts_bw_Z.png" style="width: 400px;" /></a>
+<p>To some extent, the above figure can be customized through optional input arguments to the default backend function. For argument descriptions, follow the links in the <a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.graphics.plot_time_shifts.html">plot_time_shifts</a> documentation, or see the <a class="reference external" href="https://mtuqorg.github.io/mtuq/library/generated/mtuq.graphics.attrs._default_backend.html">default backend</a> page directly.</p>
+<p>In comparison, a more powerful approach is to overload the backend function completely:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot_time_shifts</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">custom_backend</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To illustrate, we have implemented a <a class="reference external" href="https://mtuqorg.github.io/mtuq/user_guide/06/custom_backends.html#example">custom backend</a> relevant to <a class="reference external" href="https://mtuqorg.github.io/mtuq/references.html">Silwal2016</a>. The result of calling <cite>plot_time_shifts</cite> with this new backend is:</p>
+<a class="reference internal image-reference" href="../../_images/20090407201255351_attrs_time_shifts_bw_Z_pygmt.png"><img alt="../../_images/20090407201255351_attrs_time_shifts_bw_Z_pygmt.png" src="../../_images/20090407201255351_attrs_time_shifts_bw_Z_pygmt.png" style="width: 400px;" /></a>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Frontend functions perform only data manipulation. All calls to graphics libraries (matplotlib, GMT, PyGMT and so on) occur in the backends, making even the choice of graphics library customizable.</p>
+</div>
+</section>
+<section id="misfit-and-likelihood-figures">
+<h2>Misfit and likelihood figures<a class="headerlink" href="#misfit-and-likelihood-figures" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://mtuqorg.github.io/mtuq/library/index.html#moment-tensor-and-force-visualization">Misfit and likelihood figures</a> for force, moment tensor, depth and hypocenter can also be customized by user-supplied backends.</p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

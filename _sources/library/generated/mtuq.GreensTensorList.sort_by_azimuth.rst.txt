@@ -1,0 +1,6 @@
+mtuq.GreensTensorList.sort_by_azimuth
+=====================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensorList.sort_by_azimuth

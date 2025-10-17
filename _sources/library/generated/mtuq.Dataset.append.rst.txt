@@ -1,0 +1,6 @@
+mtuq.Dataset.append
+===================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Dataset.append

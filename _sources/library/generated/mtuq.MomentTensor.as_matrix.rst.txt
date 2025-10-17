@@ -1,0 +1,6 @@
+mtuq.MomentTensor.as_matrix
+===========================
+
+.. currentmodule:: mtuq
+
+.. automethod:: MomentTensor.as_matrix

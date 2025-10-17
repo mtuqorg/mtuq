@@ -1,0 +1,124 @@
+﻿mtuq.PolarityMisfit
+===================
+
+.. currentmodule:: mtuq
+.. autoclass:: PolarityMisfit
+  :show-inheritance:
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  .. rubric:: Public Methods
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~PolarityMisfit.collect_attributes
+     ~PolarityMisfit.get_observed
+     ~PolarityMisfit.get_predicted
+  
+
+  
+  .. rubric:: Private Methods
+
+  .. warning::
+
+       Private methods are mainly for internal/developer use and their API might change without notice.
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~PolarityMisfit._description
+  
+
+  
+  

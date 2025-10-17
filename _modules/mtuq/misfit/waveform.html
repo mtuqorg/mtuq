@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.misfit.waveform &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/style.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.misfit.waveform</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.misfit.waveform</span><span class="w"> </span><span class="kn">import</span> <span class="n">level0</span><span class="p">,</span> <span class="n">level1</span><span class="p">,</span> <span class="n">level2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.misfit.waveform._stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">estimate_sigma</span><span class="p">,</span> <span class="n">calculate_norm_data</span><span class="p">,</span> <span class="n">_flatten</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">Null</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">warn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util.math</span><span class="w"> </span><span class="kn">import</span> <span class="n">isclose</span><span class="p">,</span> <span class="n">list_intersect</span><span class="p">,</span> <span class="n">list_intersect_with_indices</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_padding</span><span class="p">,</span> <span class="n">get_components</span><span class="p">,</span> <span class="n">isempty</span>
+
+
+<div class="viewcode-block" id="WaveformMisfit"><a class="viewcode-back" href="../../../library/generated/mtuq.WaveformMisfit.html#mtuq.WaveformMisfit">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">WaveformMisfit</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Waveform misfit function</span>
+
+<span class="sd">    Evaluates misfit between data and synthetics using time shifts followed by</span>
+<span class="sd">    waveform differences. This approach, due to `Zhao1994` and `Zhu1996`, has </span>
+<span class="sd">    become widely used in regional seismology.  See `docs/references` for more</span>
+<span class="sd">    information.</span>
+
+<span class="sd">    .. rubric:: Usage</span>
+
+<span class="sd">    Evaluating misfit is a two-step procedure. </span>
+
+<span class="sd">    First, the user supplies parameters such as the type of norm (see below for</span>
+<span class="sd">    detailed argument description):</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        misfit = Misfit(**parameters)</span>
+
+<span class="sd">    Second, the user supplies data, Green&#39;s functions, and sources:</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        values = misfit(data, greens, sources)</span>
+
+<span class="sd">    During misfit evaluation, synthetics are then generated and compared with </span>
+<span class="sd">    data, and a NumPy array of  misfit values is returned of the same length as</span>
+<span class="sd">    `sources`.</span>
+
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    ``norm`` (`str`)</span>
+
+<span class="sd">    - ``&#39;L2&#39;``: conventional L2 norm (fast)</span>
+<span class="sd">    ..  r1**2 + r1**2 + ...</span>
+
+<span class="sd">    - ``&#39;L1&#39;``: conventional L1 norm (slow)</span>
+<span class="sd">    ..  \\|r1\\| + \\|r2\\| + ...</span>
+
+<span class="sd">    - ``&#39;hybrid&#39;``: hybrid L1-L2 norm (much faster than L1 but still robust)</span>
+<span class="sd">    ..  (r11**2 + r12**2 + ...)**0.5 + (r21**2 + r22**2 + ...)**0.5 + ...</span>
+
+
+<span class="sd">    ``level`` (`int`): optimization level </span>
+<span class="sd">    (see further details below)</span>
+
+
+<span class="sd">    ``time_shift_groups`` (`list`)</span>
+
+<span class="sd">    - ``[&#39;ZRT&#39;]``: forces all three components to have the same time shift</span>
+
+<span class="sd">    - ``[&#39;ZR&#39;,&#39;T&#39;``]: forces vertical and radial components to have the same</span>
+<span class="sd">      time shift, while transverse time shift is allowed to vary independently</span>
+
+<span class="sd">    - ``[&#39;Z&#39;,&#39;R&#39;,&#39;T&#39;]``: allows time shifts of all three components to vary</span>
+<span class="sd">      independently</span>
+
+<span class="sd">    ``time_shift_min`` (`float`): minimum allowable time shift (s)</span>
+
+<span class="sd">    ``time_shift_max`` (`float`): maximum allowable time shift (s)</span>
+
+
+<span class="sd">    .. note:: </span>
+
+<span class="sd">      *Convention* : A positive time shift means synthetics are arriving too </span>
+<span class="sd">      early and need to be shifted forward in time to match the observed data.</span>
+
+
+<span class="sd">    .. rubric:: Optimization Levels</span>
+
+<span class="sd">    Because waveform misfit evaluation is the most computationally expensive </span>
+<span class="sd">    task, we have implemented three different versions: </span>
+
+<span class="sd">    - a readable pure Python version (``mtuq.misfit.level0``)</span>
+
+<span class="sd">    - a fast pure Python version (``mtuq.misfit.level1``)</span>
+
+<span class="sd">    - a very fast numba version (``mtuq.misfit.level2``)</span>
+
+<span class="sd">    - a very fast Cython version (``mtuq.misfit.level3``)</span>
+
+
+<span class="sd">    While having exactly the same input argument syntax, the following versions</span>
+<span class="sd">    differ in the following ways:</span>
+
+<span class="sd">    - ``level=0`` provides a reference for understanding what the code is doing</span>
+<span class="sd">      and for checking the correctness of the fast implementations</span>
+
+<span class="sd">    - ``level=1`` is an optimized pure Python implementation which provides </span>
+<span class="sd">      significant computational savings for `len(sources)` &gt; 100. This</span>
+<span class="sd">      version is the closest to `Zhu1996`&#39;s original C software.</span>
+
+<span class="sd">    - ``level=2`` is an optimized numba implementation, in which a Python </span>
+<span class="sd">      wrapper is used to combine ObsPy traces into multidimensional arrays.</span>
+<span class="sd">      These arrays are passed to a numba routine, which does the</span>
+<span class="sd">      main computational work. Unlike the previous two versions, this </span>
+<span class="sd">      implementation requires that all ObsPy traces have the same time</span>
+<span class="sd">      discretization.</span>
+
+<span class="sd">    - ``level=3`` is an optimized Cython implementation, in which a Python </span>
+<span class="sd">      wrapper is used to combine ObsPy traces into multidimensional arrays.</span>
+<span class="sd">      These arrays are passed to a Cython routine, which does the</span>
+<span class="sd">      main computational work. This implementation also requires that all </span>
+<span class="sd">      ObsPy traces have the same time discretization.</span>
+
+
+<span class="sd">    .. note:: </span>
+
+<span class="sd">      Cython extension modules are no longer automatically compiled during</span>
+<span class="sd">      installation, but can be manually compiled via `build_ext.sh`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">norm</span><span class="o">=</span><span class="s1">&#39;hybrid&#39;</span><span class="p">,</span>
+        <span class="n">time_shift_groups</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ZRT&#39;</span><span class="p">],</span>
+        <span class="n">time_shift_min</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+        <span class="n">time_shift_max</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+        <span class="n">level</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Function handle constructor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">norm</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">==</span><span class="s1">&#39;hybrid&#39;</span><span class="p">:</span>
+            <span class="n">norm</span> <span class="o">=</span> <span class="s1">&#39;hybrid&#39;</span>
+
+        <span class="k">assert</span> <span class="n">norm</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;L1&#39;</span><span class="p">,</span> <span class="s1">&#39;L2&#39;</span><span class="p">,</span> <span class="s1">&#39;hybrid&#39;</span><span class="p">],</span>\
+            <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bad input argument: norm&quot;</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">time_shift_min</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">,</span>\
+            <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bad input argument: time_shift_min&quot;</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">time_shift_max</span> <span class="o">&gt;=</span> <span class="mf">0.</span><span class="p">,</span>\
+            <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bad input argument: time_shift_max&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">norm</span><span class="o">==</span><span class="s1">&#39;L1&#39;</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;Consider using norm=&#39;hybrid&#39;, which is much faster than &quot;</span>
+                <span class="s2">&quot;norm=&#39;L1&#39; but still robust against outliers.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">time_shift_groups</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span>
+
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">time_shift_groups</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">component</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span><span class="s1">&#39;R&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">],</span>\
+                    <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bad input argument&quot;</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">level</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="n">level</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span> <span class="o">=</span> <span class="n">time_shift_min</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span> <span class="o">=</span> <span class="n">time_shift_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_groups</span> <span class="o">=</span> <span class="n">time_shift_groups</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span> <span class="o">=</span> <span class="n">normalize</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">progress_handle</span><span class="o">=</span><span class="n">Null</span><span class="p">(),</span> 
+        <span class="n">normalize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">set_attributes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Evaluates misfit on given data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">normalize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">normalize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span>
+
+        <span class="k">if</span> <span class="n">level</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span>
+
+        <span class="k">assert</span> <span class="n">level</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span>
+
+        <span class="c1"># normally misfit is evaluated over a grid of sources; `iterable`</span>
+        <span class="c1"># makes things work if just a single source is given</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="n">iterable</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+
+        <span class="c1"># checks that dataset is nonempty</span>
+        <span class="k">if</span> <span class="n">isempty</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Empty data set. No misfit evaluations will be carried out&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">sources</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># checks that the container lengths are consistent</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">greens</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Inconsistent container lengths</span><span class="se">\n\n</span><span class="s2">  &quot;</span><span class="o">+</span>
+                <span class="s2">&quot;len(data): </span><span class="si">%d</span><span class="se">\n</span><span class="s2">  len(greens): </span><span class="si">%d</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span>
+                <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">greens</span><span class="p">)))</span>
+ 
+
+        <span class="c1"># checks that optional Green&#39;s function padding is consistent with time </span>
+        <span class="c1"># shift bounds</span>
+        <span class="n">check_padding</span><span class="p">(</span><span class="n">greens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span><span class="p">)</span>
+
+ 
+        <span class="k">if</span> <span class="n">level</span><span class="o">==</span><span class="mi">0</span> <span class="ow">or</span> <span class="n">set_attributes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">level0</span><span class="o">.</span><span class="n">misfit</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_groups</span><span class="p">,</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span><span class="p">,</span> <span class="n">progress_handle</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span> <span class="n">set_attributes</span><span class="o">=</span><span class="n">set_attributes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">level</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">level1</span><span class="o">.</span><span class="n">misfit</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_groups</span><span class="p">,</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span><span class="p">,</span> <span class="n">progress_handle</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">level</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">level2</span><span class="o">.</span><span class="n">misfit</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_groups</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span><span class="p">,</span> <span class="n">progress_handle</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">level</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">level2</span><span class="o">.</span><span class="n">misfit</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_groups</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span><span class="p">,</span> <span class="n">progress_handle</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s1">&#39;Cython&#39;</span><span class="p">)</span> 
+
+
+<div class="viewcode-block" id="WaveformMisfit.collect_attributes"><a class="viewcode-back" href="../../../library/generated/mtuq.WaveformMisfit.collect_attributes.html#mtuq.WaveformMisfit.collect_attributes">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">collect_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Collects misfit, time shifts and other attributes corresponding to </span>
+<span class="sd">        each trace</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># checks that dataset is nonempty</span>
+        <span class="k">if</span> <span class="n">isempty</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Empty data set. No attributes will be returned&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># checks that optional Green&#39;s function padding is consistent with time </span>
+        <span class="c1"># shift bounds</span>
+        <span class="n">check_padding</span><span class="p">(</span><span class="n">greens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span><span class="p">)</span>
+
+        <span class="n">synthetics</span> <span class="o">=</span> <span class="n">greens</span><span class="o">.</span><span class="n">get_synthetics</span><span class="p">(</span>
+            <span class="n">source</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get_components</span><span class="p">(),</span> <span class="n">stats</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(),</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;map&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># attaches attributes to synthetics</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">level0</span><span class="o">.</span><span class="n">misfit</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">iterable</span><span class="p">(</span><span class="n">source</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_groups</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span><span class="p">,</span> <span class="n">msg_handle</span><span class="o">=</span><span class="n">Null</span><span class="p">(),</span>
+            <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span> <span class="n">set_attributes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># collects attributes</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">synthetics</span><span class="p">:</span>
+            <span class="n">attrs</span> <span class="o">+=</span> <span class="p">[{}]</span>
+            <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+                <span class="n">component</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning multiple traces for same component&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="s1">&#39;attrs&#39;</span><span class="p">):</span>
+                    <span class="n">attrs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">component</span><span class="p">]</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">attrs</span>
+
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="WaveformMisfit.collect_synthetics"><a class="viewcode-back" href="../../../library/generated/mtuq.WaveformMisfit.collect_synthetics.html#mtuq.WaveformMisfit.collect_synthetics">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">collect_synthetics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Collects synthetics with misfit, time shifts and other attributes attached</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">mode</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span> 
+            <span class="c1"># returns synthetics from all stations and components</span>
+            <span class="n">components</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span><span class="s1">&#39;R&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">]]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+ 
+        <span class="k">elif</span> <span class="n">mode</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+            <span class="c1"># returns synthetics only from stations and components which exist in</span>
+            <span class="c1"># observed data</span>
+            <span class="n">components</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_components</span><span class="p">()</span>
+ 
+        <span class="k">elif</span> <span class="n">mode</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
+            <span class="c1"># returns synthetics only from stations and components which exist</span>
+            <span class="c1"># and are included in misfit function evaluation</span>
+            <span class="n">_active</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_groups</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+                    <span class="n">_active</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+ 
+            <span class="n">components</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">_exist</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">get_components</span><span class="p">():</span>
+                <span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">list_intersect</span><span class="p">(</span><span class="n">_active</span><span class="p">,</span> <span class="n">_exist</span><span class="p">))</span>
+ 
+
+        <span class="c1"># checks that dataset is nonempty</span>
+        <span class="k">if</span> <span class="n">isempty</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Empty data set. No attributes will be returned&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># checks that optional Green&#39;s function padding is consistent with time </span>
+        <span class="c1"># shift bounds</span>
+        <span class="n">check_padding</span><span class="p">(</span><span class="n">greens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span><span class="p">)</span>
+
+
+        <span class="n">synthetics</span> <span class="o">=</span> <span class="n">greens</span><span class="o">.</span><span class="n">get_synthetics</span><span class="p">(</span>
+            <span class="n">source</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="n">components</span><span class="p">,</span> <span class="n">stats</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(),</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;map&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># attaches attributes to synthetics</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">level0</span><span class="o">.</span><span class="n">misfit</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">iterable</span><span class="p">(</span><span class="n">source</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_groups</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span><span class="p">,</span> <span class="n">msg_handle</span><span class="o">=</span><span class="n">Null</span><span class="p">(),</span>
+            <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">set_attributes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">synthetics</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="WaveformMisfit._description"><a class="viewcode-back" href="../../../library/generated/mtuq.WaveformMisfit._description.html#mtuq.WaveformMisfit._description">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">_string</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="o">==</span><span class="s1">&#39;L1&#39;</span><span class="p">:</span>
+                <span class="n">formula</span> <span class="o">=</span> <span class="s1">&#39;Σ ∫ |d(t) - s(t-t_s)| dt&#39;</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="o">==</span><span class="s1">&#39;L2&#39;</span><span class="p">:</span>
+                <span class="n">formula</span> <span class="o">=</span> <span class="s1">&#39;Σ ∫ |d(t) - s(t-t_s)|² dt&#39;</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="o">==</span><span class="s1">&#39;hybrid&#39;</span><span class="p">:</span>
+                <span class="n">formula</span> <span class="o">=</span> <span class="s1">&#39;Σ √(∫ |d(t) - s(t-t_s)|² dt)&#39;</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+                <span class="n">formula</span> <span class="o">=</span> <span class="s1">&#39;(&#39;</span><span class="o">+</span><span class="n">formula</span><span class="o">+</span><span class="s1">&#39;)&#39;</span> <span class="o">+</span> <span class="s1">&#39; / NF&#39;</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="o">==</span><span class="s1">&#39;L1&#39;</span><span class="p">:</span>
+                    <span class="n">NF</span> <span class="o">=</span> <span class="s1">&#39;Σ ∫ |d(t)| dt&#39;</span>
+
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="o">==</span><span class="s1">&#39;L2&#39;</span><span class="p">:</span>
+                    <span class="n">NF</span> <span class="o">=</span> <span class="s1">&#39;Σ ∫ |d(t)|² dt&#39;</span>
+
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="o">==</span><span class="s1">&#39;hybrid&#39;</span><span class="p">:</span>
+                    <span class="n">NF</span> <span class="o">=</span> <span class="s1">&#39;Σ √(∫ |d(t)|² dt)&#39;</span>
+
+            <span class="n">_string</span> <span class="o">+=</span> \
+<span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">    Misfit function evaluates</span>
+<span class="s2">      </span><span class="si">{</span><span class="n">formula</span><span class="si">}</span>
+
+<span class="s2">    where the sum is over components</span>
+<span class="s2">      </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_shift_groups</span><span class="p">))</span><span class="si">}</span>
+
+<span class="s2">    and where</span>
+<span class="s2">      d(t) is observed data</span>
+<span class="s2">      s(t) is synthetic data</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_min</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_shift_max</span><span class="p">:</span>
+                <span class="n">_string</span> <span class="o">+=</span>\
+                    <span class="sa">f</span><span class="s1">&#39;      t_s is a cross-correlation time shift</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+                <span class="n">_string</span> <span class="o">+=</span>\
+                    <span class="sa">f</span><span class="s1">&#39;      NF = </span><span class="si">{</span><span class="n">NF</span><span class="si">}</span><span class="s1"> is a normalization factor</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+            <span class="n">_string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+
+        <span class="n">_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="n">_level</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;readable pure Python&#39;</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;fast pure Python&#39;</span><span class="p">,</span>
+            <span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;numba&#39;</span><span class="p">,</span>
+            <span class="mi">3</span><span class="p">:</span> <span class="s1">&#39;Cython [deprecated]&#39;</span><span class="p">,</span>
+            <span class="p">}[</span><span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="p">]</span>
+
+        <span class="n">_string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+            <span class="sa">f</span><span class="s1">&#39;    Misfit function type:</span><span class="se">\n</span><span class="s1">    </span><span class="si">{</span><span class="n">_type</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s1">&#39;    Misfit function implementation:</span><span class="se">\n</span><span class="s1">    </span><span class="si">{</span><span class="n">_level</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">_string</span></div></div>
+
+         
+
+<span class="c1">#</span>
+<span class="c1"># for backward compatibility</span>
+<span class="c1">#</span>
+<span class="n">Misfit</span> <span class="o">=</span> <span class="n">WaveformMisfit</span>
+
+
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

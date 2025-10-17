@@ -1,0 +1,121 @@
+﻿mtuq.io.clients.SPECFEM3D_SGT.Client
+====================================
+
+.. currentmodule:: mtuq.io.clients.SPECFEM3D_SGT
+.. autoclass:: Client
+  :show-inheritance:
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  .. rubric:: Public Methods
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~Client.get_greens_tensors
+     ~Client.set_local_db
+     ~Client.set_remote_db
+  
+
+  
+  .. rubric:: Private Methods
+
+  .. warning::
+
+       Private methods are mainly for internal/developer use and their API might change without notice.
+
+  .. autosummary::
+    :toctree: .
+    :nosignatures:
+  
+     ~Client._get_greens_tensor
+  
+
+  
+  

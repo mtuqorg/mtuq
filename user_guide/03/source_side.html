@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Source-side 3D Green’s functions &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Source-side 3D Green’s functions</a><ul>
+<li><a class="reference internal" href="#generating-source-side-3d-green-s-functions-using-specfem3d-3d-globe">Generating source-side 3D Green’s functions using SPECFEM3D/3D_GLOBE</a><ul>
+<li><a class="reference internal" href="#generate-sac-binary-files">Generate SAC binary files</a></li>
+<li><a class="reference internal" href="#convert-to-si-units">Convert to SI units</a></li>
+<li><a class="reference internal" href="#other-amplitude-scaling">Other amplitude scaling</a></li>
+<li><a class="reference internal" href="#rotate-traces">Rotate traces</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#requirements-for-mtuq-source-side-3d-green-s-functions">Requirements for MTUQ source-side 3D Green’s functions</a><ul>
+<li><a class="reference internal" href="#file-format">File format</a></li>
+<li><a class="reference internal" href="#units-convention">Units convention</a></li>
+<li><a class="reference internal" href="#basis-convention">Basis convention</a></li>
+<li><a class="reference internal" href="#origin-time-convention">Origin time convention</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hypocenter-searches-experimental">Hypocenter searches (experimental)</a></li>
+<li><a class="reference internal" href="#working-example">Working example</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This page is still under construction.  To help improve the
+documentation, feel free to submit a pull request.</p>
+</div>
+<section id="source-side-3d-green-s-functions">
+<h1>Source-side 3D Green’s functions<a class="headerlink" href="#source-side-3d-green-s-functions" title="Permalink to this headline">¶</a></h1>
+<section id="generating-source-side-3d-green-s-functions-using-specfem3d-3d-globe">
+<h2>Generating source-side 3D Green’s functions using SPECFEM3D/3D_GLOBE<a class="headerlink" href="#generating-source-side-3d-green-s-functions-using-specfem3d-3d-globe" title="Permalink to this headline">¶</a></h2>
+<p>In principle, any 3D solver can be used to generate source-side Green’s functions, as long as the <a class="reference external" href="https://mtuqorg.github.io/mtuq/user_guide/03/source_side.html#requirements-for-mtuq-source-side-green-s-functions">requirements</a> below are satisfied.</p>
+<p>So far, however, the machinery has only been tested using SPECFEM3D/3D_GLOBE.  To convert SPECFEM3D/3D_GLOBE output to MTUQ-compliant Green’s functions, the following steps are necessary.</p>
+<section id="generate-sac-binary-files">
+<h3>Generate SAC binary files<a class="headerlink" href="#generate-sac-binary-files" title="Permalink to this headline">¶</a></h3>
+<p>SAC binary output format is natively supported by SPECFEM3D_GLOBE (in the parameter file, set <cite>OUTPUT_SEISMOS_SAC_BINARY = .true.</cite>).</p>
+<p>Unfortunately, SAC binary output format is not natively supported by SPECFEM3D, so it is necessary to manually convert SPECFEM3D output.</p>
+</section>
+<section id="convert-to-si-units">
+<h3>Convert to SI units<a class="headerlink" href="#convert-to-si-units" title="Permalink to this headline">¶</a></h3>
+<p>SPECFEM3D/3D_GLOBE use a mixed SI and CGS convention, in which moment tensor elements are input in terms of dynes and centimeters, and seismograms are output in meters.    In contrast, MTUQ uses a fully SI <span class="xref std std-ref">convention</span>.   As a result, it is necessary to scale SPECFEM3D/3D_GLOBE seismograms by 10^7 prior to using them as MTUQ Green’s functions.</p>
+</section>
+<section id="other-amplitude-scaling">
+<h3>Other amplitude scaling<a class="headerlink" href="#other-amplitude-scaling" title="Permalink to this headline">¶</a></h3>
+<p>In addition to converting to SI units, it is also necessary to account for any scaling factors in the SPECFEM3D/3D_GLOBE input files. Such scaling factors can enter, for example, through the <cite>M_rr,M_tt,M_pp,M_rt,M_rp,M_tp</cite> values in the moment tensor input file or through the <a class="reference external" href="https://github.com/SPECFEM/specfem3d/blob/bf45798f3af9d792326a829de920fd944cf7c7dd/EXAMPLES/applications/homogeneous_halfspace_HEX27_elastic_no_absorbing/DATA/FORCESOLUTION#L8">scaling factor</a> in the force input file.</p>
+</section>
+<section id="rotate-traces">
+<h3>Rotate traces<a class="headerlink" href="#rotate-traces" title="Permalink to this headline">¶</a></h3>
+<p>Conveniently, SPECFEM3D_GLOBE can be made to automatically rotate output seismograms into vertical, radial and transverse components (set <cite>ROTATE_SEISMOGRAMS_RT = .true.</cite> in the parameter file).</p>
+<p>No modifications are necessary on account of moment tensor basis convention, since MTUQ’s <cite>up-south-east</cite> convention matches SPECFEM3D/3D_GLOBE’s.</p>
+</section>
+</section>
+<section id="requirements-for-mtuq-source-side-3d-green-s-functions">
+<h2>Requirements for MTUQ source-side 3D Green’s functions<a class="headerlink" href="#requirements-for-mtuq-source-side-3d-green-s-functions" title="Permalink to this headline">¶</a></h2>
+<section id="file-format">
+<h3>File format<a class="headerlink" href="#file-format" title="Permalink to this headline">¶</a></h3>
+<p>Individual Green’s functions must be written to SAC binary files.</p>
+<p>A total of 18 SAC binary files are required to represent the response between a given hypocenter and station (corresponding to 6 moment tensor elements times 3 directions of motion).</p>
+</section>
+<section id="units-convention">
+<h3>Units convention<a class="headerlink" href="#units-convention" title="Permalink to this headline">¶</a></h3>
+<p>For a moment tensor inversion, each SAC binary file must give the response in meters to a 1 Newton-meter force couple.</p>
+<p>For a force inversion, each SAC binary file must give the response in meters to a 1 Newton force.</p>
+<p>In both cases, MTUQ uses a fully SI units convention (compare with SPECFEM3D/3D_GLOBE notes, above).</p>
+</section>
+<section id="basis-convention">
+<h3>Basis convention<a class="headerlink" href="#basis-convention" title="Permalink to this headline">¶</a></h3>
+<p>MTUQ uses an <cite>up-south-east</cite> basis convention in which <cite>r</cite> denotes vertically upward, <cite>t</cite> denotes south, and <cite>p</cite> denotes east.</p>
+<p>Green’s functions must be rotated into into vertical <cite>Z</cite>, radial <cite>R</cite> and transverse <cite>T</cite> components relative to the source-receiver backazimuth.</p>
+<p>Place all seismograms for the same hypocenter in a single directory as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">event_id</span><span class="p">}</span><span class="o">/</span>
+    <span class="p">{</span><span class="n">depth_in_km</span><span class="p">}</span><span class="o">/</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mrr</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mtt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mpp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mrt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mrp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mtp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mrr</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mtt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mpp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mrt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mrp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mtp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mrr</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mtt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mpp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mrt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mrp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mtp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+<p>The corresponding convention for force responses is:</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Not yet tested; subject to change without notice.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">event_id</span><span class="p">}</span><span class="o">/</span>
+    <span class="p">{</span><span class="n">depth_in_km</span><span class="p">}</span><span class="o">/</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Fz</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Fs</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Fe</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Fz</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Fs</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Fe</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Fz</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Fs</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Fe</span><span class="o">.</span><span class="n">sac</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+<section id="origin-time-convention">
+<h3>Origin time convention<a class="headerlink" href="#origin-time-convention" title="Permalink to this headline">¶</a></h3>
+<p>For origin time, MTUQ uses a centroid convention (<a class="reference external" href="https://github.com/mtuqorg/mtuq/issues/140">more details</a>), so that <cite>t=0</cite> in the <cite>GreensTensor</cite> time discretization corresponds to mean source excitation time.</p>
+<p>MTUQ uses the begin time (<cite>B</cite>) and end time (<cite>E</cite>) headers from the SAC binary files to align the Green’s functions relative to centroid origin time.</p>
+<p>Currently, these are the only SAC headers used in reading Green’s functions.</p>
+<p>(Note that different <a class="reference external" href="https://ds.iris.edu/files/sac-manual/manual/file_format.html">SAC headers</a> are required in reading <a class="reference external" href="https://mtuqorg.github.io/mtuq/user_guide/02.html#file-format-metadata-and-data-processing-requirements">observed data</a>.)</p>
+</section>
+</section>
+<section id="hypocenter-searches-experimental">
+<h2>Hypocenter searches (experimental)<a class="headerlink" href="#hypocenter-searches-experimental" title="Permalink to this headline">¶</a></h2>
+<p>Currently, only searches over source depth are possible with source-side 3D Green’s functions (no other hypocenter parameters).</p>
+<p>The current <a class="reference external" href="https://github.com/mtuqorg/mtuq/blob/568e49a73817e4e2dbab1189210214da6906266f/mtuq/io/clients/SPECFEM3D_SAC.py#L117">depth search</a> implementation is especially crude and experimental (consider local modifications to suit your needs).</p>
+<p>To allow depth searches, create subdirectories for each centroid depth as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">event_id</span><span class="p">}</span><span class="o">/</span>
+    <span class="p">{</span><span class="n">depth_in_km</span><span class="p">}</span><span class="o">/</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mrr</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mtt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mpp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mrt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mrp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mtp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mrr</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mtt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mpp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mrt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mrp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mtp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mrr</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mtt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mpp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mrt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mrp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mtp</span><span class="o">.</span><span class="n">sac</span>
+    <span class="p">{</span><span class="n">depth_in_km</span><span class="p">}</span><span class="o">/</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mrr</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mtt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mpp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mrt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mrp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">Mtp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mrr</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mtt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mpp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mrt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mrp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">Mtp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mrr</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mtt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mpp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mrt</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mrp</span><span class="o">.</span><span class="n">sac</span>
+        <span class="p">{</span><span class="n">net</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">sta</span><span class="p">}</span><span class="o">.</span><span class="p">{</span><span class="n">loc</span><span class="p">}</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">Mtp</span><span class="o">.</span><span class="n">sac</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+<section id="working-example">
+<h2>Working example<a class="headerlink" href="#working-example" title="Permalink to this headline">¶</a></h2>
+<p>A working of example using source-side 3D Green’s functions from SPECFEM3D_GLOBE in a moment tensor inversion:</p>
+<p><a class="reference external" href="https://github.com/rmodrak/mtuq/blob/master/tests/test_greens_SPECFEM3D_SAC.py">test_greens_SPECFEM3D_SAC.py</a></p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

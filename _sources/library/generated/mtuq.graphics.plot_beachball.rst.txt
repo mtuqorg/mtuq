@@ -1,0 +1,6 @@
+﻿mtuq.graphics.plot_beachball
+============================
+
+.. currentmodule:: mtuq.graphics
+
+.. autofunction:: plot_beachball

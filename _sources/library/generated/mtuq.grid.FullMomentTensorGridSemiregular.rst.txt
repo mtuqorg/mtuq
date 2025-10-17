@@ -1,0 +1,6 @@
+﻿mtuq.grid.FullMomentTensorGridSemiregular
+=========================================
+
+.. currentmodule:: mtuq.grid
+
+.. autofunction:: FullMomentTensorGridSemiregular

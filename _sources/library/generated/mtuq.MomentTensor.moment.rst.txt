@@ -1,0 +1,6 @@
+mtuq.MomentTensor.moment
+========================
+
+.. currentmodule:: mtuq
+
+.. automethod:: MomentTensor.moment

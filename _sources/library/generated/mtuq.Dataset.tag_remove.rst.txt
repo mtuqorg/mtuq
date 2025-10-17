@@ -1,0 +1,6 @@
+mtuq.Dataset.tag_remove
+=======================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Dataset.tag_remove

@@ -1,0 +1,6 @@
+mtuq.misfit.waveform.level2._to_array
+=====================================
+
+.. currentmodule:: mtuq.misfit.waveform.level2
+
+.. autofunction:: _to_array

@@ -1,0 +1,6 @@
+mtuq.GreensTensorList.get_synthetics
+====================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensorList.get_synthetics

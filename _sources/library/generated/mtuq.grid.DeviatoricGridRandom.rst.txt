@@ -1,0 +1,6 @@
+﻿mtuq.grid.DeviatoricGridRandom
+==============================
+
+.. currentmodule:: mtuq.grid
+
+.. autofunction:: DeviatoricGridRandom

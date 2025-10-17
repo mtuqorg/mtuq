@@ -1,0 +1,6 @@
+﻿mtuq.grid.FullMomentTensorGridRandom
+====================================
+
+.. currentmodule:: mtuq.grid
+
+.. autofunction:: FullMomentTensorGridRandom

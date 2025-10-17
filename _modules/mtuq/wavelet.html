@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.wavelet &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.wavelet</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">signal</span>
+
+
+
+<div class="viewcode-block" id="Wavelet"><a class="viewcode-back" href="../../library/generated/mtuq.Wavelet.html#mtuq.Wavelet">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Wavelet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Source wavelet/source-time function base class</span>
+
+<span class="sd">    Most easily, an analytical expression can be used to define the wavelet, but</span>
+<span class="sd">    a user-supplied time series or on-the-fly numerical procedure can also be</span>
+<span class="sd">    used.  By inheriting from this class and implementing the ``evaluate`` </span>
+<span class="sd">    method, all of these differents types of wavelets can be defined.</span>
+
+<span class="sd">    .. rubric:: Example</span>
+
+<span class="sd">    We can implement a Gaussian function with unit standard deviation</span>
+<span class="sd">    as follows:</span>
+<span class="sd">    </span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        class SimpleGaussian(Wavelet):</span>
+<span class="sd">            def evaluate(self, t):</span>
+<span class="sd">                return ((2*np.pi)**0.5)**(-1.)*np.exp(-0.5*(t)**2.)</span>
+
+<span class="sd">    We can now evaluate ``SimpleGaussian`` on any given set, say, on the </span>
+<span class="sd">    interval [-5, +5]:</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">       wavelet = SimpleGaussian()</span>
+
+<span class="sd">       t = np.linspace(-5,. +5., 101)</span>
+<span class="sd">       y = wavelet.evaluate(t)</span>
+
+<span class="sd">    Or we can convolve it with an ObsPy trace:</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">       from obspy import read</span>
+<span class="sd">       trace = read(&#39;http://examples.obspy.org/exaple_data.sac&#39;)[0]</span>
+<span class="sd">       convolved_trace = wavelet.convolve(trace)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Wavelet.evaluate"><a class="viewcode-back" href="../../library/generated/mtuq.Wavelet.evaluate.html#mtuq.Wavelet.evaluate">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Evaluates wavelet at chosen points</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Must be implemented by subclass&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Wavelet.convolve"><a class="viewcode-back" href="../../library/generated/mtuq.Wavelet.convolve.html#mtuq.Wavelet.convolve">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">convolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trace</span><span class="p">):</span>
+<span class="w">         </span><span class="sd">&quot;&quot;&quot; Convolves ObsPy trace with given wavelet</span>
+<span class="sd">         &quot;&quot;&quot;</span>
+         <span class="k">try</span><span class="p">:</span>
+             <span class="n">y</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">data</span>
+             <span class="n">dt</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span>
+         <span class="k">except</span><span class="p">:</span>
+             <span class="k">raise</span> <span class="ne">Exception</span>
+         <span class="n">trace</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convolve_array</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+         <span class="k">return</span> <span class="n">trace</span></div>
+
+
+<div class="viewcode-block" id="Wavelet._evaluate_on_interval"><a class="viewcode-back" href="../../library/generated/mtuq.Wavelet._evaluate_on_interval.html#mtuq.Wavelet._evaluate_on_interval">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">_evaluate_on_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">half_duration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nt</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Evaluates wavelet on an interval about  zero</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">half_duration</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span>
+        <span class="k">assert</span> <span class="n">half_duration</span> <span class="o">&gt;</span> <span class="mf">0.</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">half_duration</span><span class="p">,</span> <span class="o">+</span><span class="n">half_duration</span><span class="p">,</span> <span class="n">nt</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">_is_symmetric</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+            <span class="c1"># trim symmetric wavelets only, otherwise any convolution results</span>
+            <span class="c1"># will be off-center</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trim_zeros</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">w</span></div>
+
+
+<div class="viewcode-block" id="Wavelet._convolve_array"><a class="viewcode-back" href="../../library/generated/mtuq.Wavelet._convolve_array.html#mtuq.Wavelet._convolve_array">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">_convolve_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Convolves NumPy array with given wavelet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">half_duration</span> <span class="o">=</span> <span class="p">(</span><span class="n">nt</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">dt</span><span class="o">/</span><span class="mf">2.</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_on_interval</span><span class="p">(</span><span class="n">half_duration</span><span class="p">,</span> <span class="n">nt</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">*=</span> <span class="n">dt</span>
+
+        <span class="k">if</span> <span class="n">mode</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># frequency-domain implementation</span>
+            <span class="k">return</span> <span class="n">signal</span><span class="o">.</span><span class="n">fftconvolve</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">mode</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+            <span class="c1"># time-domain implementation</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)</span></div></div>
+
+
+
+<span class="c1">#</span>
+<span class="c1"># user-supplied wavelet</span>
+<span class="c1">#</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">UserSupplied</span><span class="p">(</span><span class="n">Wavelet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Wavelet obtained from an arbitrary user-supplied time series</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<span class="c1">#</span>
+<span class="c1"># basic mathematical shapes and functions</span>
+<span class="c1">#</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Triangle</span><span class="p">(</span><span class="n">Wavelet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Triangle with unit area, symmetric about t=0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">half_duration</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">half_duration</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">half_duration</span> <span class="o">=</span> <span class="n">half_duration</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="c1"># construct a triangle with height = 1 and base = 2*half_duration</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">half_duration</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+        <span class="c1"># area = (0.5)*(base)*(height)</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">half_duration</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mf">1.</span><span class="p">)</span>
+
+        <span class="c1"># normalize by area</span>
+        <span class="n">w</span> <span class="o">/=</span> <span class="n">area</span>
+
+        <span class="k">return</span> <span class="n">w</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Trapezoid</span><span class="p">(</span><span class="n">Wavelet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Trapezoid with unit area, symmetric about t=0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rise_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">half_duration</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">rise_time</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rise_time</span> <span class="o">=</span> <span class="n">rise_time</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span>
+
+        <span class="k">if</span> <span class="n">half_duration</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">half_duration</span> <span class="o">=</span> <span class="n">half_duration</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span>
+
+        <span class="k">assert</span> <span class="n">rise_time</span> <span class="o">&lt;=</span> <span class="n">half_duration</span>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="c1"># construct a trapezoid with height = 1</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">half_duration</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">t</span><span class="p">))</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">rise_time</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+
+        <span class="n">top</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">half_duration</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">rise_time</span><span class="p">)</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">half_duration</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mf">1.</span>
+
+        <span class="c1"># normalize by area</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">top</span> <span class="o">+</span> <span class="n">bottom</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">height</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">/=</span> <span class="n">area</span>
+
+        <span class="k">return</span> <span class="n">w</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Gaussian</span><span class="p">(</span><span class="n">Wavelet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Gaussian with unit area</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span><span class="o">*</span>\
+            <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="p">((</span><span class="n">t</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Gabor</span><span class="p">(</span><span class="n">Wavelet</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">b</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">*</span><span class="n">t</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">*</span><span class="n">t</span><span class="p">)</span>
+
+
+<span class="c1">#</span>
+<span class="c1"># earthquake seismology &quot;source-time functions&quot; defined in terms of earthquake</span>
+<span class="c1"># source parameters</span>
+<span class="c1">#</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">EarthquakeTrapezoid</span><span class="p">(</span><span class="n">rise_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rupture_time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rise_time</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rupture_time</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span>
+
+    <span class="k">assert</span> <span class="n">rupture_time</span> <span class="o">&gt;=</span> <span class="n">rise_time</span>
+
+    <span class="k">return</span> <span class="n">Trapezoid</span><span class="p">(</span>
+        <span class="n">rise_time</span><span class="o">=</span><span class="n">rise_time</span><span class="p">,</span>
+        <span class="n">half_duration</span><span class="o">=</span><span class="p">(</span><span class="n">rise_time</span> <span class="o">+</span> <span class="n">rupture_time</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+
+
+<span class="c1">#</span>
+<span class="c1"># exploration seismology &quot;wavelets,&quot; defined in terms of dominant frequency</span>
+<span class="c1">#</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GaussianWavelet</span><span class="p">(</span><span class="n">Wavelet</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dominant_frequency</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">RickerWavelet</span><span class="p">(</span><span class="n">Wavelet</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dominant_frequency</span><span class="p">):</span>
+        <span class="c1"># dominant frequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">dominant_frequency</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">freq</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="n">t</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.25</span><span class="o">*</span><span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="n">t</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GaborWavelet</span><span class="p">(</span><span class="n">Wavelet</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dominant_frequency</span><span class="p">):</span>
+        <span class="c1"># dominant frequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">dominant_frequency</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">freq</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">freq</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="n">t</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b</span><span class="o">*</span><span class="n">t</span><span class="p">)</span>
+
+
+<span class="c1">#</span>
+<span class="c1"># utility functions</span>
+<span class="c1">#</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_symmetric</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+    <span class="n">npts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">remainder</span><span class="p">(</span><span class="n">npts</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">half</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">npts</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># even number of points</span>
+        <span class="k">return</span> <span class="n">_is_close</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">half</span><span class="o">-</span><span class="mi">1</span><span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">w</span><span class="p">[</span><span class="n">half</span><span class="p">:])</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># odd number of points</span>
+        <span class="n">half</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">npts</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_is_close</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">half</span><span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">w</span><span class="p">[</span><span class="n">half</span><span class="p">:])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_close</span><span class="p">(</span><span class="n">w1</span><span class="p">,</span> <span class="n">w2</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">w1</span><span class="p">,</span> <span class="n">w2</span><span class="p">))</span>
+
+
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

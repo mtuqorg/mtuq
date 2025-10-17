@@ -1,0 +1,6 @@
+mtuq.io.clients.SPECFEM3D_SGT.Client.get_greens_tensors
+=======================================================
+
+.. currentmodule:: mtuq.io.clients.SPECFEM3D_SGT
+
+.. automethod:: Client.get_greens_tensors

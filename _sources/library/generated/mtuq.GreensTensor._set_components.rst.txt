@@ -1,0 +1,6 @@
+mtuq.GreensTensor._set_components
+=================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensor._set_components

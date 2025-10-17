@@ -1,0 +1,6 @@
+﻿mtuq.grid.ForceGridRegular
+==========================
+
+.. currentmodule:: mtuq.grid
+
+.. autofunction:: ForceGridRegular

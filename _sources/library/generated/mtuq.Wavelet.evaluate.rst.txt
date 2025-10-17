@@ -1,0 +1,6 @@
+mtuq.Wavelet.evaluate
+=====================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Wavelet.evaluate

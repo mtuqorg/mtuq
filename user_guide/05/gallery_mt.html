@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Plotting moment tensor results &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Plotting force results" href="gallery_force.html" />
+    <link rel="prev" title="Visualization galleries" href="../05.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../04.html">Data processing</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Plotting moment tensor results</a><ul>
+<li><a class="reference internal" href="#misfit-values">Misfit values</a></li>
+<li><a class="reference internal" href="#maximum-likelihoods">Maximum likelihoods</a></li>
+<li><a class="reference internal" href="#marginal-likelihoods">Marginal likelihoods</a></li>
+<li><a class="reference internal" href="#tradeoffs-between-source-type-and-orientation">Tradeoffs between source type and orientation</a></li>
+<li><a class="reference internal" href="#tradeoffs-between-source-type-and-magnitude">Tradeoffs between source type and magnitude</a></li>
+<li><a class="reference internal" href="#source-code">Source code</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="../05.html" title="Previous Chapter: Visualization galleries"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Visualization...</span>
+    </a>
+  </li>
+  <li>
+    <a href="gallery_force.html" title="Next Chapter: Plotting force results"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Plotting forc... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="plotting-moment-tensor-results">
+<h1>Plotting moment tensor results<a class="headerlink" href="#plotting-moment-tensor-results" title="Permalink to this headline">¶</a></h1>
+<p>Suppose we are running a moment tensor grid search:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="n">grid_search</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">greens</span><span class="p">,</span> <span class="n">misfit</span><span class="p">,</span> <span class="n">origins</span><span class="p">,</span> <span class="n">sources</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After the above command finishes, the data structure <cite>ds</cite> will hold all the moment tensors and corresponding misfit values.</p>
+<p>For a grid of regulary-spaced moment tensors, <cite>ds</cite> may look something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+
+<span class="go">Summary:</span>
+<span class="go">  grid shape: (10, 10, 20, 10, 10, 10, 1)</span>
+<span class="go">  grid size:  2000000</span>
+<span class="go">  mean: 2.548e-09</span>
+<span class="go">  std:  2.851e-10</span>
+<span class="go">  min:  1.328e-09</span>
+<span class="go">  max:  3.640e-09</span>
+
+<span class="go">Coordinates:</span>
+<span class="go">  * rho         (rho) float64 5.018e+15 5.418e+15 ... 9.272e+15 1.001e+16</span>
+<span class="go">  * v           (v) float64 -0.3313 -0.2995 -0.2371 ... 0.2371 0.2995 0.3313</span>
+<span class="go">  * w           (w) float64 -1.178 -1.176 -1.167 -1.141 ... 1.167 1.176 1.178</span>
+<span class="go">  * kappa       (kappa) float64 18.0 54.0 90.0 126.0 ... 234.0 270.0 306.0 342.0</span>
+<span class="go">  * sigma       (sigma) float64 -81.0 -63.0 -45.0 -27.0 ... 27.0 45.0 63.0 81.0</span>
+<span class="go">  * h           (h) float64 0.05 0.15 0.25 0.35 0.45 0.55 0.65 0.75 0.85 0.95</span>
+<span class="go">  * origin_idx  (origin_idx) int64 0</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Moment tensor grids are implemented using the <cite>rho, v, w, kappa, sigma, h</cite> parameterization of <a class="reference external" href="https://mtuqorg.github.io/mtuq/references.html">Tape2012</a> and <a class="reference external" href="https://mtuqorg.github.io/mtuq/references.html">Tape2015</a>, from which <a class="reference external" href="https://github.com/rmodrak/mtpar">formulas</a> converting to parameterizations can be derived.</p>
+</div>
+<section id="misfit-values">
+<h2>Misfit values<a class="headerlink" href="#misfit-values" title="Permalink to this headline">¶</a></h2>
+<p>To plot the misfit values returned by the grid search, we can pass <cite>ds</cite> to a plotting utility as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_misfit_lune</span>
+<span class="n">plot_misfit_lune</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ds</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/20090407201255351_misfit_lune.png"><img alt="../../_images/20090407201255351_misfit_lune.png" src="../../_images/20090407201255351_misfit_lune.png" style="width: 100px;" /></a>
+</section>
+<section id="maximum-likelihoods">
+<h2>Maximum likelihoods<a class="headerlink" href="#maximum-likelihoods" title="Permalink to this headline">¶</a></h2>
+<p>If a data variance estimate <cite>var</cite> is available, then misfit values can be converted to likelihood values.
+In the following approach, a two-dimensional maximum likelihood surface is obtained by maximimizing over orientiation and magnitude parameters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_likelihood_lune</span>
+<span class="n">plot_likelihood_lune</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/20090407201255351_likelihood_lune.png"><img alt="../../_images/20090407201255351_likelihood_lune.png" src="../../_images/20090407201255351_likelihood_lune.png" style="width: 100px;" /></a>
+</section>
+<section id="marginal-likelihoods">
+<h2>Marginal likelihoods<a class="headerlink" href="#marginal-likelihoods" title="Permalink to this headline">¶</a></h2>
+<p>An alternative for visualizing likelihood is integrate over orientiation and magnitude parameters, giving a two-dimensional marginal distribution.  In this case, it is natural to use the so-called v,w parameterization, as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_marginal_vw</span>
+<span class="n">plot_marginal_vw</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/20090407201255351_marginal_vw.png"><img alt="../../_images/20090407201255351_marginal_vw.png" src="../../_images/20090407201255351_marginal_vw.png" style="width: 100px;" /></a>
+</section>
+<section id="tradeoffs-between-source-type-and-orientation">
+<h2>Tradeoffs between source type and orientation<a class="headerlink" href="#tradeoffs-between-source-type-and-orientation" title="Permalink to this headline">¶</a></h2>
+<p>To see how the orientation of the best-fitting moment tensor varies with respect to source type, we can add the <cite>show_tradeoffs=True</cite> option to any of the plotting utilities as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_misfit_lune</span>
+<span class="n">plot_misfit_lune</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">show_tradeoffs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/20090407201255351_mt_tradeoffs.png"><img alt="../../_images/20090407201255351_mt_tradeoffs.png" src="../../_images/20090407201255351_mt_tradeoffs.png" style="width: 100px;" /></a>
+</section>
+<section id="tradeoffs-between-source-type-and-magnitude">
+<h2>Tradeoffs between source type and magnitude<a class="headerlink" href="#tradeoffs-between-source-type-and-magnitude" title="Permalink to this headline">¶</a></h2>
+<p>To see how the magnitude of the best-fitting moment tensor varies with respect to source type, we can use the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.graphics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_magnitude_tradeoffs_lune</span>
+<span class="n">plot_magnitude_tradeoffs_lune</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ds</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/20090407201255351_Mw_tradeoffs.png"><img alt="../../_images/20090407201255351_Mw_tradeoffs.png" src="../../_images/20090407201255351_Mw_tradeoffs.png" style="width: 100px;" /></a>
+</section>
+<section id="source-code">
+<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
+<p>[<a class="reference external" href="https://github.com/mtuqorg/mtuq/blob/master/docs/user_guide/05/code/gallery_mt.py">script to reproduce above figures</a>]</p>
+<p>Users can run the script immediately after <a class="reference external" href="https://mtuqorg.github.io/mtuq/install/index.html">installing MTUQ</a>, without any additional setup.</p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

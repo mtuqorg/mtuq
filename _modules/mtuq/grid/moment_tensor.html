@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.grid.moment_tensor &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/style.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.grid.moment_tensor</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">pi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.random</span><span class="w"> </span><span class="kn">import</span> <span class="n">uniform</span> <span class="k">as</span> <span class="n">random</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.event</span><span class="w"> </span><span class="kn">import</span> <span class="n">Force</span><span class="p">,</span> <span class="n">MomentTensor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">Grid</span><span class="p">,</span> <span class="n">UnstructuredGrid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">asarray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util.math</span><span class="w"> </span><span class="kn">import</span> <span class="n">open_interval</span> <span class="k">as</span> <span class="n">regular</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util.math</span><span class="w"> </span><span class="kn">import</span> <span class="n">open_interval</span><span class="p">,</span> <span class="n">closed_interval</span><span class="p">,</span>\
+   <span class="n">to_delta</span><span class="p">,</span> <span class="n">to_gamma</span><span class="p">,</span> <span class="n">to_mij</span><span class="p">,</span> <span class="n">to_rho</span><span class="p">,</span> <span class="n">to_v</span><span class="p">,</span> <span class="n">to_w</span>
+
+
+<span class="c1">#</span>
+<span class="c1"># see here for usage and other practical information</span>
+<span class="c1"># https://mtuqorg.github.io/mtuq/user_guide/06/moment_tensor_and_force_grids.html</span>
+<span class="c1">#</span>
+
+<div class="viewcode-block" id="FullMomentTensorGridRandom"><a class="viewcode-back" href="../../../library/generated/mtuq.grid.FullMomentTensorGridRandom.html#mtuq.grid.FullMomentTensorGridRandom">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">FullMomentTensorGridRandom</span><span class="p">(</span><span class="n">magnitudes</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">],</span> <span class="n">npts</span><span class="o">=</span><span class="mi">1000000</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Grid with randomly-drawn full moment tensors</span>
+
+<span class="sd">    Given input parameters ``magnitudes`` (`list`) and ``npts`` (`int`),</span>
+<span class="sd">    returns an ``UnstructuredGrid`` of size `npts*len(magnitudes)`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">v</span> <span class="o">=</span> <span class="n">random</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">random</span><span class="p">(</span><span class="o">-</span><span class="mf">3.</span><span class="o">/</span><span class="mf">8.</span><span class="o">*</span><span class="n">pi</span><span class="p">,</span> <span class="mf">3.</span><span class="o">/</span><span class="mf">8.</span><span class="o">*</span><span class="n">pi</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">random</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">random</span><span class="p">(</span><span class="o">-</span><span class="mf">90.</span><span class="p">,</span> <span class="mf">90.</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">random</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">to_rho</span><span class="p">,</span> <span class="n">asarray</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">)))</span>
+
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">kappa</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">UnstructuredGrid</span><span class="p">(</span>
+        <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;kappa&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">),</span>
+        <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">h</span><span class="p">),</span>
+        <span class="n">callback</span><span class="o">=</span><span class="n">to_mt</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FullMomentTensorGridSemiregular"><a class="viewcode-back" href="../../../library/generated/mtuq.grid.FullMomentTensorGridSemiregular.html#mtuq.grid.FullMomentTensorGridSemiregular">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">FullMomentTensorGridSemiregular</span><span class="p">(</span><span class="n">magnitudes</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">],</span> <span class="n">npts_per_axis</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> 
+    <span class="n">tightness</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">uniformity</span><span class="o">=</span><span class="mf">0.8</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Grid with regularly-spaced full moment tensors</span>
+
+<span class="sd">    Given input parameters ``magnitudes`` (`list`) and ``npts`` (`int`),</span>
+<span class="sd">    returns a ``Grid`` of roughly size `2*len(magnitudes)*npts_per_axis^5`.</span>
+
+<span class="sd">    The grid is `semiregular` in the sense of an interpolation between</span>
+<span class="sd">    two parameterizations.  `See here</span>
+<span class="sd">    &lt;mtuq.grid.moment_tensor._semiregular.html&gt;`_ for details.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">v</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">_semiregular</span><span class="p">(</span><span class="n">npts_per_axis</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">npts_per_axis</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tightness</span><span class="p">,</span> <span class="n">uniformity</span><span class="p">)</span>
+
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">regular</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="n">npts_per_axis</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">regular</span><span class="p">(</span><span class="o">-</span><span class="mf">90.</span><span class="p">,</span> <span class="mf">90.</span><span class="p">,</span> <span class="n">npts_per_axis</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">regular</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">npts_per_axis</span><span class="p">)</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">to_rho</span><span class="p">,</span> <span class="n">asarray</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">Grid</span><span class="p">(</span>
+        <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;kappa&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">),</span>
+        <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">h</span><span class="p">),</span>
+        <span class="n">callback</span><span class="o">=</span><span class="n">to_mt</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DeviatoricGridRandom"><a class="viewcode-back" href="../../../library/generated/mtuq.grid.DeviatoricGridRandom.html#mtuq.grid.DeviatoricGridRandom">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">DeviatoricGridRandom</span><span class="p">(</span><span class="n">magnitudes</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">],</span> <span class="n">npts</span><span class="o">=</span><span class="mi">100000</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Grid with randomly-drawn deviatoric moment tensors</span>
+
+<span class="sd">    Given input parameters ``magnitudes`` (`list`) and ``npts`` (`int`),</span>
+<span class="sd">    returns an ``UnstructuredGrid`` of size `npts*len(magnitudes)`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">v</span> <span class="o">=</span> <span class="n">random</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span>
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">random</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">random</span><span class="p">(</span><span class="o">-</span><span class="mf">90.</span><span class="p">,</span> <span class="mf">90.</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">random</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">to_rho</span><span class="p">,</span> <span class="n">asarray</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">)))</span>
+
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">kappa</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">UnstructuredGrid</span><span class="p">(</span>
+        <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;kappa&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">),</span>
+        <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">h</span><span class="p">),</span>
+        <span class="n">callback</span><span class="o">=</span><span class="n">to_mt</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DeviatoricGridSemiregular"><a class="viewcode-back" href="../../../library/generated/mtuq.grid.DeviatoricGridSemiregular.html#mtuq.grid.DeviatoricGridSemiregular">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">DeviatoricGridSemiregular</span><span class="p">(</span><span class="n">magnitudes</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">],</span> <span class="n">npts_per_axis</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">tightness</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">uniformity</span><span class="o">=</span><span class="mf">0.8</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Grid with reguarly-spaced deviatoric moment tensors</span>
+
+<span class="sd">    Given input parameters ``magnitudes`` (`list`) and ``npts`` (`int`),</span>
+<span class="sd">    returns a ``Grid`` of size `len(magnitudes)*npts_per_axis^4`.</span>
+
+<span class="sd">    The grid is `semiregular` in the sense of an interpolation between</span>
+<span class="sd">    two parameterizations.  `See here</span>
+<span class="sd">    &lt;mtuq.grid.moment_tensor._semiregular.html&gt;`_ for details.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">v</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_semiregular</span><span class="p">(</span><span class="n">npts_per_axis</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tightness</span><span class="p">,</span> <span class="n">uniformity</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">regular</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="n">npts_per_axis</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">regular</span><span class="p">(</span><span class="o">-</span><span class="mf">90.</span><span class="p">,</span> <span class="mf">90.</span><span class="p">,</span> <span class="n">npts_per_axis</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">regular</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">npts_per_axis</span><span class="p">)</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">to_rho</span><span class="p">,</span> <span class="n">asarray</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">Grid</span><span class="p">(</span>
+        <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;kappa&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">),</span>
+        <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">h</span><span class="p">),</span>
+        <span class="n">callback</span><span class="o">=</span><span class="n">to_mt</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DoubleCoupleGridRandom"><a class="viewcode-back" href="../../../library/generated/mtuq.grid.DoubleCoupleGridRandom.html#mtuq.grid.DoubleCoupleGridRandom">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">DoubleCoupleGridRandom</span><span class="p">(</span><span class="n">magnitudes</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">],</span> <span class="n">npts</span><span class="o">=</span><span class="mi">50000</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Grid with randomly-drawn double couple moment tensors</span>
+
+<span class="sd">    Given input parameters ``magnitudes`` (`list`) and ``npts`` (`int`),</span>
+<span class="sd">    returns an ``UnstructuredGrid`` of size `npts*len(magnitudes)`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span>
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">random</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">random</span><span class="p">(</span><span class="o">-</span><span class="mf">90.</span><span class="p">,</span> <span class="mf">90.</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">random</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">to_rho</span><span class="p">,</span> <span class="n">asarray</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">)))</span>
+
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">kappa</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">))</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">npts</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">UnstructuredGrid</span><span class="p">(</span>
+        <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;kappa&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">),</span>
+        <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">h</span><span class="p">),</span>
+        <span class="n">callback</span><span class="o">=</span><span class="n">to_mt</span><span class="p">)</span></div>
+    
+
+<div class="viewcode-block" id="DoubleCoupleGridRegular"><a class="viewcode-back" href="../../../library/generated/mtuq.grid.DoubleCoupleGridRegular.html#mtuq.grid.DoubleCoupleGridRegular">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">DoubleCoupleGridRegular</span><span class="p">(</span><span class="n">magnitudes</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">],</span> <span class="n">npts_per_axis</span><span class="o">=</span><span class="mi">40</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Grid with reguarly-spaced double couple moment tensors</span>
+
+<span class="sd">    Given input parameters ``magnitudes`` (`list`) and ``npts`` (`int`),</span>
+<span class="sd">    returns a ``Grid`` of size `len(magnitudes)*npts_per_axis^3`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="mf">0.</span>
+
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">regular</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="n">npts_per_axis</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">regular</span><span class="p">(</span><span class="o">-</span><span class="mf">90.</span><span class="p">,</span> <span class="mf">90.</span><span class="p">,</span> <span class="n">npts_per_axis</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">regular</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">npts_per_axis</span><span class="p">)</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">to_rho</span><span class="p">,</span> <span class="n">asarray</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">Grid</span><span class="p">(</span>
+        <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;kappa&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">),</span>
+        <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">h</span><span class="p">),</span>
+        <span class="n">callback</span><span class="o">=</span><span class="n">to_mt</span><span class="p">)</span></div>
+
+
+<span class="c1">#</span>
+<span class="c1"># utility functions</span>
+<span class="c1">#</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">to_mt</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">h</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Converts from lune parameters to MomentTensor object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mt</span> <span class="o">=</span> <span class="n">to_mij</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">MomentTensor</span><span class="p">(</span><span class="n">mt</span><span class="p">,</span> <span class="n">convention</span><span class="o">=</span><span class="s1">&#39;USE&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="_semiregular"><a class="viewcode-back" href="../../../library/generated/mtuq.grid.moment_tensor._semiregular.html#mtuq.grid._semiregular">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">_semiregular</span><span class="p">(</span><span class="n">npts_v</span><span class="p">,</span> <span class="n">npts_w</span><span class="p">,</span> <span class="n">tightness</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">uniformity</span><span class="o">=</span><span class="mf">0.8</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Returns coordinate vectors along the `v, w` axes</span>
+<span class="sd"> </span>
+<span class="sd">    .. rubric :: Keyword arguments</span>
+
+<span class="sd">    ``tightness`` (`float`):</span>
+<span class="sd">    Value in range `[0,1)` that controls how close the extremal points lie to the </span>
+<span class="sd">    boundary of the `v, w` rectangle</span>
+
+
+<span class="sd">    ``uniformity`` (`float`):</span>
+<span class="sd">    Value in range `[0,1]` that controls the spacing between points</span>
+
+<span class="sd">    - For `uniformity=0`, the spacing will be regular in `Tape2012 </span>
+<span class="sd">      &lt;https://mtuqorg.github.io/mtuq/references.html&gt;`_ parameters </span>
+<span class="sd">      `delta`, `gamma`, which is  good for avoiding distortion near the upper</span>
+<span class="sd">      and lower edges.</span>
+<span class="sd">    - For `uniformity=1`, the spacing will be regular in `Tape2015</span>
+<span class="sd">      &lt;https://mtuqorg.github.io/mtuq/references.html&gt;`_ parameters `v, w`, </span>
+<span class="sd">      which means that points are uniformly-spaced in terms of moment tensor </span>
+<span class="sd">      Frobenius norms.</span>
+<span class="sd">    - For intermediate values, the spacing will be `semiregular` in the sense of</span>
+<span class="sd">      a linear interpolation between the above cases.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="mf">0.</span> <span class="o">&lt;=</span> <span class="n">tightness</span> <span class="o">&lt;</span> <span class="mf">1.</span><span class="p">,</span>\
+        <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Allowable range: 0. &lt; tightness &lt; 1.&quot;</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="mf">0.</span> <span class="o">&lt;=</span> <span class="n">uniformity</span> <span class="o">&lt;=</span> <span class="mf">1.</span><span class="p">,</span>\
+        <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Allowable range: 0. &lt;= uniformity &lt;= 1.&quot;</span><span class="p">)</span>
+
+
+    <span class="n">v1</span> <span class="o">=</span> <span class="p">(</span><span class="n">tightness</span> <span class="o">*</span> <span class="n">closed_interval</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span><span class="p">,</span> <span class="n">npts_v</span><span class="p">)</span> <span class="o">+</span>
+          <span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">tightness</span><span class="p">)</span> <span class="o">*</span> <span class="n">open_interval</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span><span class="p">,</span> <span class="n">npts_v</span><span class="p">))</span>
+
+    <span class="n">w1</span> <span class="o">=</span> <span class="p">(</span><span class="n">tightness</span> <span class="o">*</span> <span class="n">closed_interval</span><span class="p">(</span><span class="o">-</span><span class="mf">3.</span><span class="o">/</span><span class="mf">8.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mf">3.</span><span class="o">/</span><span class="mf">8.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">npts_w</span><span class="p">)</span> <span class="o">+</span>
+          <span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">tightness</span><span class="p">)</span> <span class="o">*</span> <span class="n">open_interval</span><span class="p">(</span><span class="o">-</span><span class="mf">3.</span><span class="o">/</span><span class="mf">8.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mf">3.</span><span class="o">/</span><span class="mf">8.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">npts_w</span><span class="p">))</span>
+
+    <span class="n">gamma2</span> <span class="o">=</span> <span class="p">(</span><span class="n">tightness</span> <span class="o">*</span> <span class="n">closed_interval</span><span class="p">(</span><span class="o">-</span><span class="mf">30.</span><span class="p">,</span> <span class="mf">30.</span><span class="p">,</span> <span class="n">npts_v</span><span class="p">)</span> <span class="o">+</span>
+              <span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">tightness</span><span class="p">)</span> <span class="o">*</span> <span class="n">open_interval</span><span class="p">(</span><span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="mf">30.</span><span class="p">,</span> <span class="n">npts_v</span><span class="p">))</span>
+
+    <span class="n">delta2</span> <span class="o">=</span> <span class="p">(</span><span class="n">tightness</span> <span class="o">*</span> <span class="n">closed_interval</span><span class="p">(</span><span class="o">-</span><span class="mf">90.</span><span class="p">,</span> <span class="mf">90.</span><span class="p">,</span> <span class="n">npts_w</span><span class="p">)</span> <span class="o">+</span>
+              <span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">tightness</span><span class="p">)</span> <span class="o">*</span> <span class="n">open_interval</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mf">90.</span><span class="p">,</span> <span class="n">npts_w</span><span class="p">))</span>
+
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">to_delta</span><span class="p">(</span><span class="n">w1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">uniformity</span><span class="p">)</span> <span class="o">+</span> <span class="n">delta2</span><span class="o">*</span><span class="n">uniformity</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">to_gamma</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">uniformity</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma2</span><span class="o">*</span><span class="n">uniformity</span>
+
+    <span class="k">return</span> <span class="n">to_v</span><span class="p">(</span><span class="n">gamma</span><span class="p">),</span> <span class="n">to_w</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span></div>
+
+
+<span class="c1">#</span>
+<span class="c1"># deprecated</span>
+<span class="c1">#</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">FullMomentTensorPlottingGrid</span><span class="p">(</span><span class="n">magnitudes</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">],</span> <span class="n">npts_per_axis</span><span class="o">=</span><span class="mi">11</span><span class="p">):</span>
+    <span class="c1"># depracated now that separate tightness and uniformity options have been</span>
+    <span class="c1"># added to FullMomentTensorGridSemiregular</span>
+
+    <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">nv</span> <span class="o">=</span> <span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">13</span>
+    <span class="n">w1</span><span class="p">,</span> <span class="n">w2</span><span class="p">,</span> <span class="n">nw</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">35</span>
+    <span class="n">dv</span> <span class="o">=</span> <span class="p">(</span><span class="n">v2</span><span class="o">-</span><span class="n">v1</span><span class="p">)</span><span class="o">/</span><span class="n">nv</span>
+    <span class="n">dw</span> <span class="o">=</span> <span class="p">(</span><span class="n">w2</span><span class="o">-</span><span class="n">w1</span><span class="p">)</span><span class="o">/</span><span class="n">nw</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">((</span><span class="n">v1</span><span class="o">+</span><span class="n">dv</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">v2</span><span class="o">-</span><span class="n">dv</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="n">dv</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">((</span><span class="n">w1</span><span class="o">+</span><span class="n">dw</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">w2</span><span class="o">+</span><span class="n">dw</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="n">dw</span><span class="p">)</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">w</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">180</span><span class="o">/</span><span class="n">pi</span><span class="p">)</span>
+    <span class="n">v</span><span class="p">,</span><span class="n">w</span> <span class="o">=</span> <span class="n">to_v</span><span class="p">(</span><span class="n">gamma</span><span class="p">),</span> <span class="n">to_w</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span>
+
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">regular</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="n">npts_per_axis</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">regular</span><span class="p">(</span><span class="o">-</span><span class="mf">90.</span><span class="p">,</span> <span class="mf">90.</span><span class="p">,</span> <span class="n">npts_per_axis</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">regular</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">npts_per_axis</span><span class="p">)</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">to_rho</span><span class="p">,</span> <span class="n">asarray</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">Grid</span><span class="p">(</span>
+        <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;kappa&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">),</span>
+        <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">h</span><span class="p">),</span>
+        <span class="n">callback</span><span class="o">=</span><span class="n">to_mt</span><span class="p">)</span>
+
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

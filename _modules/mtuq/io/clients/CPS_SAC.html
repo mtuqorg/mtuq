@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtuq.io.clients.CPS_SAC &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/style.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../library/index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for mtuq.io.clients.CPS_SAC</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">obspy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">glob</span><span class="w"> </span><span class="kn">import</span> <span class="n">glob</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">basename</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">isdir</span><span class="p">,</span> <span class="n">join</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">listdir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.greens_tensor.CPS</span><span class="w"> </span><span class="kn">import</span> <span class="n">GreensTensor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.io.clients.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span> <span class="k">as</span> <span class="n">ClientBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mtuq.util.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">resample</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">obspy.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stream</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">obspy.geodetics</span><span class="w"> </span><span class="kn">import</span> <span class="n">gps2dist_azimuth</span>
+
+
+<span class="c1"># CPS workflow (solver + binary-to-SAC conversion) produces the following</span>
+<span class="c1"># individual time series</span>
+<span class="n">CHANNELS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;ZEX&#39;</span><span class="p">,</span> <span class="s1">&#39;ZSS&#39;</span><span class="p">,</span> <span class="s1">&#39;ZDS&#39;</span><span class="p">,</span> <span class="s1">&#39;ZDD&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;REX&#39;</span><span class="p">,</span> <span class="s1">&#39;RSS&#39;</span><span class="p">,</span> <span class="s1">&#39;RDS&#39;</span><span class="p">,</span> <span class="s1">&#39;RDD&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;TSS&#39;</span><span class="p">,</span> <span class="s1">&#39;TDS&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="Client"><a class="viewcode-back" href="../../../../library/generated/mtuq.io.clients.CPS_SAC.Client.html#mtuq.io.clients.CPS_SAC.Client">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Client</span><span class="p">(</span><span class="n">ClientBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;  CPS database client</span>
+
+<span class="sd">    .. rubric:: Usage</span>
+
+<span class="sd">    To instantiate a database client, supply a path or url:</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        from mtuq.io.clients.CPS_SAC import Client</span>
+<span class="sd">        db = Client(path_or_url)</span>
+
+<span class="sd">    Then the database client can be used to generate GreensTensors:</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        greens_tensors = db.get_greens_tensors(stations, origin)</span>
+
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">      `GreensTensor`s are obtained by reading precomputed time series from an </span>
+<span class="sd">      CPS directory tree with naming convention `ZZZz/RRRRrZZZz.EXT`,</span>
+<span class="sd">      where ZZZz gives the depth of the source, RRRRr gives the horizontal offset</span>
+<span class="sd">      between source and receiver, and EXT is the file extension related to</span>
+<span class="sd">      so-called fundamental sources.</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">      The above directory tree convention permits us to represent offsets </span>
+<span class="sd">      from 0 to 9999.9 km in 0.1 km increments and origin depths from </span>
+<span class="sd">      0 to 999.9 km in 0.1 km increments</span>
+
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_or_url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">include_mt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">include_force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path_or_url</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">(</span><span class="n">path_or_url</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span>
+
+        <span class="k">if</span> <span class="n">include_force</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">model</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">path_or_url</span><span class="p">)</span>
+
+        <span class="c1"># path to CPS directory tree</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path_or_url</span>
+
+        <span class="c1"># model from which CPS Green&#39;s functions were computed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_mt</span> <span class="o">=</span> <span class="n">include_mt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_force</span> <span class="o">=</span> <span class="n">include_force</span>
+
+<div class="viewcode-block" id="Client.get_greens_tensors"><a class="viewcode-back" href="../../../../library/generated/mtuq.io.clients.CPS_SAC.Client.get_greens_tensors.html#mtuq.io.clients.CPS_SAC.Client.get_greens_tensors">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_greens_tensors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stations</span><span class="o">=</span><span class="p">[],</span> <span class="n">origins</span><span class="o">=</span><span class="p">[],</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Extracts Green&#39;s tensors from database</span>
+
+<span class="sd">        Returns a ``GreensTensorList`` in which each element corresponds to a</span>
+<span class="sd">        (station, origin) pair from the given lists</span>
+
+<span class="sd">        .. rubric :: Input arguments</span>
+
+<span class="sd">        ``stations`` (`list` of `mtuq.Station` objects)</span>
+
+<span class="sd">        ``origins`` (`list` of `mtuq.Origin` objects)</span>
+
+<span class="sd">        ``verbose`` (`bool`)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Client</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_greens_tensors</span><span class="p">(</span><span class="n">stations</span><span class="p">,</span> <span class="n">origins</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Client._get_greens_tensor"><a class="viewcode-back" href="../../../../library/generated/mtuq.io.clients.CPS_SAC.Client._get_greens_tensor.html#mtuq.io.clients.CPS_SAC.Client._get_greens_tensor">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">_get_greens_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Missing station input argument&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">origin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Missing station input argument&quot;</span><span class="p">)</span>
+
+        <span class="n">traces</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">offset_in_m</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gps2dist_azimuth</span><span class="p">(</span>
+            <span class="n">origin</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+            <span class="n">origin</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
+            <span class="n">station</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+            <span class="n">station</span><span class="o">.</span><span class="n">longitude</span><span class="p">)</span>
+
+        <span class="c1"># what are the start and end times of the data?</span>
+        <span class="n">t1_new</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">station</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span>
+        <span class="n">t2_new</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">station</span><span class="o">.</span><span class="n">endtime</span><span class="p">)</span>
+        <span class="n">dt_new</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">station</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_mt</span><span class="p">:</span>
+            <span class="c1"># closest depth for which Green&#39;s functions are available</span>
+            <span class="n">depth_km</span> <span class="o">=</span> <span class="n">_closest_depth</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">origin</span><span class="o">.</span><span class="n">depth_in_m</span><span class="o">/</span><span class="mf">1000.</span><span class="p">)</span>
+
+            <span class="c1"># closest horizontal offset for which Green&#39;s functions are available</span>
+            <span class="n">offset_km</span> <span class="o">=</span> <span class="n">_closest_offset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">depth_km</span><span class="p">,</span> <span class="n">offset_in_m</span><span class="o">/</span><span class="mf">1000.</span><span class="p">)</span>
+
+            <span class="c1"># the file naming convention used by CPS for offset is RRRRr, which</span>
+            <span class="c1"># allows us to represent offsets up to 9999.9 km </span>
+            <span class="c1"># in increments of 0.1 km</span>
+            <span class="n">offset_str</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%05d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">10.</span><span class="o">*</span><span class="n">offset_km</span><span class="p">)</span>
+
+            <span class="c1"># the file naming convention used by CPS for depth is ZZZz, which</span>
+            <span class="c1"># allows us to represent depths up to 999.9 km </span>
+            <span class="c1"># in increments of 0.1 km</span>
+            <span class="n">depth_str</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%04d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">10.</span><span class="o">*</span><span class="n">depth_km</span><span class="p">)</span>
+
+
+            <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">ext</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">CHANNELS</span><span class="p">):</span>
+                <span class="n">trace</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                                   <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">depth_str</span><span class="p">,</span>
+                                    <span class="n">offset_str</span><span class="p">,</span> <span class="n">depth_str</span><span class="p">,</span> <span class="n">ext</span><span class="p">),</span>
+                                   <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;sac&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="n">CHANNELS</span><span class="p">[</span><span class="n">_i</span><span class="p">]</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">_component</span> <span class="o">=</span> <span class="n">CHANNELS</span><span class="p">[</span><span class="n">_i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="c1"># ad hoc workaround for difference between </span>
+                <span class="c1"># CPS and FK conventions</span>
+                <span class="k">if</span> <span class="n">CHANNELS</span><span class="p">[</span><span class="n">_i</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;EX&#39;</span><span class="p">):</span>
+                    <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">_component</span><span class="o">+</span><span class="s1">&#39;EP&#39;</span>
+
+                <span class="c1"># what are the start and end times of the Green&#39;s function?</span>
+                <span class="n">t1_old</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="p">)</span><span class="o">+</span><span class="nb">float</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span>
+                <span class="n">t2_old</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="p">)</span><span class="o">+</span><span class="nb">float</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="p">)</span>
+                <span class="n">dt_old</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
+                <span class="n">data_old</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">data</span>
+
+                <span class="c1"># resample Green&#39;s function</span>
+                <span class="n">data_new</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span><span class="n">data_old</span><span class="p">,</span> <span class="n">t1_old</span><span class="p">,</span> <span class="n">t2_old</span><span class="p">,</span> <span class="n">dt_old</span><span class="p">,</span>
+                                    <span class="n">t1_new</span><span class="p">,</span> <span class="n">t2_new</span><span class="p">,</span> <span class="n">dt_new</span><span class="p">)</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data_new</span>
+                <span class="c1"># convert from 10^-20 dyne to N^-1</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">data</span> <span class="o">*=</span> <span class="mf">1.e-15</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">=</span> <span class="n">t1_new</span>
+                <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">dt_new</span>
+
+                <span class="n">traces</span> <span class="o">+=</span> <span class="p">[</span><span class="n">trace</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_force</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="n">tags</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;model:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="s1">&#39;solver:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="s1">&#39;CPS&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">GreensTensor</span><span class="p">(</span><span class="n">traces</span><span class="o">=</span><span class="p">[</span><span class="n">trace</span> <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">],</span>
+                            <span class="n">station</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span>
+                            <span class="n">include_mt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">include_mt</span><span class="p">,</span> <span class="n">include_force</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">include_force</span><span class="p">)</span></div></div>
+
+
+<span class="c1">#</span>
+<span class="c1"># utility functions</span>
+<span class="c1">#</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_closest_depth</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">depth_km</span><span class="p">,</span> <span class="n">thresh_km</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Searches CPS directory tree to find closest depth for which </span>
+<span class="sd">    Green&#39;s functions are available</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_listdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;No subdirectories found: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+
+    <span class="n">depths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">subdir</span> <span class="ow">in</span> <span class="n">_listdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="c1"># exclude improperly-formatted subdirectories</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">subdir</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">subdir</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># convert to km</span>
+        <span class="n">depths</span> <span class="o">+=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">subdir</span><span class="p">)</span><span class="o">/</span><span class="mf">10.</span><span class="p">]</span>
+      
+    <span class="n">closest_depth</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">depths</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="n">depth_km</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">closest_depth</span> <span class="o">-</span> <span class="n">depth_km</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">thresh_km</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: Closest available Greens functions differ from given source &#39;</span>
+              <span class="s1">&#39;by %.f km vertically&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">closest_depth</span> <span class="o">-</span> <span class="n">depth_km</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: Depth displayed in figure header may be inaccurate&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">closest_depth</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_closest_offset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">depth_km</span><span class="p">,</span> <span class="n">offset_km</span><span class="p">,</span> <span class="n">thresh_km</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Searches CPS directory tree to find closest horizontal offset for which </span>
+<span class="sd">    Green&#39;s functions are available</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># the directory naming convention used by CPS is ZZZz</span>
+    <span class="n">wildcard</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/</span><span class="si">%04d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="mi">10</span><span class="o">*</span><span class="n">depth_km</span><span class="p">)</span>
+
+    <span class="c1"># the file naming convention used by CPS is RRRRrZZZz.EXT</span>
+    <span class="n">wildcard</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/?????</span><span class="si">%04d</span><span class="s1">.ZEX&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">wildcard</span><span class="p">,</span> <span class="mi">10</span><span class="o">*</span><span class="n">depth_km</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">glob</span><span class="p">(</span><span class="n">wildcard</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;No Greens functions found: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">wildcard</span><span class="p">)</span>
+
+    <span class="n">offsets</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">fullname</span> <span class="ow">in</span> <span class="n">glob</span><span class="p">(</span><span class="n">wildcard</span><span class="p">):</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">fullname</span><span class="p">)</span>
+
+        <span class="c1"># exclude improperly-formatted filenames</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">9</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># convert to km</span>
+        <span class="n">offsets</span> <span class="o">+=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">5</span><span class="p">])</span><span class="o">/</span><span class="mf">10.</span><span class="p">]</span>
+      
+    <span class="n">closest_offset</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">offsets</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="n">offset_km</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">closest_offset</span> <span class="o">-</span> <span class="n">offset_km</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">thresh_km</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: Closest available Greens functions differ from given source &#39;</span>
+              <span class="s1">&#39;by %.f km horizontally&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">closest_offset</span> <span class="o">-</span> <span class="n">offset_km</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">closest_offset</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_listdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="c1"># lists all subdirectories</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="p">))):</span>
+            <span class="k">yield</span> <span class="n">name</span>
+ 
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

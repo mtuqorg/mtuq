@@ -1,0 +1,6 @@
+﻿mtuq.grid.ForceGridRandom
+=========================
+
+.. currentmodule:: mtuq.grid
+
+.. autofunction:: ForceGridRandom

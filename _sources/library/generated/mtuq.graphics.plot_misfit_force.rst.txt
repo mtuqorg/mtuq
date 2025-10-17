@@ -1,0 +1,6 @@
+﻿mtuq.graphics.plot_misfit_force
+===============================
+
+.. currentmodule:: mtuq.graphics
+
+.. autofunction:: plot_misfit_force

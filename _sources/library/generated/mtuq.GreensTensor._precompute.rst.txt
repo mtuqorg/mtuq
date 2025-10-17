@@ -1,0 +1,6 @@
+mtuq.GreensTensor._precompute
+=============================
+
+.. currentmodule:: mtuq
+
+.. automethod:: GreensTensor._precompute

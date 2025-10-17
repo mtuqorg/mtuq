@@ -1,0 +1,6 @@
+﻿mtuq.graphics.plot_marginal_dc
+==============================
+
+.. currentmodule:: mtuq.graphics
+
+.. autofunction:: plot_marginal_dc

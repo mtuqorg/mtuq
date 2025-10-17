@@ -1,0 +1,6 @@
+mtuq.WaveformMisfit.collect_synthetics
+======================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: WaveformMisfit.collect_synthetics

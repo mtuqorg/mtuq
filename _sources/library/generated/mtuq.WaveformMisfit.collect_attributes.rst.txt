@@ -1,0 +1,6 @@
+mtuq.WaveformMisfit.collect_attributes
+======================================
+
+.. currentmodule:: mtuq
+
+.. automethod:: WaveformMisfit.collect_attributes

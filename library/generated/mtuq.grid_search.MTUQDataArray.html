@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>mtuq.grid_search.MTUQDataArray &#8212; MTUQ Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          MTUQ</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/01.html">Learning Python and ObsPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/02.html">Acquiring seismic data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/03.html">Acquiring Green’s functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/04.html">Data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/05.html">Visualization galleries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/06.html">Miscellaneous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Library reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">mtuq.grid_search.MTUQDataArray</a><ul>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="mtuq-grid-search-mtuqdataarray">
+<h1>mtuq.grid_search.MTUQDataArray<a class="headerlink" href="#mtuq-grid-search-mtuqdataarray" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="mtuq.grid_search.MTUQDataArray">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtuq.grid_search.</span></span><span class="sig-name descname"><span class="pre">MTUQDataArray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data:</span> <span class="pre">typing.Any</span> <span class="pre">=</span> <span class="pre">&lt;NA&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords:</span> <span class="pre">collections.abc.Sequence[collections.abc.Sequence</span> <span class="pre">|</span> <span class="pre">pandas.core.indexes.base.Index</span> <span class="pre">|</span> <span class="pre">xarray.core.dataarray.DataArray</span> <span class="pre">|</span> <span class="pre">xarray.core.variable.Variable</span> <span class="pre">|</span> <span class="pre">numpy.ndarray]</span> <span class="pre">|</span> <span class="pre">collections.abc.Mapping</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">collections.abc.Iterable[collections.abc.Hashable]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">collections.abc.Hashable</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs:</span> <span class="pre">collections.abc.Mapping</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indexes:</span> <span class="pre">collections.abc.Mapping[collections.abc.Hashable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xarray.core.indexes.Index]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fastpath:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mtuq/grid_search.html#MTUQDataArray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtuq.grid_search.MTUQDataArray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.core.dataarray.DataArray</span></code></p>
+<p>Data structure for storing values on regularly-spaced grids</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Besides the methods below, <cite>MTUQDataArray</cite> includes many useful methods
+inherited from <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>. See 
+<a class="reference external" href="http://xarray.pydata.org/en/stable/generated/xarray.DataArray.html">xarray documentation</a> 
+for more information.</p>
+</div>
+<p class="rubric">Public Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.grid_search.MTUQDataArray.item.html#mtuq.grid_search.MTUQDataArray.item" title="mtuq.grid_search.MTUQDataArray.item"><code class="xref py py-obj docutils literal notranslate"><span class="pre">item</span></code></a></p></td>
+<td><p>Copy an element of an array to a standard Python scalar and return it.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.grid_search.MTUQDataArray.origin_idxmin.html#mtuq.grid_search.MTUQDataArray.origin_idxmin" title="mtuq.grid_search.MTUQDataArray.origin_idxmin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">origin_idxmin</span></code></a></p></td>
+<td><p>Returns <cite>origins</cite> index corresponding to minimum misfit</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.grid_search.MTUQDataArray.save.html#mtuq.grid_search.MTUQDataArray.save" title="mtuq.grid_search.MTUQDataArray.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a></p></td>
+<td><p>Saves grid search results to NetCDF file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="mtuq.grid_search.MTUQDataArray.searchsorted.html#mtuq.grid_search.MTUQDataArray.searchsorted" title="mtuq.grid_search.MTUQDataArray.searchsorted"><code class="xref py py-obj docutils literal notranslate"><span class="pre">searchsorted</span></code></a></p></td>
+<td><p>Find indices where elements of v should be inserted in a to maintain order.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.grid_search.MTUQDataArray.source_idxmin.html#mtuq.grid_search.MTUQDataArray.source_idxmin" title="mtuq.grid_search.MTUQDataArray.source_idxmin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">source_idxmin</span></code></a></p></td>
+<td><p>Returns <cite>sources</cite> index corresponding to minimum misfit</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Private Methods</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Private methods are mainly for internal/developer use and their API might change without notice.</p>
+</div>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="mtuq.grid_search.MTUQDataArray._get_shape.html#mtuq.grid_search.MTUQDataArray._get_shape" title="mtuq.grid_search.MTUQDataArray._get_shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_shape</span></code></a></p></td>
+<td><p>Private helper method</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

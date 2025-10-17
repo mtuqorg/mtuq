@@ -1,0 +1,6 @@
+mtuq.Station._refresh
+=====================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Station._refresh

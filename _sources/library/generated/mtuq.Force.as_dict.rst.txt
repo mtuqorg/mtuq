@@ -1,0 +1,6 @@
+mtuq.Force.as_dict
+==================
+
+.. currentmodule:: mtuq
+
+.. automethod:: Force.as_dict
