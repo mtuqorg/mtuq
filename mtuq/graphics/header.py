@@ -543,8 +543,9 @@ def create_moment_tensor_header(process_bw, process_sw, misfit_bw, misfit_sw,
                                best_misfit_bw, best_misfit_sw, model, solver, mt, lune_dict, origin,
                                data_bw=None, data_sw=None, mt_grid=None, event_name=None, **kwargs):
     """Create a complete moment tensor header"""
+    process_sw_supp = kwargs.pop('process_sw_supp', None)
     header_info = prepare_moment_tensor_header_info(
-        origin, mt, lune_dict, process_bw, process_sw, kwargs.get('process_sw_supp', None),
+        origin, mt, lune_dict, process_bw, process_sw, process_sw_supp,
         misfit_bw, misfit_sw, best_misfit_bw, best_misfit_sw, model, solver,
         data_bw=data_bw, data_sw=data_sw, mt_grid=mt_grid, event_name=event_name, **kwargs)
     header = build_moment_tensor_header(header_info)
@@ -555,8 +556,9 @@ def create_force_header(process_bw, process_sw, misfit_bw, misfit_sw,
                        best_misfit_bw, best_misfit_sw, model, solver, force, force_dict, origin,
                        data_bw=None, data_sw=None, force_grid=None, event_name=None, **kwargs):
     """Create a complete force header"""
+    process_sw_supp = kwargs.pop('process_sw_supp', None)
     header_info = prepare_force_header_info(
-        origin, force, force_dict, process_bw, process_sw, kwargs.get('process_sw_supp', None),
+        origin, force, force_dict, process_bw, process_sw, process_sw_supp,
         misfit_bw, misfit_sw, best_misfit_bw, best_misfit_sw, model, solver,
         data_bw=data_bw, data_sw=data_sw, force_grid=force_grid, event_name=event_name, **kwargs)
     header = build_force_header(header_info)
