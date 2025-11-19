@@ -59,7 +59,13 @@ Alternatively, MTUQ misfit functions can be used as a starting point for Bayesia
 
 The package has been tested against [legacy Perl/C codes](https://github.com/mtuqorg/mtuq/blob/master/tests/benchmark_cap_vs_mtuq.py) as well as [published studies](https://github.com/rmodrak/mtbench).
 
+## Citation
 
+If you use MTUQ in your research, please cite:
+
+J Thurin, R Modrak, C Tape, A M McPherson, F R Rodríguez-Cardozo, J Kintner, L Ding, Q Liu, J Braunmiller, MTUQ: a framework for estimating moment tensors, point forces, and their uncertainties, *Geophysical Journal International*, Volume 241, Issue 2, May 2025, Pages 1373–1390, <https://doi.org/10.1093/gji/ggaf080>
+
+Scripts for reproducing the grid-search results and figures from Cases 1 to 3 of this publication, along with useful files (best-fitting moment tensor parameters, weight files, first-motion polarity picks, etc.), are available in the Zenodo collection at <https://doi.org/10.5281/zenodo.13868450>.
 
 [Instaseis]: http://instaseis.net/
 
