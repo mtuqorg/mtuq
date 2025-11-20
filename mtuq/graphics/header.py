@@ -10,6 +10,10 @@ from typing import List
 
 from matplotlib import pyplot
 from matplotlib.font_manager import FontProperties
+try:
+    from matplotlib.textpath import TextPath
+except ImportError:  
+    TextPath = None
 from mtuq.graphics.beachball import plot_beachball, _plot_beachball_matplotlib
 from mtuq.graphics._pygmt import exists_pygmt, plot_force_pygmt
 from mtuq.graphics._matplotlib import plot_force_matplotlib
@@ -38,6 +42,8 @@ class HeaderStyle:
     text_left_margin: float = HEADER_TEXT_LEFT_MARGIN
     font_size: int = HEADER_TEXT_FONT_SIZE
     text_vspace: float = HEADER_TEXT_VSPACE
+    text_right_margin: float = HEADER_TEXT_LEFT_MARGIN
+    min_font_size: int = 10
 
 
 @dataclass
@@ -98,12 +104,15 @@ class TextBlock(HeaderBlock):
     """A text block for displaying formatted text in headers."""
     
     def __init__(self, text: str, fontsize=HEADER_TEXT_FONT_SIZE, bold=False, 
-                 italic=False, vspace=HEADER_TEXT_VSPACE, **kwargs):
+                 italic=False, vspace=HEADER_TEXT_VSPACE, auto_shrink=True,
+                 min_fontsize=None, **kwargs):
         self.text = text
         self.fontsize = fontsize
         self.bold = bold
         self.italic = italic
         self.vspace = vspace
+        self.auto_shrink = auto_shrink
+        self.min_fontsize = min_fontsize
         self.kwargs = kwargs
     
     def render(self, ax, info, px, py, *, height: float, width: float, 
@@ -118,9 +127,30 @@ class TextBlock(HeaderBlock):
         fontsize = self.fontsize or style.font_size
         vspace = self.vspace or style.text_vspace
 
+        text_value = self.text.format(**info.__dict__)
+
+        # Compute available width in axis units and shrink fonts if required
+        max_width = max(width - px - style.text_right_margin * height, 0.)
+        target_min = self.min_fontsize if self.min_fontsize is not None else style.min_font_size
+
+        if self.auto_shrink and max_width > 0 and TextPath is not None:
+            font_for_metrics = font.copy()
+            font_for_metrics.set_size(fontsize)
+            try:
+                text_path = TextPath((0, 0), text_value, prop=font_for_metrics)
+                text_width = text_path.get_extents().width / 72.0
+            except Exception:
+                text_width = 0.0
+
+            if text_width > max_width and text_width > 0.0:
+                scale = max_width / text_width
+                fontsize = max(target_min, fontsize * scale)
+
+        font.set_size(fontsize)
+
         # Use attribute access for info container
-        ax.text(px, py, self.text.format(**info.__dict__), fontproperties=font, 
-                fontsize=fontsize, **self.kwargs)
+        ax.text(px, py, text_value, fontproperties=font, fontsize=fontsize, 
+                **self.kwargs)
         return py - vspace
 
 
@@ -543,8 +573,9 @@ def create_moment_tensor_header(process_bw, process_sw, misfit_bw, misfit_sw,
                                best_misfit_bw, best_misfit_sw, model, solver, mt, lune_dict, origin,
                                data_bw=None, data_sw=None, mt_grid=None, event_name=None, **kwargs):
     """Create a complete moment tensor header"""
+    process_sw_supp = kwargs.pop('process_sw_supp', None)
     header_info = prepare_moment_tensor_header_info(
-        origin, mt, lune_dict, process_bw, process_sw, kwargs.get('process_sw_supp', None),
+        origin, mt, lune_dict, process_bw, process_sw, process_sw_supp,
         misfit_bw, misfit_sw, best_misfit_bw, best_misfit_sw, model, solver,
         data_bw=data_bw, data_sw=data_sw, mt_grid=mt_grid, event_name=event_name, **kwargs)
     header = build_moment_tensor_header(header_info)
@@ -555,8 +586,9 @@ def create_force_header(process_bw, process_sw, misfit_bw, misfit_sw,
                        best_misfit_bw, best_misfit_sw, model, solver, force, force_dict, origin,
                        data_bw=None, data_sw=None, force_grid=None, event_name=None, **kwargs):
     """Create a complete force header"""
+    process_sw_supp = kwargs.pop('process_sw_supp', None)
     header_info = prepare_force_header_info(
-        origin, force, force_dict, process_bw, process_sw, kwargs.get('process_sw_supp', None),
+        origin, force, force_dict, process_bw, process_sw, process_sw_supp,
         misfit_bw, misfit_sw, best_misfit_bw, best_misfit_sw, model, solver,
         data_bw=data_bw, data_sw=data_sw, force_grid=force_grid, event_name=event_name, **kwargs)
     header = build_force_header(header_info)
