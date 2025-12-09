@@ -14,7 +14,7 @@ description = "moment tensor (mt) uncertainty quantification (uq)"
 authors = [
   { name = "Ryan Modrak" }
 ]
-requires-python = ">=3"
+requires-python = ">=3,<3.14"
 keywords = ["seismology"]
 classifiers = [
   "Development Status :: 4 - Beta",
