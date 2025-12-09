@@ -35,7 +35,8 @@ def calculate_norm_data(data, norm, components, apply_weights=True):
         dt = stream[0].stats.delta
 
         for _k in indices:
-            d = stream[_k].data
+            trace = stream[_k]
+            d = trace.data
 
             if norm=='L1':
                 value = np.sum(np.abs(d))*dt
@@ -44,14 +45,14 @@ def calculate_norm_data(data, norm, components, apply_weights=True):
                 value = np.sum(d**2)*dt
 
             elif norm=='hybrid':
-                value = np.sqrt(np.sum(r**2))*dt
+                value = np.sqrt(np.sum(d**2))*dt
 
             # optionally, applies user-supplied weights attached during
             # process_data()
             if apply_weights:
                 try:
-                    value *= d[_k].weight
-                except:
+                    value *= trace.weight
+                except Exception:
                     pass
 
             norm_data += value

@@ -233,7 +233,7 @@ class WaveformMisfit(object):
                 normalize=normalize, ext='Cython') 
 
 
-    def collect_attributes(self, data, greens, source, normalize=False):
+    def collect_attributes(self, data, greens, source, normalize=None):
         """ Collects misfit, time shifts and other attributes corresponding to 
         each trace
         """
@@ -249,6 +249,9 @@ class WaveformMisfit(object):
         synthetics = greens.get_synthetics(
             source, components=data.get_components(), stats=data.get_stats(),
             mode='map', inplace=True)
+
+        if normalize is None:
+            normalize = self.normalize
 
         # attaches attributes to synthetics
         _ = level0.misfit(
@@ -270,7 +273,7 @@ class WaveformMisfit(object):
         return deepcopy(attrs)
 
 
-    def collect_synthetics(self, data, greens, source, normalize=False, mode=2):
+    def collect_synthetics(self, data, greens, source, normalize=None, mode=2):
         """ Collects synthetics with misfit, time shifts and other attributes attached
         """
 
@@ -310,11 +313,14 @@ class WaveformMisfit(object):
             source, components=components, stats=data.get_stats(),
             mode='map', inplace=True)
 
+        if normalize is None:
+            normalize = self.normalize
+
         # attaches attributes to synthetics
         _ = level0.misfit(
             data, greens, iterable(source), self.norm, self.time_shift_groups,
             self.time_shift_min, self.time_shift_max, msg_handle=Null(),
-            normalize=False, set_attributes=True)
+            normalize=normalize, set_attributes=True)
 
         return deepcopy(synthetics)
 
