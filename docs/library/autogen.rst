@@ -45,12 +45,10 @@ autogen
    mtuq.graphics._plot_latlon
    mtuq.graphics.plot_time_shifts
    mtuq.graphics.plot_amplitude_ratios
-   mtuq.graphics.plot_log_amplitude_ratios
-   mtuq.graphics.plot_cross_corr
+   mtuq.graphics.plot_cc_max
    mtuq.graphics._plot_attrs
    mtuq.graphics.attrs._default_backend
    mtuq.graphics.attrs._pygmt_backend
-   mtuq.graphics.attrs.PyGMTUtilities
    mtuq.grid.DeviatoricGridRandom
    mtuq.grid.DeviatoricGridSemiregular
    mtuq.grid.DoubleCoupleGridRandom
@@ -73,7 +71,7 @@ autogen
    mtuq.ProcessData
    mtuq.PolarityMisfit
    mtuq.WaveformMisfit
-   mtuq.download_greens_tensors
+   mtuq.download_greens
    mtuq.open_db
    mtuq.read
    mtuq.io.clients.AxiSEM_NetCDF.Client

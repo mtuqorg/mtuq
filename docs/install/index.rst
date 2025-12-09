@@ -1,17 +1,10 @@
 Installation
 ============
 
-We recommend installing MTUQ under Miniforge, which can be obtained following `these instructions <https://conda-forge.org/download/>`_.
+We recommend installing MTUQ under `Miniforge <https://conda-forge.org/download/>`_.
 
 
-To install MTUQ, create a conda virtual environment:
-
-.. code::
-
-   conda create -n mtuq
-
-
-Download the MTUQ source code:
+To install MTUQ, first download the source code:
 
 .. code::
 
@@ -19,12 +12,19 @@ Download the MTUQ source code:
    cd mtuq
 
 
-Install in editable mode:
+Create a conda virtual environment:
 
 .. code::
 
+   conda create --name=mtuq
    conda activate mtuq
-   conda env update --file env.yaml
+
+
+Then install in editable mode:
+
+.. code::
+
+   conda env update --name=mtuq --file=env.yaml
 
 
 Unpack seismic waveforms used by examples:

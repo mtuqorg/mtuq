@@ -16,7 +16,7 @@ from mtuq.util.math import closed_interval, open_interval
 
 
 def plot_misfit_force(filename, ds, **kwargs):
-    """ Plots misfit values with respect to force orientation (requires GMT)
+    """ Plots misfit values with respect to force orientation
 
     .. rubric :: Required input arguments
 
@@ -36,6 +36,7 @@ def plot_misfit_force(filename, ds, **kwargs):
     """
     defaults(kwargs, {
         'colormap': 'viridis',
+        'colorbar_label': 'Misfit',
         })
 
     _check(ds)
@@ -52,7 +53,6 @@ def plot_misfit_force(filename, ds, **kwargs):
 
 def plot_likelihood_force(filename, ds, var, **kwargs):
     """ Plots maximum likelihood values with respect to force orientation 
-    (requires GMT)
 
     .. rubric :: Required input arguments
 
@@ -76,6 +76,7 @@ def plot_likelihood_force(filename, ds, var, **kwargs):
 
     defaults(kwargs, {
         'colormap': 'hot_r',
+        'colorbar_label': 'Likelihood',
         })
 
     _check(ds)
@@ -92,7 +93,6 @@ def plot_likelihood_force(filename, ds, var, **kwargs):
 
 def plot_marginal_force(filename, ds, var, **kwargs):
     """ Plots marginal likelihood values with respect to force orientation 
-    (requires GMT)
 
     .. rubric :: Required input arguments
 
@@ -114,6 +114,7 @@ def plot_marginal_force(filename, ds, var, **kwargs):
     """
     defaults(kwargs, {
         'colormap': 'hot_r',
+        'colorbar_label': 'Likelihood',
         })
 
     _check(ds)
@@ -130,7 +131,6 @@ def plot_marginal_force(filename, ds, var, **kwargs):
 
 def plot_magnitude_tradeoffs_force(filename, ds, **kwargs):
     """ Plots magnitude versus force orientation tradeoffs
-    (requires GMT)
 
     .. rubric :: Required input arguments
 
@@ -167,7 +167,7 @@ def plot_magnitude_tradeoffs_force(filename, ds, **kwargs):
 def _plot_force(filename, da, show_best=True, show_tradeoffs=False, 
     backend=_plot_force_matplotlib, **kwargs):
 
-    """ Plots values with respect to force orientation (requires GMT)
+    """ Plots values with respect to force orientation
 
     .. rubric :: Keyword arguments
 

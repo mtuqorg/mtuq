@@ -30,7 +30,7 @@ from mtuq.graphics.uq._gmt import _parse_best_lune
 
 
 def plot_misfit_lune(filename, ds, **kwargs):
-    """ Plots misfit values on eigenvalue lune (requires GMT)
+    """ Plots misfit values on eigenvalue lune
 
     .. rubric :: Required input arguments
 
@@ -49,6 +49,7 @@ def plot_misfit_lune(filename, ds, **kwargs):
     """ 
     defaults(kwargs, {
         'colormap': 'viridis',
+        'colorbar_label': 'Misfit',
         })
 
     _check(ds)
@@ -65,7 +66,7 @@ def plot_misfit_lune(filename, ds, **kwargs):
 
 
 def plot_likelihood_lune(filename, ds, var, **kwargs):
-    """ Plots maximum likelihood values on eigenvalue lune (requires GMT)
+    """ Plots maximum likelihood values on eigenvalue lune
 
     .. rubric :: Required input arguments
 
@@ -86,6 +87,7 @@ def plot_likelihood_lune(filename, ds, var, **kwargs):
     """
     defaults(kwargs, {
         'colormap': 'hot_r',
+        'colorbar_label': 'Likelihood',
         })
 
     _check(ds)
@@ -102,7 +104,7 @@ def plot_likelihood_lune(filename, ds, var, **kwargs):
 
 
 def plot_marginal_lune(filename, ds, var, **kwargs):
-    """ Plots maximum likelihood values on eigenvalue lune (requires GMT)
+    """ Plots maximum likelihood values on eigenvalue lune
 
     .. rubric :: Required input arguments
 
@@ -123,6 +125,7 @@ def plot_marginal_lune(filename, ds, var, **kwargs):
     """
     defaults(kwargs, {
         'colormap': 'hot_r',
+        'colorbar_label': 'Likelihood',
         })
 
     _check(ds)
@@ -138,7 +141,7 @@ def plot_marginal_lune(filename, ds, var, **kwargs):
 
 
 def plot_variance_reduction_lune(filename, ds, data_norm, **kwargs):
-    """ Plots variance reduction values on eigenvalue lune (requires GMT)
+    """ Plots variance reduction values on eigenvalue lune
 
     .. rubric :: Required input arguments
 
@@ -159,6 +162,7 @@ def plot_variance_reduction_lune(filename, ds, data_norm, **kwargs):
     """
     defaults(kwargs, {
         'colormap': 'viridis_r',
+        'colorbar_label': 'Variance reduction',
         })
 
     _check(ds)
@@ -174,7 +178,7 @@ def plot_variance_reduction_lune(filename, ds, data_norm, **kwargs):
 
 
 def plot_magnitude_tradeoffs_lune(filename, ds, **kwargs):
-    """ Plots magnitude versus source type tradeoffs (requires GMT)
+    """ Plots magnitude versus source type tradeoffs
 
     .. rubric :: Required input arguments
 
@@ -212,7 +216,7 @@ def plot_magnitude_tradeoffs_lune(filename, ds, **kwargs):
 def _plot_lune(filename, da, show_best=True, show_mt=False,
     show_tradeoffs=False, backend=_plot_lune_matplotlib, **kwargs):
 
-    """ Plots DataArray values on the eigenvalue lune (requires GMT)
+    """ Plots DataArray values on the eigenvalue lune
 
     .. rubric :: Keyword arguments
 

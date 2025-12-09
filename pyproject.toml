@@ -1,2 +1,80 @@
 [build-system]
-requires = ["setuptools", "wheel", "Cython>=0.29", "numpy >= 1.15"]
+requires = [
+  "setuptools>=42",
+  "wheel",
+  "cython",
+  "numpy<2",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mtuq"
+version = "0.2.0"
+description = "moment tensor (mt) uncertainty quantification (uq)"
+authors = [
+  { name = "Ryan Modrak" }
+]
+requires-python = ">=3"
+keywords = ["seismology"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Operating System :: Unix",
+  "Operating System :: POSIX",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering",
+]
+
+dependencies = [
+  "numpy<2",
+  "scipy",
+  "obspy",
+  "instaseis",
+  "pandas",
+  "xarray",
+  "netCDF4",
+  "h5py",
+  "tables",
+  "retry",
+  "flake8",
+  "nose",
+  "pytest",
+  "cython",
+  "seisgen",
+  "seisclient",
+]
+
+[project.entry-points."readers"]
+SAC = "mtuq.io.readers.SAC:read"
+
+[project.entry-points."greens_tensor_clients"]
+AXISEM = "mtuq.io.clients.AxiSEM_NetCDF:Client"
+AXISEM_NETCDF = "mtuq.io.clients.AxiSEM_NetCDF:Client"
+FK = "mtuq.io.clients.FK_SAC:Client"
+FK_SAC = "mtuq.io.clients.FK_SAC:Client"
+CPS = "mtuq.io.clients.CPS_SAC:Client"
+CPS_SAC = "mtuq.io.clients.CPS_SAC:Client"
+SPECFEM3D = "mtuq.io.clients.SPECFEM3D_SAC:Client"
+SPECFEM3D_GLOBE = "mtuq.io.clients.SPECFEM3D_SAC:Client"
+SPECFEM3D_SAC = "mtuq.io.clients.SPECFEM3D_SAC:Client"
+SPECFEM3D_SGT = "mtuq.io.clients.SPECFEM3D_SGT:Client"
+SPECFEM3D_PKL = "mtuq.io.clients.SPECFEM3D_SGT:Client"
+SEISCLOUD = "mtuq.io.clients.seiscloud:Client"
+SYNGINE = "mtuq.io.clients.syngine:Client"
+
+[tool.setuptools]
+packages = ["mtuq"]
+
+
+#[tool.setuptools.package-data]
+#"mtuq" = ["data/examples/*.tgz", "data/tests/*.tgz"]
+
+
+##Cython support remains experimental?
+#[tool.setuptools.extension]
+# "mtuq.some_module" = { sources = ["mtuq/some_module.pyx"], extra_compile_args = [...] }
+
+

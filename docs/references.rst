@@ -11,6 +11,8 @@ References
 
 [`Tape2015`] W. Tape and C. Tape (2015), A uniform parameterization of moment tensors, GJI, https://doi.org/10.1093/gji/ggv262
 
+[`Thurin2025`] J. Thurin, R. Modrak, C. Tape, A. McPherson, F. Rodríguez-Cardozo, J. Kintner, L, Ding, Q. Liu, J. Braunmiller (2025), MTUQ: a framework for estimating moment tensors, point forces, and their uncertainties, GJI, https://doi.org/10.1093/gji/ggaf080
+
 [`Zhao1994`] L.-S. Zhao and D. Helmberger (1994), Source estimation from broadband regional seismograms. Bulletin of the Seismological Society of America 1994, 84 (1): 91-104
 
 [`Zhu1996`] L. Zhu and D. Helmberger (1996), Advancement in source estimation techniques using broadband regional seismograms. Bulletin of the Seismological Society of America, 86 (5): 1634-1641

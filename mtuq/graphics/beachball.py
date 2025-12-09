@@ -463,7 +463,7 @@ def _plot_beachball_matplotlib(filename, mt_arrays, stations=None, origin=None, 
     
     from scipy.interpolate import griddata
 
-    _development_warning_beachball()
+    #_development_warning_beachball()
 
     if lon_lats is not None:
         if len(lon_lats) != len(mt_arrays):

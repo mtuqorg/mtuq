@@ -85,8 +85,8 @@ class Grid(object):
             self.stop = stop
             self.size = stop-start
         else:
-            self.stop = np.product(shape)
-            self.size = np.product(shape)-start
+            self.stop = np.prod(shape)
+            self.size = np.prod(shape)-start
         self.index = start
 
         self.callback = callback

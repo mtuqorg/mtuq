@@ -3,7 +3,7 @@
 Data processing 
 ===============
 
-Filtering, windowing and other signal processing operations are essential for meaningful comparisons between data synthetics.  
+Filtering, windowing and other signal processing operations are important for meaningful comparisons between data synthetics.  
 
 To make data processing easier, `mtuq.ProcessData` is an attempt at a one-size-fits-all data processing class.  While the approach below based on `mtuq.ProcessData` is very general,  users are nevertheless free to apply their own custom data processing functions instead, with the only condition being that the `requirements <https://mtuqorg.github.io/mtuq/user_guide/04.html#requirements-for-processed-data>`_ below end up being satisfied.
 
@@ -53,10 +53,10 @@ Requirements for processed data
 
 Processed traces must satisfy:
 
-1. all traces must have the same sampling rate and number of samples
-2. all traces common to the same station must have the same startime and endtime
+- all traces must have the same sampling rate and number of samples
+- all traces common to the same station must have the same startime and endtime
 
-These conditions help MTUQ achieve faster memory access patterns, more efficient misfit evaluation, and more easily maintainable code.  An easy way to ensure that they are satisfied is to simply use `mtuq.ProcessData` for data processing.
+These conditions help MTUQ achieve faster memory access patterns and more easily maintainable code.  An easy way to ensure that they are satisfied is to simply use `mtuq.ProcessData` for data processing.
 
 
 Plotting waveforms

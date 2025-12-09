@@ -131,10 +131,6 @@ def _plot_lune_matplotlib(filename, longitude, latitude, values,
         divider = make_axes_locatable(pyplot.gca())
         cax = divider.append_axes("bottom", '2%', pad=0.001)
         cb = pyplot.colorbar(im, cax=cax, orientation='horizontal', ticks=ticker.MaxNLocator(nbins=5))
-        if 'colorbar_label' in kwargs:
-            cb.set_label(kwargs['colorbar_label'])
-        else:
-            cb.set_label('l2-misfit')
 
     elif plot_type == 'scatter':
         divider = make_axes_locatable(pyplot.gca())
@@ -265,8 +261,7 @@ def _plot_force_matplotlib(filename, phi, h, values, best_force=None, colormap='
         cb = pyplot.colorbar(im, ticks=ticks, location='bottom', ax=ax, pad=0.001, fraction=0.02)
         if 'colorbar_label' in kwargs:
             cb.set_label(kwargs['colorbar_label'])
-        else:
-            cb.set_label('l2-misfit')
+
     elif plot_type == 'scatter':
         cb = pyplot.colorbar(im, location='bottom', ax=ax, pad=0.001, fraction=0.02, ticks=boundaries, extend='max')
         cb.set_label('Mismatching polarities')
@@ -339,8 +334,6 @@ def _plot_dc_matplotlib(filename, coords,
         cb.ax.yaxis.set_major_formatter(formatter)
         if 'colorbar_label' in kwargs:
             cb.set_label(kwargs['colorbar_label'])
-        else:
-            cb.set_label('l2-misfit')
 
 
     # Set the title if provided
@@ -569,8 +562,6 @@ def _plot_latlon_matplotlib(filename, lon, lat, values, best_latlon=None, lune_a
     cbar = pyplot.colorbar(contour, cax=cax)
     if 'colorbar_label' in kwargs:
         cbar.set_label(kwargs['colorbar_label'])
-    else:
-        cbar.set_label('l2-misfit')
 
     if lune_array is not None:
         from mtuq.graphics.beachball import _plot_beachball_matplotlib
@@ -856,6 +847,11 @@ def _plot_directions_text(axis):
 
 def _development_warning():
     warnings.warn(
-        "\n You are using the new matplotlib visualization backend, which is currently being tested. \n The figures might look slightly different from previous results using the GMT backend. \n If you encounter any issues or unexpected behavior, please report them on GitHub.",
-        UserWarning
-    )
+       """'\n'
+    You are using the new matplotlib visualization backend, which is currently
+    being tested. If you encounter issues or unexpected behavior, please report
+    them on GitHub.
+       """,
+       UserWarning
+       )
+    print()

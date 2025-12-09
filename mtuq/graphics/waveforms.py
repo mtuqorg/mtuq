@@ -36,8 +36,11 @@ def plot_waveforms1(
 
     """ Creates data/synthetics comparison figure with 3 columns (Z, R, T)
     """
-    if _isempty(data):
-        raise Exception
+    if data is None:
+        data = Null()
+
+    if synthetics is None:
+        synthetics = Null()
 
     # how many stations have at least one trace?
     nrows = _count(data, synthetics)
@@ -106,6 +109,17 @@ def plot_waveforms2(
     """ Creates data/synthetics comparison figure with 5 columns 
    (Pn Z, Pn R, Rayleigh Z, Rayleigh R, Love T)
     """
+    if data_bw is None:
+        data_bw = Null()
+
+    if data_sw is None:
+        data_sw = Null()
+
+    if synthetics_bw is None:
+        synthetics_bw = Null()
+
+    if synthetics_sw is None:
+        synthetics_sw = Null()
 
     # how many stations have at least one trace?
     nrows = _count(data_bw, data_sw, synthetics_bw, synthetics_bw)
@@ -182,6 +196,23 @@ def plot_waveforms3(
     """ Creates data/synthetics comparison figure with 5 columns 
     (Pn Z, Pn R, Rayleigh Z, Rayleigh R, Love T)
     """
+    if data_bw is None: 
+        data_bw = Null()
+
+    if data_rayl is None: 
+        data_rayl = Null()
+
+    if data_love is None:
+        data_love = Null()
+
+    if synthetics_bw is None:
+        synthetics_bw = Null()
+
+    if synthetics_rayl is None:
+        synthetics_rayl = Null()
+
+    if synthetics_love is None:
+        synthetics_love = Null()
 
     # how many stations have at least one trace?
     nrows = _count(data_bw, data_rayl, data_love)
@@ -269,7 +300,7 @@ def plot_data_greens1(
     synthetics = misfit.collect_synthetics(data, greens.select(origin), source)
 
     # calculate total misfit for display in figure header
-    total_misfit = misfit(data, greens.select(origin), source, optimization_level=0)
+    total_misfit = misfit(data, greens.select(origin), source, level=0)
 
     # prepare figure header
     if 'header' in kwargs:
@@ -319,10 +350,10 @@ def plot_data_greens2(filename,
 
     # calculate total misfit for display in figure header
     total_misfit_bw = misfit_bw(
-        data_bw, greens_bw.select(origin), source, optimization_level=0)
+        data_bw, greens_bw.select(origin), source, level=0)
 
     total_misfit_sw = misfit_sw(
-        data_sw, greens_sw.select(origin), source, optimization_level=0) 
+        data_sw, greens_sw.select(origin), source, level=0) 
 
 
     # prepare figure header
@@ -383,13 +414,13 @@ def plot_data_greens3(
     
     # calculate total misfit for display in figure header
     total_misfit_bw = misfit_bw(
-        data_bw, greens_bw.select(origin), source, optimization_level=0)
+        data_bw, greens_bw.select(origin), source, level=0)
 
     total_misfit_rayl = misfit_rayl(
-        data_rayl, greens_rayl.select(origin), source, optimization_level=0) 
+        data_rayl, greens_rayl.select(origin), source, level=0) 
 
     total_misfit_love = misfit_love(
-        data_love, greens_love.select(origin), source, optimization_level=0)
+        data_love, greens_love.select(origin), source, level=0)
 
     # prepare figure header
     if 'header' in kwargs:
@@ -506,6 +537,21 @@ def _plot_stream(
     total_misfit=1.
     ):
 
+    if normalize in [
+        'maximum_amplitude',
+        'median_amplitude',
+        'station_amplitude',
+        'trace_amplitude',
+        ]:
+        pass
+    elif not normalize:
+        pass
+    else:
+        warn(f"Unrecognized option: normalize={normalize}.\n\n"
+             "Setting normalize='station_amplitude'")
+
+        normalize='station_amplitude'
+
     for _i, component, in enumerate(components):
         axis = axes[column_indices[_i]]
 
@@ -538,7 +584,7 @@ def _plot_stream(
 
         try:
             axis.set_ylim(*ylim)
-        except ValueError:
+        except (UnboundLocalError, ValueError):
             pass
 
         try:
@@ -632,6 +678,8 @@ def _time_series(trace):
 
 
 def _count(*datasets):
+    datasets = filter(lambda x: x is not None, datasets)
+
     # counts number of nonempty streams in dataset(s)
     count = 0
     for streams in zip(*datasets):
@@ -654,7 +702,8 @@ def _isempty(dataset):
 def _max(*datasets):
     # returns maximum amplitude over traces, streams, or datasets
 
-    maxall = -np.Inf
+    maxval = -np.inf
+    maxall = -np.inf
 
     for ds in datasets:
         if type(ds) not in [Dataset, Stream, Trace, Null]:
@@ -666,7 +715,8 @@ def _max(*datasets):
             maxval = abs(ds.max())
 
         elif type(ds)==Stream:
-            maxval = map(abs, ds.max())
+            if len(ds) > 0:
+                maxval = max(map(abs, ds.max()))
 
         elif type(ds)==Dataset:
             maxval = abs(ds.max())
@@ -676,6 +726,9 @@ def _max(*datasets):
 
         if maxval > maxall:
             maxall = maxval
+
+    if maxall==-np.inf:
+        print('Warning: maximum value undefined')
 
     return maxall
 

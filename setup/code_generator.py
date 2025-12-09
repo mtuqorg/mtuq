@@ -4,7 +4,7 @@ Imports="""
 import os
 import numpy as np
 
-from mtuq import read, open_db, download_greens_tensors
+from mtuq import read, open_db, download_greens
 from mtuq.event import Origin
 from mtuq.graphics import plot_data_greens2, plot_beachball, plot_misfit_dc
 from mtuq.grid import DoubleCoupleGridRegular
@@ -211,9 +211,9 @@ if __name__=='__main__':
     # implementations against a simple pure Python implementation.
     # These implementations correspond to:
     #
-    #   optimization_level=0: simple pure Python
-    #   optimization_level=1: fast pure Python
-    #   optimization_level=2: fast Python/C
+    #   level=0: simple pure Python
+    #   level=1: fast pure Python
+    #   level=2: fast Python/C
     #
     # In running the test in our environment, we observe that the two pure 
     # Python implementations agree almost exactly.  On the other hand, the
@@ -225,7 +225,7 @@ if __name__=='__main__':
     # Possibly relevant is the fact that C extensions are compiled with
     # `-Ofast` flag, as specified in `setup.py`.
     #
-    # Note that the `optimization_level` keyword argument does not correspond
+    # Note that the `level` keyword argument does not correspond
     # at all to C compiler optimization flags.  For example, the NumPy binaries
     # called by the simple pure Python misfit function are probably compiled 
     # using a nonzero optimization level?
@@ -450,6 +450,7 @@ MisfitDefinitions="""
         time_shift_min=-2.,
         time_shift_max=+2.,
         time_shift_groups=['ZR'],
+        normalize=True,
         )
 
     misfit_sw = Misfit(
@@ -457,6 +458,7 @@ MisfitDefinitions="""
         time_shift_min=-10.,
         time_shift_max=+10.,
         time_shift_groups=['ZR','T'],
+        normalize=True,
         )
 
 """
@@ -491,7 +493,28 @@ WaveformsPolaritiesMisfit="""
     # unpicked
     #
 
-    polarities = np.array([-1, -1, -1, 1, 1, 0, 1, 1, -1, 1, 1, 1, 0, 1, 1, 1, -1, 1, 1, 0])
+    polarities_dict = {
+        "BMR":   0,
+        "DIV":  +1,
+        "EYAK": +1,
+        "PAX":  +1,
+        "SWD":  +1,
+        "TRF":  -1,
+        "PMR":  -1,
+        "AVAL": +1,
+        "BIGB": -1,
+        "BLAK": +1,
+        "DEVL": +1,
+        "HEAD": +1,
+        "KASH": -1,
+        "LSKI": -1,
+        "LSUM": +1,
+        "MPEN":  0,
+        "NSKI": +1,
+        "PERI": +1,
+        "SOLD":  0,
+        "TUPA":  1,
+        }
 
 
 """
@@ -610,6 +633,7 @@ MisfitDefinitions_DetailedExample="""
         time_shift_min=-2.,
         time_shift_max=+2.,
         time_shift_groups=['ZR'],
+        normalize=False,
         )
 
     misfit_rayleigh = Misfit(
@@ -617,6 +641,7 @@ MisfitDefinitions_DetailedExample="""
         time_shift_min=-10.,
         time_shift_max=+10.,
         time_shift_groups=['ZR'],
+        normalize=False,
         )
 
     misfit_love = Misfit(
@@ -624,6 +649,7 @@ MisfitDefinitions_DetailedExample="""
         time_shift_min=-10.,
         time_shift_max=+10.,
         time_shift_groups=['T'],
+        normalize=False,
         )
 
 """
@@ -772,7 +798,7 @@ Main_GridSearch="""
 
 
         print('Reading Greens functions...\\n')
-        greens = download_greens_tensors(stations, origin, model)
+        greens = download_greens(stations, origin, model)
 
         print('Processing Greens functions...\\n')
         greens.convolve(wavelet)
@@ -836,7 +862,7 @@ Main1_SerialGridSearch_DoubleCouple="""
 
 
     print('Reading Greens functions...\\n')
-    greens = download_greens_tensors(stations, origin, model)
+    greens = download_greens(stations, origin, model)
 
 
     print('Processing Greens functions...\\n')
@@ -1006,13 +1032,13 @@ Main_TestMisfit="""
     print('Evaluating body wave misfit...\\n')
 
     results_0 = misfit_bw(
-        data_bw, greens_bw, grid, optimization_level=0)
+        data_bw, greens_bw, grid, level=0)
 
     results_1 = misfit_bw(
-        data_bw, greens_bw, grid, optimization_level=1)
+        data_bw, greens_bw, grid, level=1)
 
     results_2 = misfit_bw(
-        data_bw, greens_bw, grid, optimization_level=2)
+        data_bw, greens_bw, grid, level=2)
 
     print('  optimization level:  0\\n', 
           '  argmin:  %d\\n' % results_0.argmin(), 
@@ -1034,13 +1060,13 @@ Main_TestMisfit="""
     print('Evaluating surface wave misfit...\\n')
 
     results_0 = misfit_sw(
-        data_sw, greens_sw, grid, optimization_level=0)
+        data_sw, greens_sw, grid, level=0)
 
     results_1 = misfit_sw(
-        data_sw, greens_sw, grid, optimization_level=1)
+        data_sw, greens_sw, grid, level=1)
 
     results_2 = misfit_sw(
-        data_sw, greens_sw, grid, optimization_level=2)
+        data_sw, greens_sw, grid, level=2)
 
     print('  optimization level:  0\\n', 
           '  argmin:  %d\\n' % results_0.argmin(), 
@@ -1547,9 +1573,13 @@ WrapUp_WaveformsPolarities="""
     if comm.rank==0:
         print('Evaluating polarity misfit...\\n')
 
+    polarities = np.zeros(len(stations))
+    for _i, station in enumerate(stations):
+        polarities[_i] = polarities_dict[station.station]
+        
     results_polarity = grid_search(
         polarities, greens_bw, polarity_misfit, origin, grid)
-
+        
 
     if comm.rank==0:
 
@@ -1635,12 +1665,12 @@ WrapUp_TestGridSearch_DoubleCouple="""
 
         if not isclose(best_mt.as_vector(),
             np.array([
-                 -6.731618e+15,
-                  8.398708e+14,
-                  5.891747e+15,
-                 -1.318056e+15,
-                  7.911756e+14,
-                  2.718294e+15,
+                 -5.282696e+15,
+                  9.182139e+14,
+                  4.364482e+15,
+                  8.607951e+14,
+                  4.534485e+15,
+                  2.217397e+15,
                  ])
             ):
             raise Exception(
@@ -1879,13 +1909,13 @@ if __name__=='__main__':
             'Reading Greens functions...\\\\n\\\\n'+
             '  Downloads can sometimes take as long as a few hours!\\\\n'
             ),
-            'download_greens_tensors\(stations, origin, model\)',
-            'download_greens_tensors(stations, origin, model, verbose=True)',
+           r'download_greens\(stations, origin, model\)',
+            'download_greens(stations, origin, model, verbose=True)',
             ))
         file.write(
             replace(
             WrapUp_GridSearch_DoubleCoupleMagnitudeDepth,
-            'DC\+Z',
+           r'DC\+Z',
             'DC+XY',
             'misfit_depth',
             'misfit_latlon',
@@ -2005,7 +2035,7 @@ if __name__=='__main__':
     #    file.write(
     #        replace(
     #        Main_GridSearch,
-    #        'greens = download_greens_tensors\(stations, origin, model\)',
+    #        'greens = download_greens\(stations, origin, model\)',
     #        'db = open_db(path_greens, format=\'SPECFEM3D_SGT\', model=model)\n        '
     #       +'greens = db.get_greens_tensors(stations, origin)',
     #       ))
@@ -2044,7 +2074,7 @@ if __name__=='__main__':
         file.write(
             replace(
             Main1_SerialGridSearch_DoubleCouple,
-            'greens = download_greens_tensors\(stations, origin, model\)',
+           r'greens = download_greens\(stations, origin, model\)',
             'db = open_db(path_greens, format=\'FK\', model=model)\n    '
            +'greens = db.get_greens_tensors(stations, origin)',
             ))
@@ -2110,7 +2140,7 @@ if __name__=='__main__':
         file.write(
             replace(
             Main1_SerialGridSearch_DoubleCouple,
-            'greens = download_greens_tensors\(stations, origin, model\)',
+           r'greens = download_greens\(stations, origin, model\)',
             'db = open_db(path_greens, format=\'FK\', model=model)\n    '
            +'greens = db.get_greens_tensors(stations, origin)',
             ))

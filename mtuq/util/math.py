@@ -188,6 +188,200 @@ def to_mij(rho, v, w, kappa, sigma, h):
         return np.array([mt0, mt1, mt2, mt3, mt4, mt5])
 
 
+def from_mij(mij):
+    """
+    Converts from moment tensor (Up-South-East) to lune parameters
+    This is a stripped out version based of mtpar's cmt2tt function by rmodrak
+    It ONLY works with MTUQ convention.
+
+    Parameters:
+    -----------
+    mij : array_like, shape (6,)
+        Moment tensor components in Up-South-East convention (default MTUQ) 
+        [Mxx, Myy, Mzz, Mxy, Mxz, Myz]
+        
+    Returns:
+    --------
+    tuple : (rho, v, w, kappa, sigma, h)
+        rho   : Tape2012 magnitude parameter  
+        v     : Tape2015 parameter v [-1/3, 1/3]
+        w     : Tape2015 parameter w [-3π/8, 3π/8]
+        kappa : strike angle [0°, 360°]
+        sigma : rake angle [-90°, 90°]
+        h     : cosine of dip angle [0, 1]
+
+    """
+    
+    mij = np.array(mij)
+    
+    # Cast from up-south-east to south-east-up convention (following mtpar)
+    # USE convention: [Mxx, Myy, Mzz, Mxy, Mxz, Myz] (UP-SOUTH-EAST)
+    # SEU convention: [Myy, Mzz, Mxx, Myz, Mxy, Mxz] (SOUTH-EAST-UP)
+    mij_seu = np.array([mij[1], mij[2], mij[0], mij[5], mij[3], mij[4]])
+    
+    # Convert to matrix representation for eigenvalue decomposition
+    M_seu = np.array([[mij_seu[0], mij_seu[3], mij_seu[4]],
+                      [mij_seu[3], mij_seu[1], mij_seu[5]],
+                      [mij_seu[4], mij_seu[5], mij_seu[2]]])
+    
+    # Eigenvalue decomposition (sort eigenvalues highest to lowest)
+    lam, U = np.linalg.eigh(M_seu)
+    idx = np.argsort(lam)[::-1]  # descending sort
+    lam = lam[idx]
+    U = U[:, idx]
+    
+    # Convert eigenvalues to lune coordinates
+    # magnitude of lambda vector
+    lammag = np.linalg.norm(lam)
+    
+    # seismic moment M0 = ||lam|| / sqrt(2)
+    M0 = lammag / np.sqrt(2.)
+    rho = M0 * np.sqrt(2.)  # rho parameter
+    
+    # lune coordinates (gamma, delta)
+    if np.sum(lam) != 0.:
+        bdot = np.sum(lam) / (np.sqrt(3) * lammag)
+        bdot = np.clip(bdot, -1, 1)  # clipping to avoid numerical issues
+        delta = 90. - np.rad2deg(np.arccos(bdot))
+    else:
+        delta = 0.
+    
+    # gamma coordinate
+    if lam[0] != lam[2]:
+        gamma = np.rad2deg(np.arctan((-lam[0] + 2.*lam[1] - lam[2]) / 
+                                   (np.sqrt(3) * (lam[0] - lam[2]))))
+    else:
+        gamma = 0.
+    
+    # Convert lune coordinates to v, w parameters
+    gamma_rad = np.deg2rad(gamma)
+    delta_rad = np.deg2rad(delta)
+    beta = np.pi/2. - delta_rad
+    
+    v = (1./3.) * np.sin(3. * gamma_rad)
+    u = (0.75 * beta - 0.5 * np.sin(2. * beta) + 0.0625 * np.sin(4. * beta))
+    w = 3. * np.pi / 8. - u
+    
+    # Ensure det(U) = 1
+    if np.linalg.det(U) < 0:
+        U[:, 1] *= -1
+    
+    # 45° rotation around y axis to get the fault vectors from eigenvectors
+    Y = np.array([[np.cos(np.pi/4), 0, np.sin(np.pi/4)],
+                  [0, 1, 0],
+                  [-np.sin(np.pi/4), 0, np.cos(np.pi/4)]])  # rotmat(45, 1)
+    
+    V = np.dot(U, Y)
+    S = V[:, 0]  # slip vector
+    N = V[:, 2]  # fault normal
+    
+    # Round off small values to -/+1 and 0 (like in mtpar)
+    EPSVAL = 1e-6
+    S[np.abs(S) < EPSVAL] = 0
+    N[np.abs(N) < EPSVAL] = 0
+    S[np.abs(S - 1) < EPSVAL] = 1
+    S[np.abs(S + 1) < EPSVAL] = -1
+    N[np.abs(N - 1) < EPSVAL] = 1
+    N[np.abs(N + 1) < EPSVAL] = -1
+    
+    # Calculate fault angles using south-east-up basis
+    zenith = np.array([0, 0, 1])
+    north = np.array([-1, 0, 0])
+    
+    def faultvec2angles(S_vec, N_vec):
+        """Calculate fault angles from slip and normal vectors
+        Similar to Ryan's mtpar implementation. I keep within the scope of 
+        the from_mij function because it is only useful there."""
+        # Strike vector
+        v_cross = np.cross(zenith, N_vec)
+        if np.linalg.norm(v_cross) == 0:
+            K = S_vec  # horizontal fault case
+        else:
+            K = v_cross / np.linalg.norm(v_cross)
+        
+        # Strike angle (kappa)
+        def fangle_signed(va, vb, vnor):
+            # Angle between two vectors with sign
+            xy = np.dot(va, vb)
+            xx = np.dot(va, va)
+            yy = np.dot(vb, vb)
+            theta = np.rad2deg(np.arccos(np.clip(xy / (xx * yy)**0.5, -1, 1)))
+            
+            if abs(theta - 180) <= EPSVAL:
+                return 180
+            else:
+                Dmat = np.column_stack([va, vb, vnor])
+                if np.linalg.det(Dmat) < 0:
+                    return -theta
+                else:
+                    return theta
+        
+        kappa = fangle_signed(north, K, -zenith)
+        kappa = kappa % 360.  # wrap to [0, 360)
+        
+        # Dip angle (theta)
+        costh = np.dot(N_vec, zenith)
+        theta = np.rad2deg(np.arccos(np.clip(costh, -1, 1)))
+        
+        # Rake angle (sigma)
+        sigma = fangle_signed(K, S_vec, N_vec)
+        
+        return theta, sigma, kappa, K
+    
+    # Frame2angles: evaluate four combinations to resolve ambiguity
+    # There are four combinations of N and S that represent a double couple
+    # moment tensor (TT2012, Fig. 15). We need to find the one within the
+    # proper bounding region (TT2012, Figs. 16, B1)
+    
+    # Four combinations for the given frame
+    S1, N1 = S, N
+    S2, N2 = -S, -N  
+    S3, N3 = N, S
+    S4, N4 = -N, -S
+    
+    # Calculate fault angles for each combination
+    theta1, sigma1, kappa1, K1 = faultvec2angles(S1, N1)
+    theta2, sigma2, kappa2, K2 = faultvec2angles(S2, N2)
+    theta3, sigma3, kappa3, K3 = faultvec2angles(S3, N3)
+    theta4, sigma4, kappa4, K4 = faultvec2angles(S4, N4)
+    
+    theta = np.array([theta1, theta2, theta3, theta4])
+    sigma = np.array([sigma1, sigma2, sigma3, sigma4])
+    kappa = np.array([kappa1, kappa2, kappa3, kappa4])
+    
+    # Which combination lies within the bounding region?
+    btheta = (theta <= 90. + EPSVAL)
+    bsigma = (np.abs(sigma) <= 90. + EPSVAL)
+    bb = np.logical_and(btheta, bsigma)
+    ii = np.where(bb)[0]
+    nn = len(ii)
+    
+    if nn == 0:
+        raise Exception('No valid fault plane found within bounding region')
+    elif nn == 1:
+        jj = ii[0]
+    elif nn == 2:
+        # Choose one of the two based on strike angle
+        # This is a simplified version of the _pick function in mtpar
+        if kappa[ii[0]] < 180:
+            jj = ii[0]
+        else:
+            jj = ii[1]
+    else:
+        # Take the first one for unusual cases
+        jj = ii[0]
+    
+    # Select the angles from the chosen combination
+    final_theta = theta[jj]
+    final_sigma = sigma[jj]
+    final_kappa = kappa[jj]
+    
+    # Convert theta to h parameter
+    h = np.cos(np.deg2rad(final_theta))
+    
+    return (rho, v, w, final_kappa, final_sigma, h)
+
+
 def to_xyz(F0, phi, h):
     """ Converts from spherical to Cartesian coordinates (east-north-up)
     """

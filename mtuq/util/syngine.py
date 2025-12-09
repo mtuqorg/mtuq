@@ -212,6 +212,6 @@ def _check(path):
             assert os.access(path, os.W_OK)
         except:
             path = abspath('./syngine/cache')
-            os.makedirs(path, exists_ok=True)
+            os.makedirs(path, exist_ok=True)
     return path
 

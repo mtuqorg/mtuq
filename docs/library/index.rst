@@ -20,7 +20,7 @@ Data I/O
 --------
 
 ============================================================================================================  ============================================================================================================
-`mtuq.download_greens_tensors <generated/mtuq.download_greens_tensors.html>`_                                  Downloads Green's tensors from syngine
+`mtuq.download_greens <generated/mtuq.download_greens.html>`_                                                  Downloads Green's tensors from syngine
 `mtuq.open_db <generated/mtuq.open_db.html>`_                                                                  Opens Green's tensor database from disk
 `mtuq.open_ds <generated/mtuq.grid_search.open_ds.html>`_                                                      Opens grid search results from disk
 `mtuq.read <generated/mtuq.io.readers.SAC.read.html>`_                                                         Reads seismic data from disk
@@ -95,13 +95,13 @@ Depth and hypocenter visualization
 ============================================================================================================  ============================================================================================================
 
 
-Station attributes visualization
---------------------------------------------
+Visualizing by location and component
+-------------------------------------
 
 ============================================================================================================  ============================================================================================================
 `mtuq.graphics.plot_time_shifts <generated/mtuq.graphics.plot_time_shifts.html>`_                              Plots time shifts by location and component
 `mtuq.graphics.plot_amplitude_ratios <generated/mtuq.graphics.plot_amplitude_ratios.html>`_                    Plots amplitude ratios by location and component
-`mtuq.graphics.plot_cross_corr <generated/mtuq.graphics.plot_cross_corr.html>`_                                Plots normalized cross-correlation by location and component
+`mtuq.graphics.plot_cc_max <generated/mtuq.graphics.plot_cc_max.html>`_                                        Plots maximum correlation coefficient by location and component
 ============================================================================================================  ============================================================================================================
 
 
@@ -157,6 +157,6 @@ Low-level misfit modules
 ============================================================================================================  ============================================================================================================
 `mtuq.misfit.waveform.level0.misfit <generated/mtuq.misfit.waveform.level0.html>`_                             Easy-to-read pure Python implementation
 `mtuq.misfit.waveform.level1.misfit <generated/mtuq.misfit.waveform.level1.html>`_                             Fast pure Python implementation
-`mtuq.misfit.waveform.level2.misfit <generated/mtuq.misfit.waveform.level2.html>`_                             Fastest Python/C implementation
+`mtuq.misfit.waveform.level2.misfit <generated/mtuq.misfit.waveform.level2.html>`_                             Fastest Python/numba.jit implementation
 ============================================================================================================  ============================================================================================================
 

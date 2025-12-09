@@ -49,9 +49,9 @@ MTUQ now includes its own beachball plotting implementation, as well as wrappers
 
 .. warning::
 
-    Some versions of GMT and ObsPy plotted `non-double couple beachballs <https://github.com/obspy/obspy/issues/2388>`_ incorrectly.
+    Some versions of GMT and ObsPy plotted `non-double couple <https://github.com/obspy/obspy/issues/2388>`_ beachballs incorrectly.
 
 .. warning::
 
-    MTUQ's `_plot_beachball_matplotlib() <https://mtuqorg.github.io/mtuq/_modules/mtuq/graphics/beachball.html>`_ appears to improve over some versions of GMT and ObsPy, but is still being tested.
+    MTUQ's native `beachball plotting <https://mtuqorg.github.io/mtuq/_modules/mtuq/graphics/beachball.html>`_ appears to improve over some versions of GMT and ObsPy, but is still being tested.
 

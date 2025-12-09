@@ -3,7 +3,7 @@
 import os
 import numpy as np
 
-from mtuq import read, open_db, download_greens_tensors
+from mtuq import read, open_db, download_greens
 from mtuq.event import Origin
 from mtuq.graphics import plot_data_greens2, plot_beachball, plot_misfit_lune
 from mtuq.grid import FullMomentTensorGridSemiregular
@@ -67,6 +67,7 @@ if __name__=='__main__':
         time_shift_min=-2.,
         time_shift_max=+2.,
         time_shift_groups=['ZR'],
+        normalize=True,
         )
 
     misfit_sw = Misfit(
@@ -74,6 +75,7 @@ if __name__=='__main__':
         time_shift_min=-10.,
         time_shift_max=+10.,
         time_shift_groups=['ZR','T'],
+        normalize=True,
         )
 
 
@@ -139,7 +141,7 @@ if __name__=='__main__':
 
 
         print('Reading Greens functions...\n')
-        greens = download_greens_tensors(stations, origin, model)
+        greens = download_greens(stations, origin, model)
 
         print('Processing Greens functions...\n')
         greens.convolve(wavelet)

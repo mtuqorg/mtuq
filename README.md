@@ -43,7 +43,7 @@ downloading Green's functions from remote [syngine](http://ds.iris.edu/ds/produc
 ### Misfit evaluation
 
 Waveform difference and cross-correlation time-shift [misfit evaluation](https://mtuqorg.github.io/mtuq/library/index.html#data-processing-and-inversion)
-on body-wave and surface-wave windows is implemented in C-accelerated Python.
+on body-wave and surface-wave windows is implemented in numba-accelerated Python.
 
 These misfit functions can be used with [mtuq.grid_search](https://mtuqorg.github.io/mtuq/library/generated/mtuq.grid_search.grid_search.html), which automatically partitions the grid over multiple MPI processes if invoked from an MPI environment.  For efficient and unbiased uncertainty quantification, [uniform grids](https://mtuqorg.github.io/mtuq/library/index.html#moment-tensor-and-force-grids) can be used for the grid search, drawing from [Tape2015](https://academic.oup.com/gji/article/202/3/2074/613765).
 
@@ -59,7 +59,13 @@ Alternatively, MTUQ misfit functions can be used as a starting point for Bayesia
 
 The package has been tested against [legacy Perl/C codes](https://github.com/mtuqorg/mtuq/blob/master/tests/benchmark_cap_vs_mtuq.py) as well as [published studies](https://github.com/rmodrak/mtbench).
 
+## Citation
 
+If you use MTUQ in your research, please cite:
+
+J Thurin, R Modrak, C Tape, A M McPherson, F R Rodríguez-Cardozo, J Kintner, L Ding, Q Liu, J Braunmiller, MTUQ: a framework for estimating moment tensors, point forces, and their uncertainties, *Geophysical Journal International*, Volume 241, Issue 2, May 2025, Pages 1373–1390, <https://doi.org/10.1093/gji/ggaf080>
+
+Scripts for reproducing the grid-search results and figures from Cases 1 to 3 of this publication, along with useful files (best-fitting moment tensor parameters, weight files, first-motion polarity picks, etc.), are available in the Zenodo collection at <https://doi.org/10.5281/zenodo.13868450>.
 
 [Instaseis]: http://instaseis.net/
 

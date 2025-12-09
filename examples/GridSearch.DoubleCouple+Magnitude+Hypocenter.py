@@ -3,7 +3,7 @@
 import os
 import numpy as np
 
-from mtuq import read, open_db, download_greens_tensors
+from mtuq import read, open_db, download_greens
 from mtuq.event import Origin
 from mtuq.graphics import plot_data_greens2, plot_misfit_latlon, plot_misfit_dc
 from mtuq.grid import DoubleCoupleGridRegular
@@ -88,6 +88,7 @@ if __name__=='__main__':
         time_shift_min=-2.,
         time_shift_max=+2.,
         time_shift_groups=['ZR'],
+        normalize=True,
         )
 
     misfit_sw = Misfit(
@@ -95,6 +96,7 @@ if __name__=='__main__':
         time_shift_min=-10.,
         time_shift_max=+10.,
         time_shift_groups=['ZR','T'],
+        normalize=True,
         )
 
 
@@ -179,7 +181,7 @@ if __name__=='__main__':
 
 
         print('Reading Greens functions...\n\n  Downloads can sometimes take as long as a few hours!\n')
-        greens = download_greens_tensors(stations, origins, model)
+        greens = download_greens(stations, origins, model)
 
         print('Processing Greens functions...\n')
         greens.convolve(wavelet)

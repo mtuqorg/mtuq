@@ -254,6 +254,16 @@ class PolarityMisfit(object):
         return attrs_list
 
 
+    def description(self):
+        _description = '\n'.join([
+            f'    Misfit function type:\n    {type(self).__name__}\n',
+            f'    Misfit function method:\n    {self.method}\n',
+            ])
+        return _description
+
+
+
+
 def _takeoff_angles_taup(taup, greens):
     """ Calculates takeoff angles from Tau-P model
     """

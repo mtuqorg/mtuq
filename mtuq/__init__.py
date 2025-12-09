@@ -35,21 +35,24 @@ from mtuq.grid_search import MTUQDataArray, MTUQDataFrame, open_ds
 from mtuq.misfit import PolarityMisfit, WaveformMisfit
 from mtuq.process_data import ProcessData
 
-# for backward compatibility
-Misfit = WaveformMisfit
 
 # commented out because of namespace conflict
 #from mtuq.grid_search import grid_search
 
 
+from pkg_resources import iter_entry_points
+from mtuq.io.clients.syngine import download_greens
+
+
+# for backward compatibility
+Misfit = WaveformMisfit
+download_greens_functions = download_greens
+download_greens_tensors = download_greens
+
 
 #
 # register I/O functions
 #
-
-from pkg_resources import iter_entry_points
-from mtuq.io.clients.syngine import download_greens_tensors
-
 
 def _greens_tensor_clients():
     clients = {}

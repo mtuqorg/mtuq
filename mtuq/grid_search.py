@@ -77,14 +77,16 @@ def grid_search(data, greens, misfit, origins, sources,
       reduces to ``_grid_search_serial``.
 
     """
-
-    # check input arguments
+    # check grid
     origins = iterable(origins)
     for origin in origins:
         assert type(origin) is Origin
 
     if type(sources) not in (Grid, UnstructuredGrid):
         raise TypeError
+
+    size = len(origins)*sources.size
+
 
     if _is_mpi_env():
         from mpi4py import MPI
@@ -97,16 +99,23 @@ def grid_search(data, greens, misfit, origins, sources,
 
     # print debugging information
     if verbose>0 and _is_mpi_env() and iproc==0:
+        try:
+            print(misfit.description())
+        except:
+            pass
 
-        print('  Number of grid points: %.3e' %\
-            (len(origins)*len(sources)))
+        print('    Number of misfit evaluations: {:,}\n'.format(size))
+        print('    Number of MPI processes: {:,}'.format(nproc))
+        print('    Number of evaluations per process: {:,}\n'.format(size//nproc))
 
-        print('  Number of MPI processes: %d\n' % nproc)
 
     elif verbose>0 and not _is_mpi_env():
+        try:
+            print(misfit.description())
+        except:
+            pass
 
-        print('  Number of misfit evaluations: %.3e\n' %\
-            (len(origins)*len(sources)))
+        print('    Number of misfit evaluations: {:,}\n'.format(size))
 
 
     if _is_mpi_env():
@@ -370,23 +379,23 @@ def open_ds(filename, format=None):
                 raise Exception('File format not recognized: %s' % filename)
 
     if format.upper() in ['H5', 'HDF','HDF5']:
-        return _open_df(filename)
+        return open_df(filename)
 
     elif format.upper() in ['NC', 'NC4', 'NETCDF', 'NETCDF4']:
-        return _open_da(filename)
+        return open_da(filename)
 
     else:
         raise Exception('File format not supported: %s' % filename)
 
 
-def _open_da(filename):
+def open_da(filename):
     """ Reads MTUQDataArray from NetCDF file
     """
     da = xarray.open_dataarray(filename)
     return MTUQDataArray(data=da.values, coords=da.coords, dims=da.dims)
 
 
-def _open_df(filename):
+def open_df(filename):
     """ Reads MTUQDataFrame from HDF5 file
     """
     df = pandas.read_hdf(filename)
