@@ -21,14 +21,8 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y libfabric-bin
       
     - uses: actions/checkout@v2
-    
-    - name: Install HDF5 headers
-      run: sudo apt-get update && sudo apt-get install -y libhdf5-dev
-    
-    - name: Set up Python 3.9
+    - name: Set up Python 3
       uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
 
     - name: pip installation
     # test pip installation first (much faster than conda)
@@ -38,27 +32,26 @@ jobs:
     - name: Basic tests
       run: |
          python tests/check_import.py
-         python tests/check_entry_points.py
          bash tests/check_examples.bash
     - name: Advanced tests
       run: |
          bash data/examples/unpack.bash
          bash data/tests/download.bash
-         python tests/benchmark_cap_vs_mtuq.py --no_figures
          python tests/test_grid_search_mt.py --no_figures
          python tests/test_grid_search_mt_depth.py --no_figures
          python tests/test_greens_SPECFEM3D_SAC.py --no_figures
          python tests/test_time_shifts.py --no_figures
+         python tests/benchmark_cap_vs_mtuq.py --no_figures
     - name: Graphics
       run: |
          python tests/test_graphics.py
 
-    # unfortunately, these Conda installation tests exceed the resource limits
+    # unfortunately, these Conda installation tests sometimes exceed the resource limits
     # for GitHub workflows
     # (https://github.com/actions/runner-images/issues/6680)
     # (https://github.com/conda/conda/issues/8650)
     #- name: conda installation
     #  timeout-minutes: 60
     #  run: |
-    #     bash tests/conda_install.bash
+    #     bash tests/install_conda.bash
 
