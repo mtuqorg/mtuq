@@ -116,7 +116,6 @@ def misfit(data, greens, sources, norm, time_shift_groups,
                         if normalize:
                             try:
                                 s[_k].attrs.misfit = value / norm_data
-                                print('Normalized misfit stored in trace attributes.')
                             except Exception:
                                 s[_k].attrs.misfit = value
                         else:
