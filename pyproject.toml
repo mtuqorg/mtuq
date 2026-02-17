@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-  "setuptools>=42",
+  "setuptools>=42,<82",
   "wheel",
   "cython",
   "numpy<2",
@@ -43,6 +43,7 @@ dependencies = [
   "nose",
   "pytest",
   "cython",
+  "setuptools<82",
   "seisgen",
   "seisclient",
 ]
