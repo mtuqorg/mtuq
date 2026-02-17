@@ -7,7 +7,7 @@
 import numpy as np
 
 from mtuq import Force, MomentTensor
-from mtuq.graphics.uq._matplotlib import _plot_omega_matplotlib
+from mtuq.graphics.uq._matplotlib import _plot_omega_matplotlib, _plot_confidence_curve_matplotlib
 from mtuq.grid_search import DataArray, DataFrame
 from mtuq.util import warn
 from mtuq.util.math import to_mij
@@ -47,7 +47,7 @@ def plot_pdf(filename, df, var, m0=None, nbins=50, normalized=False, **kwargs):
 
 
 
-def plot_cdf(filename, df, var, nbins=50, normalized=False, **kwargs):
+def plot_cdf(filename, df, var, m0=None, nbins=50, normalized=False, **kwargs):
     """ Plots cumulative distribution function over angular distance
 
     .. rubric :: Input arguments
@@ -77,7 +77,37 @@ def plot_cdf(filename, df, var, nbins=50, normalized=False, **kwargs):
 
     _plot_omega(filename, omega, np.cumsum(pdf), **kwargs)
 
+def plot_confidence_curve(filename, df, var, m0=None, nbins=50, normalized=False, **kwargs):
+    """ Plots confidence curve over fractional volume
 
+    .. rubric :: Input arguments
+
+    ``filename`` (`str`):
+    Name of output image file
+
+    ``df`` (`DataFrame`):
+    Data structure containing moment tensors and corresponding misfit values
+
+    ``var`` (`float` or `array`):
+    Data variance
+
+    ``nbins`` (`int`):
+    Number of angular distance bins
+
+    ``normalized`` (`bool`): 
+    Normalize each angular distance bin by volume of corresponding shell?
+
+    """
+    if not isuniform(df):
+        warn('plot_confidence_curve requires randomly-drawn grid')
+        return
+
+    omega, pdf = _calculate_pdf(df, var, m0=m0, nbins=nbins, 
+        normalized=normalized)
+    _, pdf_homo = _calculate_pdf(df*0, var, m0=m0, nbins=nbins,
+        normalized=normalized)
+
+    _plot_omega(filename, np.cumsum(pdf_homo/np.sum(pdf_homo)), np.cumsum(pdf/np.sum(pdf)), backend=_plot_confidence_curve_matplotlib, **kwargs)
 
 def plot_screening_curve(filename, ds, var, nbins=50, **kwargs):
     """ Plots explosion screening curve (maximum likelihood versus angular
@@ -164,7 +194,7 @@ def _calculate_omega(df, m0=None):
     # extract reference vector
     if type(m0)==MomentTensor:
         # convert from lune to mij parameters
-        m0 = m0.as_vector()
+        m0 = m0.as_matrix()
 
     elif type(m0)==Force:
         raise NotImplementedError
@@ -173,14 +203,41 @@ def _calculate_omega(df, m0=None):
         # assume df holds likelihoods, try maximum likelihood estimate
         idx = _argmax(df)
         m0 = m[idx,:]
+        m0 = np.array([[m0[0], m0[3], m0[4]],
+                          [m0[3], m0[1], m0[5]],
+                          [m0[4], m0[5], m0[2]]])
 
-    # vectorized dot product
-    dp = np.dot(m, m0)
-    dp /= np.sum(m0**2)**0.5
-    dp /= np.sum(m**2, axis=1)**0.5
+
+    m_tensors = np.zeros((m.shape[0], 3, 3))
+    m_tensors[:, 0, 0] = m[:, 0]  # Mrr
+    m_tensors[:, 1, 1] = m[:, 1]  # Mtt
+    m_tensors[:, 2, 2] = m[:, 2]  # Mpp
+    m_tensors[:, 0, 1] = m[:, 3]  # Mrt
+    m_tensors[:, 1, 0] = m[:, 3]  # Mrt (symmetric)
+    m_tensors[:, 0, 2] = m[:, 4]  # Mrp
+    m_tensors[:, 2, 0] = m[:, 4]  # Mrp (symmetric)
+    m_tensors[:, 1, 2] = m[:, 5]  # Mtp
+    m_tensors[:, 2, 1] = m[:, 5]  # Mtp (symmetric)
+    
+    # Compute the dot product of the tensors M and N
+    dot_product = np.einsum('...ij,...ij->...', m0, m_tensors)
+    
+    # Compute the norms of the tensors M and N
+    norm_M = np.sqrt(np.einsum('...ij,...ij->...', m0, m0))
+    norm_N = np.sqrt(np.einsum('...ij,...ij->...', m_tensors, m_tensors))
+    
+    # Compute the cosine of the angle between the tensors
+    cos_angle = dot_product / (norm_M * norm_N)
+
+    # Clip values to the valid range for arccos (prevent errors from numerical precision)
+    cos_angle = cos_angle.clip(-1, 1)
 
     # return angles as NumPy array
-    omega = 180./np.pi * np.arccos(dp)
+    omega = 180./np.pi * np.arccos(cos_angle)
+
+    # Fix nan values for identical vectors
+    omega[np.isnan(omega)] = 0.
+
     return omega
 
 
