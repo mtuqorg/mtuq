@@ -352,26 +352,28 @@ def dataarray_idxmax(da, warnings=True):
             da = da[0]
     return da.coords
 
-def sort_polarities(dict_polarity, data, polarities):
+def polarities_array_from_dict(dict_polarity, stations):
     """
-    Assigns polarity values from dict_polarity to polarities array based on station names in data (Obspy streams).
+    Based on:
+    polarities = np.zeros(len(stations))
+    for _i, station in enumerate(stations):
+        polarities[_i] = polarities_dict[station.station]
 
     Args:
         dict_polarity (dict): Dictionary mapping station names to polarity values.
-        data (list): List of Obspy streams.
-        polarities (numpy.ndarray): NumPy array to store polarity values.
+        stations (list): List of station objects.
 
     Returns:
-        numpy.ndarray: Updated polarities array.
+        numpy.ndarray: NumPy array containing polarity values corresponding to the stations.
     """
 
-    for i, stream in enumerate(data):
-        station_name = stream[0].stats.station
+    polarities = np.zeros(len(stations))
+    for i, station in enumerate(stations):
+        station_name = station.station
         if station_name in dict_polarity:
             polarities[i] = dict_polarity[station_name]
         else:
-            warn(f'Station {station_name} not found in the dictionary')
-
+            print(f'Station {station_name} not found in the dictionary')
     return polarities
 
 def defaults(kwargs, defaults):
