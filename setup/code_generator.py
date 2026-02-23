@@ -1573,9 +1573,7 @@ WrapUp_WaveformsPolarities="""
     if comm.rank==0:
         print('Evaluating polarity misfit...\\n')
 
-    polarities = np.zeros(len(stations))
-    for _i, station in enumerate(stations):
-        polarities[_i] = polarities_dict[station.station]
+    polarities = polarities_array_from_dict(polarities_dict, stations)
         
     results_polarity = grid_search(
         polarities, greens_bw, polarity_misfit, origin, grid)
@@ -1991,6 +1989,8 @@ if __name__=='__main__':
             'plot_beachball, plot_polarities',
             'from mtuq.misfit import Misfit',
             'from mtuq.misfit import WaveformMisfit, PolarityMisfit',
+            'from mtuq.util import fullpath, merge_dicts, save_json',
+            'from mtuq.util import fullpath, merge_dicts, save_json, polarities_array_from_dict',
             ))
         file.write(Docstring_WaveformsPolarities)
         file.write(Paths_Syngine)

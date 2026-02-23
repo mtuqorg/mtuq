@@ -10,7 +10,7 @@ from mtuq.grid import FullMomentTensorGridSemiregular
 from mtuq.grid_search import grid_search
 from mtuq.misfit import WaveformMisfit, PolarityMisfit
 from mtuq.process_data import ProcessData
-from mtuq.util import fullpath, merge_dicts, save_json
+from mtuq.util import fullpath, merge_dicts, save_json, polarities_array_from_dict
 from mtuq.util.cap import parse_station_codes, Trapezoid
 
 
@@ -218,9 +218,7 @@ if __name__=='__main__':
     if comm.rank==0:
         print('Evaluating polarity misfit...\n')
 
-    polarities = np.zeros(len(stations))
-    for _i, station in enumerate(stations):
-        polarities[_i] = polarities_dict[station.station]
+    polarities = polarities_array_from_dict(polarities_dict, stations)
         
     results_polarity = grid_search(
         polarities, greens_bw, polarity_misfit, origin, grid)
