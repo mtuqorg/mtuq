@@ -513,7 +513,7 @@ WaveformsPolaritiesMisfit="""
         "NSKI": +1,
         "PERI": +1,
         "SOLD":  0,
-        "TUPA":  1,
+        "TUPA": +1,
         }
 
 
@@ -1573,7 +1573,7 @@ WrapUp_WaveformsPolarities="""
     if comm.rank==0:
         print('Evaluating polarity misfit...\\n')
 
-    polarities = polarities_array_from_dict(polarities_dict, stations)
+    polarities = polarities_from_dict(polarities_dict, stations)
         
     results_polarity = grid_search(
         polarities, greens_bw, polarity_misfit, origin, grid)
@@ -1988,9 +1988,7 @@ if __name__=='__main__':
             'plot_beachball',
             'plot_beachball, plot_polarities',
             'from mtuq.misfit import Misfit',
-            'from mtuq.misfit import WaveformMisfit, PolarityMisfit',
-            'from mtuq.util import fullpath, merge_dicts, save_json',
-            'from mtuq.util import fullpath, merge_dicts, save_json, polarities_array_from_dict',
+            'from mtuq.misfit import WaveformMisfit, PolarityMisfit, polarities_from_dict',
             ))
         file.write(Docstring_WaveformsPolarities)
         file.write(Paths_Syngine)

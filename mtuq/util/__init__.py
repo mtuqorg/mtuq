@@ -352,30 +352,6 @@ def dataarray_idxmax(da, warnings=True):
             da = da[0]
     return da.coords
 
-def polarities_array_from_dict(dict_polarity, stations):
-    """
-    Based on:
-    polarities = np.zeros(len(stations))
-    for _i, station in enumerate(stations):
-        polarities[_i] = polarities_dict[station.station]
-
-    Args:
-        dict_polarity (dict): Dictionary mapping station names to polarity values.
-        stations (list): List of station objects.
-
-    Returns:
-        numpy.ndarray: NumPy array containing polarity values corresponding to the stations.
-    """
-
-    polarities = np.zeros(len(stations))
-    for i, station in enumerate(stations):
-        station_name = station.station
-        if station_name in dict_polarity:
-            polarities[i] = dict_polarity[station_name]
-        else:
-            print(f'Station {station_name} not found in the dictionary')
-    return polarities
-
 def defaults(kwargs, defaults):
     for key in defaults:
         if key not in kwargs:

@@ -362,6 +362,26 @@ def _model_type(greens):
 
     return model_type
 
+def polarities_from_dict(dict_polarity, stations):
+    """
+    Converts a dictionary of polarities to a NumPy array based on the provided stations.
+
+    Args:
+        dict_polarity (dict): Dictionary mapping station names to polarity values.
+        stations (list): List of station objects.
+
+    Returns:
+        numpy.ndarray: NumPy array containing polarity values corresponding to the stations.
+    """
+
+    polarities = np.zeros(len(stations))
+    for i, station in enumerate(stations):
+        station_name = station.station
+        if station_name in dict_polarity:
+            polarities[i] = dict_polarity[station_name]
+        else:
+            print(f'Station {station_name} not found in the dictionary')
+    return polarities
 
 def _check(greens, method):
     return
