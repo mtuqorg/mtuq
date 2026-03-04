@@ -352,7 +352,6 @@ def dataarray_idxmax(da, warnings=True):
             da = da[0]
     return da.coords
 
-
 def defaults(kwargs, defaults):
     for key in defaults:
         if key not in kwargs:
