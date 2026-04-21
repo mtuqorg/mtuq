@@ -43,7 +43,7 @@ dependencies = [
   "nose",
   "pytest",
   "cython",
-  "setuptools<82",
+  "setuptools",
   "seisgen",
   "seisclient",
 ]

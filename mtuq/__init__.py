@@ -40,7 +40,15 @@ from mtuq.process_data import ProcessData
 #from mtuq.grid_search import grid_search
 
 
-from pkg_resources import iter_entry_points
+from importlib.metadata import entry_points
+def _iter_group(group):
+    # pkg_resources.iter_entry_points(group) replacement using importlib.metadata.
+    try:
+        return entry_points(group=group)
+    # compatibility with older entry_points() behavior which returned a dict-like object keyed by group
+    except TypeError:
+        return entry_points().get(group, [])
+
 from mtuq.io.clients.syngine import download_greens
 
 
@@ -56,8 +64,8 @@ download_greens_tensors = download_greens
 
 def _greens_tensor_clients():
     clients = {}
-    for entry_point in iter_entry_points('greens_tensor_clients'):
-        clients[entry_point.name] = entry_point.load()
+    for ep in _iter_group("greens_tensor_clients"):
+        clients[ep.name] = ep.load()
     return clients
 
 
@@ -82,8 +90,8 @@ def open_db(path_or_url='', format='', **kwargs):
 
 def _readers():
     readers = {}
-    for entry_point in iter_entry_points('readers'):
-        readers[entry_point.name] = entry_point.load()
+    for ep in _iter_group("readers"):
+        readers[ep.name] = ep.load()
     return readers
 
 
