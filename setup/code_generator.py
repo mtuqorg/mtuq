@@ -1767,6 +1767,125 @@ Main_BenchmarkCAP="""
 """
 
 
+Imports_DirectEvaluation="""
+import os
+import numpy as np
+
+from mtuq import read, download_greens
+from mtuq.event import MomentTensor, Origin
+from mtuq.graphics import plot_data_greens2, plot_beachball
+from mtuq.misfit import Misfit
+from mtuq.process_data import ProcessData
+from mtuq.util import fullpath, merge_dicts, save_json
+from mtuq.util.cap import parse_station_codes, Trapezoid
+from mtuq.util.math import from_mij, to_mij, to_rho
+
+"""
+
+
+Docstring_DirectEvaluation="""
+if __name__=='__main__':
+    #
+    # Helper code for evaluating synthetic waveforms for a single fixed source.
+    #
+    # USAGE
+    #   python DirectEvaluation.py
+    #
+
+"""
+
+
+SourceDefinition_DirectEvaluation="""
+    #
+    # Define the source directly from moment tensor components (Mrr, Mtt, Mpp, Mrt, Mrp, Mtp).
+    # Alternatively, fault geometry can be converted using to_mij (see commented block below).
+    #
+
+    mt_dict = {
+        'Mrr': -5800435174432632.0,
+        'Mtt':   789342714264084.5,
+        'Mpp':  5011092460168549.0,
+        'Mrt':  3034156721905327.0,
+        'Mrp':  2110077787951300.2,
+        'Mtp':  2602039428905879.0,
+        }
+
+    mt_array = list(mt_dict.values())
+
+    # To define the source from fault geometry instead:
+    # Mw, strike, dip, rake = 4.5, 230., 40., -10.
+    # mt_array = to_mij(to_rho(Mw), 0., 0., strike, rake, np.cos(np.deg2rad(dip)))
+
+    lune_dict = dict(zip(('rho', 'v', 'w', 'kappa', 'sigma', 'h'), from_mij(mt_array)))
+
+    mt = MomentTensor(mt_array)
+
+    wavelet = Trapezoid(magnitude=4.5)
+
+"""
+
+
+Main_DirectEvaluation="""
+    #
+    # The main I/O work starts now
+    #
+
+    print('Reading data...\\n')
+    data = read(path_data, format='sac',
+        event_id=event_id,
+        station_id_list=station_id_list,
+        tags=['units:m', 'type:velocity'])
+
+    data.sort_by_distance()
+    stations = data.get_stations()
+
+    print('Processing data...\\n')
+    data_bw = data.map(process_bw)
+    data_sw = data.map(process_sw)
+
+    print('Reading Greens functions...\\n')
+    greens = download_greens(stations, origin, model)
+
+    print('Processing Greens functions...\\n')
+    greens.convolve(wavelet)
+    greens_bw = greens.map(process_bw)
+    greens_sw = greens.map(process_sw)
+
+
+    #
+    # Generating synthetics
+    #
+
+    syn_bw = greens_bw.get_synthetics(mt, components=['Z', 'R'])
+    syn_sw = greens_sw.get_synthetics(mt, components=['Z', 'R', 'T'])
+
+    syn_bw.write(event_id+'DC_synthetics_bw.sac', format='sac')
+    syn_sw.write(event_id+'DC_synthetics_sw.sac', format='sac')
+
+"""
+
+
+WrapUp_DirectEvaluation="""
+    print('Generating figures...\\n')
+
+    plot_data_greens2(event_id+'DC_waveforms.png',
+        data_bw, data_sw, greens_bw, greens_sw, process_bw, process_sw,
+        misfit_bw, misfit_sw, stations, origin, mt, lune_dict)
+
+    plot_beachball(event_id+'DC_beachball.png',
+        mt, stations, origin)
+
+
+    print('Saving results...\\n')
+
+    mt_dict.update(lune_dict)
+    mt_dict.update({'Mw': mt.magnitude(), 'M0': mt.moment()})
+    save_json(event_id+'DC_solution.json', mt_dict)
+
+    print('\\nFinished\\n')
+"""
+
+
 if __name__=='__main__':
     import os
     from mtuq.util import basepath, replace
@@ -1974,6 +2093,24 @@ if __name__=='__main__':
         file.write(Main1_SerialGridSearch_DoubleCouple)
         file.write(Main2_SerialGridSearch_DoubleCouple)
         file.write(WrapUp_SerialGridSearch_DoubleCouple)
+
+
+    with open('examples/DirectEvaluation.py', 'w') as file:
+        file.write("#!/usr/bin/env python\n")
+        file.write(Imports_DirectEvaluation)
+        file.write(Docstring_DirectEvaluation)
+        file.write(Paths_Syngine)
+        file.write(DataProcessingComments)
+        file.write(DataProcessingDefinitions)
+        file.write(MisfitComments)
+        file.write(MisfitDefinitions)
+        file.write(WeightsComments)
+        file.write(WeightsDefinitions)
+        file.write(SourceDefinition_DirectEvaluation)
+        file.write(OriginComments)
+        file.write(OriginDefinitions)
+        file.write(Main_DirectEvaluation)
+        file.write(WrapUp_DirectEvaluation)
 
 
     with open('examples/Waveforms+Polarities.py', 'w') as file:

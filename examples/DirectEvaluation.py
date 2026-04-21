@@ -21,6 +21,7 @@ if __name__=='__main__':
     #   python DirectEvaluation.py
     #
 
+
     path_data=    fullpath('data/examples/20090407201255351/*.[zrt]')
     path_weights= fullpath('data/examples/20090407201255351/weights.dat')
     event_id=     '20090407201255351'
@@ -112,7 +113,7 @@ if __name__=='__main__':
 
 
     #
-    # Origin time and location will be fixed. For an example in which they
+    # Origin time and location will be fixed. For an example in which they 
     # vary, see examples/GridSearch.DoubleCouple+Magnitude+Depth.py
     #
     # See also Dataset.get_origins(), which attempts to create Origin objects
