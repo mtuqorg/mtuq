@@ -22,16 +22,17 @@ from obspy import Stream, Trace
 #
 
 def plot_waveforms1(
-        filename, 
+        filename,
         data,
         synthetics,
         stations,
         origin,
         header=None,
-        total_misfit=1., 
+        total_misfit=1.,
         normalize='maximum_amplitude',
         trace_label_writer=trace_label_writer,
         station_label_writer=station_label_writer,
+        syn_color='red',
         ):
 
     """ Creates data/synthetics comparison figure with 3 columns (Z, R, T)
@@ -78,9 +79,10 @@ def plot_waveforms1(
             pass
 
         # plot traces
-        _plot_stream(axes[ir], [1,2,3], ['Z','R','T'], 
+        _plot_stream(axes[ir], [1,2,3], ['Z','R','T'],
                   data[_i], synthetics[_i],
-                  normalize, factor, trace_label_writer, total_misfit)
+                  normalize, factor, trace_label_writer, total_misfit,
+                  syn_color=syn_color)
 
         ir += 1
 
@@ -90,7 +92,7 @@ def plot_waveforms1(
 
 
 def plot_waveforms2(
-        filename, 
+        filename,
         data_bw,
         data_sw,
         synthetics_bw,
@@ -98,11 +100,12 @@ def plot_waveforms2(
         stations,
         origin,
         header=None,
-        total_misfit_bw=1., 
-        total_misfit_sw=1., 
+        total_misfit_bw=1.,
+        total_misfit_sw=1.,
         normalize='maximum_amplitude',
         trace_label_writer=trace_label_writer,
         station_label_writer=station_label_writer,
+        syn_color='red',
         ):
 
 
@@ -161,12 +164,14 @@ def plot_waveforms2(
         # plot body wave traces
         _plot_stream(axes[ir], [1,2], ['Z','R'],
                      data_bw[_i], synthetics_bw[_i],
-                     normalize, factor_bw, trace_label_writer, total_misfit_bw)
+                     normalize, factor_bw, trace_label_writer, total_misfit_bw,
+                     syn_color=syn_color)
 
         # plot surface wave traces
         _plot_stream(axes[ir], [3,4,5], ['Z','R','T'],
                      data_sw[_i], synthetics_sw[_i],
-                     normalize, factor_sw, trace_label_writer, total_misfit_sw)
+                     normalize, factor_sw, trace_label_writer, total_misfit_sw,
+                     syn_color=syn_color)
 
         ir += 1
 
@@ -175,7 +180,7 @@ def plot_waveforms2(
 
 
 def plot_waveforms3(
-        filename, 
+        filename,
         data_bw,
         data_rayl,
         data_love,
@@ -185,12 +190,13 @@ def plot_waveforms3(
         stations,
         origin,
         header=None,
-        total_misfit_bw=1., 
-        total_misfit_rayl=1., 
+        total_misfit_bw=1.,
+        total_misfit_rayl=1.,
         total_misfit_love=1.,
         normalize='maximum_amplitude',
         trace_label_writer=trace_label_writer,
         station_label_writer=station_label_writer,
+        syn_color='red',
         ):
 
     """ Creates data/synthetics comparison figure with 5 columns 
@@ -259,19 +265,22 @@ def plot_waveforms3(
             pass
 
         # plot body waves
-        _plot_stream(axes[ir], [1,2], ['Z','R'], 
+        _plot_stream(axes[ir], [1,2], ['Z','R'],
                      data_bw[_i], synthetics_bw[_i],
-                     normalize, factor_bw, trace_label_writer, total_misfit_bw)
-        
+                     normalize, factor_bw, trace_label_writer, total_misfit_bw,
+                     syn_color=syn_color)
+
         # plot Rayleigh waves
         _plot_stream(axes[ir], [3,4], ['Z','R'],
                      data_rayl[_i], synthetics_rayl[_i],
-                     normalize, factor_rayl, trace_label_writer, total_misfit_rayl)
+                     normalize, factor_rayl, trace_label_writer, total_misfit_rayl,
+                     syn_color=syn_color)
 
         # plot Love waves
         _plot_stream(axes[ir], [5], ['T'],
                      data_love[_i], synthetics_love[_i],
-                     normalize, factor_love, trace_label_writer, total_misfit_love)
+                     normalize, factor_love, trace_label_writer, total_misfit_love,
+                     syn_color=syn_color)
 
         ir += 1
 
@@ -309,10 +318,11 @@ def plot_data_greens1(
     else:
         model = _get_tag(greens[0].tags, 'model')
         solver = _get_tag(greens[0].tags, 'solver')
+        color = kwargs.pop('color', 'gray')
 
         header = _prepare_header(
             model, solver, source, source_dict, origin,
-            process_data, misfit, total_misfit, data_sw=data)
+            process_data, misfit, total_misfit, data_sw=data, color=color)
 
     plot_waveforms1(filename,
         data, synthetics, stations, origin,
@@ -363,12 +373,13 @@ def plot_data_greens2(filename,
     else:
         model = _get_tag(greens_sw[0].tags, 'model')
         solver = _get_tag(greens_sw[0].tags, 'solver')
+        color = kwargs.pop('color', 'gray')
 
         header = _prepare_header(
             model, solver, source, source_dict, origin,
             process_data_bw, process_data_sw,
             misfit_bw, misfit_sw, total_misfit_bw, total_misfit_sw,
-            data_bw=data_bw, data_sw=data_sw)
+            data_bw=data_bw, data_sw=data_sw, color=color)
 
     plot_waveforms2(filename,
         data_bw, data_sw, synthetics_bw, synthetics_sw, stations, origin,
@@ -428,13 +439,14 @@ def plot_data_greens3(
     else:
         model = _get_tag(greens_bw[0].tags, 'model')
         solver = _get_tag(greens_bw[0].tags, 'solver')
+        color = kwargs.pop('color', 'gray')
 
         header = _prepare_header(
             model, solver, source, source_dict, origin,
             process_data_bw, process_data_rayl, misfit_bw, misfit_rayl,
             total_misfit_bw, total_misfit_rayl, best_misfit_sw_supp=total_misfit_love,
             misfit_sw_supp = misfit_love, data_bw=data_bw, data_sw=data_rayl,
-            data_sw_supp=data_love, process_sw_supp=process_data_love)
+            data_sw_supp=data_love, process_sw_supp=process_data_love, color=color)
 
     plot_waveforms3(filename,
         data_bw, data_rayl, data_love,
@@ -534,7 +546,8 @@ def _plot_stream(
     normalize='maximum_amplitude',
     amplitude_factor=None,
     trace_label_writer=None,
-    total_misfit=1.
+    total_misfit=1.,
+    syn_color='red',
     ):
 
     if normalize in [
@@ -580,7 +593,7 @@ def _plot_stream(
         elif amplitude_factor:
             ylim = [-amplitude_factor, +amplitude_factor]
 
-        _plot_trace(axis, dat, syn)
+        _plot_trace(axis, dat, syn, syn_color=syn_color)
 
         try:
             axis.set_ylim(*ylim)
@@ -593,7 +606,7 @@ def _plot_stream(
             pass
 
 
-def _plot_trace(axis, dat, syn, label=None):
+def _plot_trace(axis, dat, syn, label=None, syn_color='red'):
     """ Plots data and synthetics time series on current axes
     """
     if dat is None and syn is None:
@@ -613,7 +626,7 @@ def _plot_trace(axis, dat, syn, label=None):
 
         t,s = _time_series(syn)
 
-        axis.plot(t[:stop-start], s[start:stop], 'r', linewidth=1.25,
+        axis.plot(t[:stop-start], s[start:stop], color=syn_color, linewidth=1.25,
             clip_on=True, zorder=10)
 
 
