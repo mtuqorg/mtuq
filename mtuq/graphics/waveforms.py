@@ -32,8 +32,9 @@ def plot_waveforms1(
         normalize='maximum_amplitude',
         trace_label_writer=trace_label_writer,
         station_label_writer=station_label_writer,
-        syn_color='red',
-        ):
+        dat_kwargs=None,
+        syn_kwargs=None,
+        **kwargs):
 
     """ Creates data/synthetics comparison figure with 3 columns (Z, R, T)
     """
@@ -82,11 +83,11 @@ def plot_waveforms1(
         _plot_stream(axes[ir], [1,2,3], ['Z','R','T'],
                   data[_i], synthetics[_i],
                   normalize, factor, trace_label_writer, total_misfit,
-                  syn_color=syn_color)
+                  dat_kwargs=dat_kwargs, syn_kwargs=syn_kwargs)
 
         ir += 1
 
-    _save(filename)
+    _save(filename, **kwargs)
     pyplot.close()
 
 
@@ -105,8 +106,9 @@ def plot_waveforms2(
         normalize='maximum_amplitude',
         trace_label_writer=trace_label_writer,
         station_label_writer=station_label_writer,
-        syn_color='red',
-        ):
+        dat_kwargs=None,
+        syn_kwargs=None,
+        **kwargs):
 
 
     """ Creates data/synthetics comparison figure with 5 columns 
@@ -165,17 +167,17 @@ def plot_waveforms2(
         _plot_stream(axes[ir], [1,2], ['Z','R'],
                      data_bw[_i], synthetics_bw[_i],
                      normalize, factor_bw, trace_label_writer, total_misfit_bw,
-                     syn_color=syn_color)
+                     dat_kwargs=dat_kwargs, syn_kwargs=syn_kwargs)
 
         # plot surface wave traces
         _plot_stream(axes[ir], [3,4,5], ['Z','R','T'],
                      data_sw[_i], synthetics_sw[_i],
                      normalize, factor_sw, trace_label_writer, total_misfit_sw,
-                     syn_color=syn_color)
+                     dat_kwargs=dat_kwargs, syn_kwargs=syn_kwargs)
 
         ir += 1
 
-    _save(filename)
+    _save(filename, **kwargs)
     pyplot.close()
 
 
@@ -196,8 +198,9 @@ def plot_waveforms3(
         normalize='maximum_amplitude',
         trace_label_writer=trace_label_writer,
         station_label_writer=station_label_writer,
-        syn_color='red',
-        ):
+        dat_kwargs=None,
+        syn_kwargs=None,
+        **kwargs):
 
     """ Creates data/synthetics comparison figure with 5 columns 
     (Pn Z, Pn R, Rayleigh Z, Rayleigh R, Love T)
@@ -268,23 +271,23 @@ def plot_waveforms3(
         _plot_stream(axes[ir], [1,2], ['Z','R'],
                      data_bw[_i], synthetics_bw[_i],
                      normalize, factor_bw, trace_label_writer, total_misfit_bw,
-                     syn_color=syn_color)
+                     dat_kwargs=dat_kwargs, syn_kwargs=syn_kwargs)
 
         # plot Rayleigh waves
         _plot_stream(axes[ir], [3,4], ['Z','R'],
                      data_rayl[_i], synthetics_rayl[_i],
                      normalize, factor_rayl, trace_label_writer, total_misfit_rayl,
-                     syn_color=syn_color)
+                     dat_kwargs=dat_kwargs, syn_kwargs=syn_kwargs)
 
         # plot Love waves
         _plot_stream(axes[ir], [5], ['T'],
                      data_love[_i], synthetics_love[_i],
                      normalize, factor_love, trace_label_writer, total_misfit_love,
-                     syn_color=syn_color)
+                     dat_kwargs=dat_kwargs, syn_kwargs=syn_kwargs)
 
         ir += 1
 
-    _save(filename)
+    _save(filename, **kwargs)
     pyplot.close()
 
 
@@ -318,11 +321,11 @@ def plot_data_greens1(
     else:
         model = _get_tag(greens[0].tags, 'model')
         solver = _get_tag(greens[0].tags, 'solver')
-        color = kwargs.pop('color', 'gray')
+        beachball_color = kwargs.pop('beachball_color', 'gray')
 
         header = _prepare_header(
             model, solver, source, source_dict, origin,
-            process_data, misfit, total_misfit, data_sw=data, color=color)
+            process_data, misfit, total_misfit, data_sw=data, beachball_color=beachball_color)
 
     plot_waveforms1(filename,
         data, synthetics, stations, origin,
@@ -373,13 +376,13 @@ def plot_data_greens2(filename,
     else:
         model = _get_tag(greens_sw[0].tags, 'model')
         solver = _get_tag(greens_sw[0].tags, 'solver')
-        color = kwargs.pop('color', 'gray')
+        beachball_color = kwargs.pop('beachball_color', 'gray')
 
         header = _prepare_header(
             model, solver, source, source_dict, origin,
             process_data_bw, process_data_sw,
             misfit_bw, misfit_sw, total_misfit_bw, total_misfit_sw,
-            data_bw=data_bw, data_sw=data_sw, color=color)
+            data_bw=data_bw, data_sw=data_sw, beachball_color=beachball_color)
 
     plot_waveforms2(filename,
         data_bw, data_sw, synthetics_bw, synthetics_sw, stations, origin,
@@ -439,14 +442,14 @@ def plot_data_greens3(
     else:
         model = _get_tag(greens_bw[0].tags, 'model')
         solver = _get_tag(greens_bw[0].tags, 'solver')
-        color = kwargs.pop('color', 'gray')
+        beachball_color = kwargs.pop('beachball_color', 'gray')
 
         header = _prepare_header(
             model, solver, source, source_dict, origin,
             process_data_bw, process_data_rayl, misfit_bw, misfit_rayl,
             total_misfit_bw, total_misfit_rayl, best_misfit_sw_supp=total_misfit_love,
             misfit_sw_supp = misfit_love, data_bw=data_bw, data_sw=data_rayl,
-            data_sw_supp=data_love, process_sw_supp=process_data_love, color=color)
+            data_sw_supp=data_love, process_sw_supp=process_data_love, beachball_color=beachball_color)
 
     plot_waveforms3(filename,
         data_bw, data_rayl, data_love,
@@ -547,7 +550,8 @@ def _plot_stream(
     amplitude_factor=None,
     trace_label_writer=None,
     total_misfit=1.,
-    syn_color='red',
+    dat_kwargs=None,
+    syn_kwargs=None,
     ):
 
     if normalize in [
@@ -593,7 +597,8 @@ def _plot_stream(
         elif amplitude_factor:
             ylim = [-amplitude_factor, +amplitude_factor]
 
-        _plot_trace(axis, dat, syn, syn_color=syn_color)
+        _plot_trace(axis, dat, syn,
+                    dat_kwargs=dat_kwargs, syn_kwargs=syn_kwargs)
 
         try:
             axis.set_ylim(*ylim)
@@ -606,18 +611,25 @@ def _plot_stream(
             pass
 
 
-def _plot_trace(axis, dat, syn, label=None, syn_color='red'):
+def _plot_trace(axis, dat, syn, dat_kwargs=None, syn_kwargs=None):
     """ Plots data and synthetics time series on current axes
     """
     if dat is None and syn is None:
         # nothing to plot
         return
 
+    _dat_kwargs = {'color': 'black', 'linewidth': 1.5, 'clip_on': True, 'zorder': 10}
+    if dat_kwargs:
+        _dat_kwargs.update(dat_kwargs)
+
+    _syn_kwargs = {'color': 'red', 'linewidth': 1.25, 'clip_on': True, 'zorder': 10}
+    if syn_kwargs:
+        _syn_kwargs.update(syn_kwargs)
+
     if dat:
         t,d = _time_series(dat)
 
-        axis.plot(t, d, 'k', linewidth=1.5,
-            clip_on=True, zorder=10)
+        axis.plot(t, d, **_dat_kwargs)
 
     if syn:
         # which start and stop indices will correctly align synthetics?
@@ -626,8 +638,7 @@ def _plot_trace(axis, dat, syn, label=None, syn_color='red'):
 
         t,s = _time_series(syn)
 
-        axis.plot(t[:stop-start], s[start:stop], color=syn_color, linewidth=1.25,
-            clip_on=True, zorder=10)
+        axis.plot(t[:stop-start], s[start:stop], **_syn_kwargs)
 
 
 
@@ -791,8 +802,8 @@ def _prepare_header(model, solver, source, source_dict, origin, *args, **kwargs)
         raise TypeError
 
 
-def _save(filename):
-    pyplot.savefig(filename)
+def _save(filename, **kwargs):
+    pyplot.savefig(filename, **kwargs)
 
 
 def _get_tag(tags, pattern):

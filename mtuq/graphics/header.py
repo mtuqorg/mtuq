@@ -157,10 +157,10 @@ class TextBlock(HeaderBlock):
 class MomentTensorFigureBlock(HeaderBlock):
     """Block for displaying moment tensor beachball figures."""
 
-    def __init__(self, diameter_scale=0.75, backend=_plot_beachball_matplotlib, color='gray'):
+    def __init__(self, diameter_scale=0.75, backend=_plot_beachball_matplotlib, beachball_color='gray'):
         self.diameter_scale = diameter_scale
         self.backend = backend
-        self.color = color
+        self.beachball_color = beachball_color
 
     def render(self, ax, info, px, py, *, height: float, width: float,
                margin_left: float, margin_top: float, style: HeaderStyle):
@@ -176,7 +176,7 @@ class MomentTensorFigureBlock(HeaderBlock):
             inset_ax.set_yticks([])
             inset_ax.set_frame_on(False)
             plot_beachball(None, mt, None, None, fig=inset_ax.figure, ax=inset_ax,
-                           backend=self.backend, color=self.color)
+                           backend=self.backend, color=self.beachball_color)
             inset_ax.axis('off')
         else:
             # File-based rendering for other backends
@@ -186,7 +186,7 @@ class MomentTensorFigureBlock(HeaderBlock):
 
     def _render_via_file(self, ax, mt, xp, yp, diameter):
         """Helper method for file-based rendering."""
-        plot_beachball('tmp.png', mt, None, None, backend=self.backend, color=self.color)
+        plot_beachball('tmp.png', mt, None, None, backend=self.backend, color=self.beachball_color)
         img = pyplot.imread('tmp.png')
         self._cleanup_temp_files()
         ax.imshow(img, extent=(xp, xp+diameter, yp, yp+diameter))
@@ -451,10 +451,10 @@ def _station_counts(data_bw, data_sw, data_sw_supp):
 # =============================================================================
 # Header Factory Functions
 # =============================================================================
-def build_moment_tensor_header(info, color='gray'):
+def build_moment_tensor_header(info, beachball_color='gray'):
     """Build header layout for moment tensor inversion results."""
     blocks = [
-        MomentTensorFigureBlock(color=color),
+        MomentTensorFigureBlock(beachball_color=beachball_color),
         TextBlock('{event_name}  {latlon}  $M_w$ {magnitude:.2f}  {depth_label} {depth_str}', bold=False),
         TextBlock('model: {model}   solver: {solver}   misfit ({norm}): {best_misfit:.3e}', bold=False),
         TextBlock('{passband_line}', bold=False),
@@ -579,12 +579,12 @@ def create_moment_tensor_header(process_bw, process_sw, misfit_bw, misfit_sw,
                                data_bw=None, data_sw=None, mt_grid=None, event_name=None, **kwargs):
     """Create a complete moment tensor header"""
     process_sw_supp = kwargs.pop('process_sw_supp', None)
-    color = kwargs.pop('color', 'gray')
+    beachball_color = kwargs.pop('beachball_color', 'gray')
     header_info = prepare_moment_tensor_header_info(
         origin, mt, lune_dict, process_bw, process_sw, process_sw_supp,
         misfit_bw, misfit_sw, best_misfit_bw, best_misfit_sw, model, solver,
         data_bw=data_bw, data_sw=data_sw, mt_grid=mt_grid, event_name=event_name, **kwargs)
-    header = build_moment_tensor_header(header_info, color=color)
+    header = build_moment_tensor_header(header_info, beachball_color=beachball_color)
     return header, header_info
 
 
