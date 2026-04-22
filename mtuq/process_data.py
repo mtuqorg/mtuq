@@ -295,8 +295,7 @@ class ProcessData(object):
             assert 'group_velocity' in parameters
             assert parameters['group_velocity'] >= 0.
             self.group_velocity = parameters['group_velocity']
-            self.window_alignment = getattr(
-                parameters, 'window_alignment', 0.5)
+            self.window_alignment = parameters.get('window_alignment', 0.5)
             assert 0. <= self.window_alignment <= 1.
             assert window_length > 0.
             self.window_length = window_length
@@ -321,10 +320,10 @@ class ProcessData(object):
             assert self.window_type is not None
 
         if apply_padding:
-            assert self.time_shift_min <= 0., \
+            assert time_shift_min <= 0., \
                 ValueError("Bad parameter: time_shift_min")
 
-            assert self.time_shift_max >= 0., \
+            assert time_shift_max >= 0., \
                 ValueError("Bad parameter: time_shift_max")
 
             self.time_shift_min = time_shift_min
