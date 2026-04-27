@@ -1,10 +1,10 @@
 
-from pkg_resources import iter_entry_points
+from importlib.metadata import entry_points
 
 
 def _greens_databases():
     databases = {}
-    for entry_point in iter_entry_points('greens_databases'):
+    for entry_point in entry_points('greens_databases'):
         databases[entry_point.name] = entry_point.load()
     return databases
 

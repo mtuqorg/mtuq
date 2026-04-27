@@ -553,7 +553,7 @@ def _plot_beachball_matplotlib(filename, mt_arrays, stations=None, origin=None, 
 
     if filename:
         pyplot.tight_layout(pad=-0.8)
-        fig.savefig(filename, dpi=300)
+        fig.savefig(filename, dpi=300, **kwargs)
         pyplot.close(fig)
     return
 
