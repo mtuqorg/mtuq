@@ -600,7 +600,6 @@ class ProcessData(object):
                 picks['S'] = float(sac_headers.t2)
 
             elif self.pick_type == 'CPS_metadata':
-                raise NotImplemented
                 # base directory: CPS_model may be None if model is specified in CPS_database path
                 if self.CPS_model is not None:
                     base_dir = join(self.CPS_database, self.CPS_model)
