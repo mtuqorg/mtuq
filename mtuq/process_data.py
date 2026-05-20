@@ -72,6 +72,9 @@ class ProcessData(object):
     - ``'FK_metadata'``
       reads P, S travel times from FK metadata
 
+    - ``'CPS_metadata'``
+      reads P, S travel times from CPS database SAC headers
+
     - ``'SAC_metadata'``
       reads P, S travel times from SAC metadata fields `t5`, `t6`
 
@@ -148,8 +151,15 @@ class ProcessData(object):
     ``FK_database`` (`str`)
     Path to FK database, required for `pick_type=FK_metadata`
 
+    ``FK_model`` (`str`)
+    FK model name, optional for `pick_type=FK_metadata`
+
     ``CPS_database`` (`str`)
     Path to CPS database, required for `pick_type=CPS_metadata`
+
+    ``CPS_model`` (`str`)
+    CPS model name (subdirectory of `CPS_database`), optional for `pick_type=CPS_metadata`.
+    If `CPS_database` already ends with the model subdirectory, omit this argument.
 
     ``capuaf_file`` (`str`)
     Path to `CAPUAF`-style text file, required for `pick_type=user_supplied`
@@ -354,6 +364,18 @@ class ProcessData(object):
 
             self.FK_database = FK_database
             self.FK_model = FK_model
+
+        elif self.pick_type == 'CPS_metadata':
+            assert CPS_database is not None
+            assert exists(CPS_database)
+            if CPS_model is not None and \
+                    basename(CPS_database.rstrip('/')) == CPS_model:
+                warn("CPS_model '%s' is already the last component of "
+                     "CPS_database '%s'; setting CPS_model=None to avoid "
+                     "path duplication" % (CPS_model, CPS_database))
+                CPS_model = None
+            self.CPS_database = CPS_database
+            self.CPS_model = CPS_model  # may be None if model is specified in CPS_database path
 
         elif self.pick_type == 'SAC_metadata':
             pass
@@ -579,6 +601,37 @@ class ProcessData(object):
 
             elif self.pick_type == 'CPS_metadata':
                 raise NotImplemented
+                # base directory: CPS_model may be None if model is specified in CPS_database path
+                if self.CPS_model is not None:
+                    base_dir = join(self.CPS_database, self.CPS_model)
+                else:
+                    base_dir = self.CPS_database
+
+                # find depth folder closest to origin depth
+                # folder names encode depth as int(depth_km * 10), zero-padded to 4 digits
+                dep_desired = int(round(origin.depth_in_m / 100.))
+                depth_folders = [e for e in listdir(base_dir)
+                                 if isdir(join(base_dir, e)) and e.isdigit()]
+                dep_folder = min(depth_folders,
+                                 key=lambda x: abs(int(x) - dep_desired))
+
+                # same as above for distance file, closest to station distance
+                # filename prefix encodes distance as int(dist_km * 10), zero-padded to 5 digits
+                dst_desired = int(round(distance_in_m / 100.))
+                folder_path = join(base_dir, dep_folder)
+                dep_len = len(dep_folder)
+                dst_values = list({f.split('.')[0][:-dep_len]
+                                   for f in listdir(folder_path)
+                                   if f.endswith('.ZDD')})
+                dst_value = min(dst_values,
+                                key=lambda x: abs(int(x) - dst_desired))
+
+                sac_headers = obspy.read(
+                    join(folder_path, dst_value + dep_folder + '.ZDD'),
+                    format='sac')[0].stats.sac
+
+                picks['P'] = float(sac_headers.a) # Not sure if universal CPS convention, but compatible with CPS database in HiBasin examples
+                picks['S'] = float(sac_headers.t0) # same as above
 
             elif self.pick_type == 'SAC_metadata':
                 sac_headers = traces[0].sac
