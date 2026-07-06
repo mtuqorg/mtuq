@@ -631,7 +631,7 @@ def _plot_confidence_curve_matplotlib(filename, fractional_volume, values,
 
 
     # Display in text the average value of P(V)
-    average = np.mean(values)
+    np.trapz(values, fractional_volume)
     ax.text(0.72, 0.10, r'$\mathcal{{P}}_{{AV}} = {:.2f}$'.format(average),  # Use raw string (r'') and LaTeX math formatting
         fontsize=fontsize+2, ha='center', va='center', transform=ax.transAxes)
     
