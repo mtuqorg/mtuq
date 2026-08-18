@@ -4,12 +4,12 @@ import obspy
 import numpy as np
 import warnings
 
-from os import listdir
 from copy import deepcopy
 from io import TextIOBase
 from obspy import taup
 from obspy.geodetics import gps2dist_azimuth
-from os.path import basename, exists, isdir, join
+from os.path import basename, exists, join
+from mtuq.io.clients.CPS_SAC import _closest_depth, _closest_offset
 from mtuq.util import AttribDict, warn
 from mtuq.util.cap import WeightParser, taper
 from mtuq.util.signal import cut, get_arrival, m_to_deg, _window_warnings
@@ -606,27 +606,22 @@ class ProcessData(object):
                 else:
                     base_dir = self.CPS_database
 
-                # find depth folder closest to origin depth
-                # folder names encode depth as int(depth_km * 10), zero-padded to 4 digits
-                dep_desired = int(round(origin.depth_in_m / 100.))
-                depth_folders = [e for e in listdir(base_dir)
-                                 if isdir(join(base_dir, e)) and e.isdigit()]
-                dep_folder = min(depth_folders,
-                                 key=lambda x: abs(int(x) - dep_desired))
+                # Select the closest available source depth and source-receiver distance
+                depth_km = _closest_depth(
+                    base_dir,
+                    origin.depth_in_m/1000.)
 
-                # same as above for distance file, closest to station distance
-                # filename prefix encodes distance as int(dist_km * 10), zero-padded to 5 digits
-                dst_desired = int(round(distance_in_m / 100.))
-                folder_path = join(base_dir, dep_folder)
-                dep_len = len(dep_folder)
-                dst_values = list({f.split('.')[0][:-dep_len]
-                                   for f in listdir(folder_path)
-                                   if f.endswith('.ZDD')})
-                dst_value = min(dst_values,
-                                key=lambda x: abs(int(x) - dst_desired))
+                offset_km = _closest_offset(
+                    base_dir,
+                    depth_km,
+                    distance_in_m/1000.)
+
+                depth_str = '%04d' % (10.*depth_km)
+                offset_str = '%05d' % (10.*offset_km)
+                filename = offset_str + depth_str + '.ZEX'
 
                 sac_headers = obspy.read(
-                    join(folder_path, dst_value + dep_folder + '.ZDD'),
+                    join(base_dir, depth_str, filename),
                     format='sac')[0].stats.sac
 
                 picks['P'] = float(sac_headers.a) # Not sure if universal CPS convention, but compatible with CPS database in HiBasin examples
