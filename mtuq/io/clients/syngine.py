@@ -46,7 +46,7 @@ class Client(ClientBase):
                  cache_path=None):
 
         if not path_or_url:
-            path_or_url = 'http://service.iris.edu/irisws/syngine/1'
+            path_or_url = 'https://service.earthscope.org/irisws/syngine/1'
         self.url = path_or_url
 
         # Checks against list of currently supported models. If necessary,
