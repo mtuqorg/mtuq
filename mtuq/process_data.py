@@ -4,12 +4,12 @@ import obspy
 import numpy as np
 import warnings
 
-from os import listdir
 from copy import deepcopy
 from io import TextIOBase
 from obspy import taup
 from obspy.geodetics import gps2dist_azimuth
-from os.path import basename, exists, isdir, join
+from os.path import basename, exists, join
+from mtuq.io.clients.CPS_SAC import _closest_depth, _closest_offset
 from mtuq.util import AttribDict, warn
 from mtuq.util.cap import WeightParser, taper
 from mtuq.util.signal import cut, get_arrival, m_to_deg, _window_warnings
@@ -71,6 +71,9 @@ class ProcessData(object):
 
     - ``'FK_metadata'``
       reads P, S travel times from FK metadata
+
+    - ``'CPS_metadata'``
+      reads P, S travel times from CPS database SAC headers
 
     - ``'SAC_metadata'``
       reads P, S travel times from SAC metadata fields `t5`, `t6`
@@ -148,8 +151,15 @@ class ProcessData(object):
     ``FK_database`` (`str`)
     Path to FK database, required for `pick_type=FK_metadata`
 
+    ``FK_model`` (`str`)
+    FK model name, optional for `pick_type=FK_metadata`
+
     ``CPS_database`` (`str`)
     Path to CPS database, required for `pick_type=CPS_metadata`
+
+    ``CPS_model`` (`str`)
+    CPS model name (subdirectory of `CPS_database`), optional for `pick_type=CPS_metadata`.
+    If `CPS_database` already ends with the model subdirectory, omit this argument.
 
     ``capuaf_file`` (`str`)
     Path to `CAPUAF`-style text file, required for `pick_type=user_supplied`
@@ -354,6 +364,18 @@ class ProcessData(object):
 
             self.FK_database = FK_database
             self.FK_model = FK_model
+
+        elif self.pick_type == 'CPS_metadata':
+            assert CPS_database is not None
+            assert exists(CPS_database)
+            if CPS_model is not None and \
+                    basename(CPS_database.rstrip('/')) == CPS_model:
+                warn("CPS_model '%s' is already the last component of "
+                     "CPS_database '%s'; setting CPS_model=None to avoid "
+                     "path duplication" % (CPS_model, CPS_database))
+                CPS_model = None
+            self.CPS_database = CPS_database
+            self.CPS_model = CPS_model  # may be None if model is specified in CPS_database path
 
         elif self.pick_type == 'SAC_metadata':
             pass
@@ -578,7 +600,32 @@ class ProcessData(object):
                 picks['S'] = float(sac_headers.t2)
 
             elif self.pick_type == 'CPS_metadata':
-                raise NotImplemented
+                # base directory: CPS_model may be None if model is specified in CPS_database path
+                if self.CPS_model is not None:
+                    base_dir = join(self.CPS_database, self.CPS_model)
+                else:
+                    base_dir = self.CPS_database
+
+                # Select the closest available source depth and source-receiver distance
+                depth_km = _closest_depth(
+                    base_dir,
+                    origin.depth_in_m/1000.)
+
+                offset_km = _closest_offset(
+                    base_dir,
+                    depth_km,
+                    distance_in_m/1000.)
+
+                depth_str = '%04d' % (10.*depth_km)
+                offset_str = '%05d' % (10.*offset_km)
+                filename = offset_str + depth_str + '.ZEX'
+
+                sac_headers = obspy.read(
+                    join(base_dir, depth_str, filename),
+                    format='sac')[0].stats.sac
+
+                picks['P'] = float(sac_headers.a) # Not sure if universal CPS convention, but compatible with CPS database in HiBasin examples
+                picks['S'] = float(sac_headers.t0) # same as above
 
             elif self.pick_type == 'SAC_metadata':
                 sac_headers = traces[0].sac
