@@ -17,8 +17,8 @@ jobs:
 
 
     steps:
-    - name: Install libfabric
-      run: sudo apt-get update && sudo apt-get install -y libfabric-bin
+    - name: Install system dependencies
+      run: sudo apt-get update && sudo apt-get install -y libfabric-bin libhdf5-dev pkg-config
       
     - uses: actions/checkout@v2
     - name: Set up Python 3
