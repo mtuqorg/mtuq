@@ -138,9 +138,9 @@ class WeightParser(object):
             statics[_code]['body_wave_Z'] = 0.
             statics[_code]['body_wave_R'] = 0.
 
-            statics[_code]['surface_wave_Z'] = float(row[11])
-            statics[_code]['surface_wave_R'] = float(row[11])
-            statics[_code]['surface_wave_T'] = float(row[12])
+            statics[_code]['surface_wave_Z'] = float(row[10])
+            statics[_code]['surface_wave_R'] = float(row[10])
+            statics[_code]['surface_wave_T'] = float(row[11])
 
         return statics
 
