@@ -1,4 +1,3 @@
-
 import h5py
 import netCDF4
 import numpy as np
@@ -8,8 +7,16 @@ import xarray
 from collections.abc import Iterable
 from mtuq.event import Origin
 from mtuq.grid import DataFrame, DataArray, Grid, UnstructuredGrid
-from mtuq.util import gather2, iterable, timer, remove_list, warn,\
-    ProgressCallback, dataarray_idxmin, dataarray_idxmax
+from mtuq.util import (
+    gather2,
+    iterable,
+    timer,
+    remove_list,
+    warn,
+    ProgressCallback,
+    dataarray_idxmin,
+    dataarray_idxmax,
+)
 from os.path import splitext
 from xarray.core.formatting import unindexed_dims_repr
 
@@ -17,18 +24,26 @@ from xarray.core.formatting import unindexed_dims_repr
 xarray.set_options(keep_attrs=True)
 
 
-def grid_search(data, greens, misfit, origins, sources, 
-    msg_interval=25, timed=True, verbose=1, gather=True):
-
-    """ Evaluates misfit over grids
+def grid_search(
+    data,
+    greens,
+    misfit,
+    origins,
+    sources,
+    msg_interval=25,
+    timed=True,
+    verbose=1,
+    gather=True,
+):
+    """Evaluates misfit over grids
 
     .. rubric :: Usage
 
-    Carries out a grid search by evaluating 
+    Carries out a grid search by evaluating
     `misfit(data, greens.select(origin), source)` over all origins and sources.
 
     If `origins` and `sources` are regularly-spaced, returns an `MTUQDataArray`
-    containing misfit values and corresponding grid points. Otherwise, 
+    containing misfit values and corresponding grid points. Otherwise,
     an `MTUQDataFrame` is returned.
 
 
@@ -55,7 +70,7 @@ def grid_search(data, greens, misfit, origins, sources,
 
 
     ``msg_interval`` (`int`):
-    How frequently, as a percentage of total evaluations, should progress 
+    How frequently, as a percentage of total evaluations, should progress
     messages be displayed? (`int` between 0 and 100)
 
 
@@ -85,38 +100,35 @@ def grid_search(data, greens, misfit, origins, sources,
     if type(sources) not in (Grid, UnstructuredGrid):
         raise TypeError
 
-    size = len(origins)*sources.size
-
+    size = len(origins) * sources.size
 
     if _is_mpi_env():
         from mpi4py import MPI
+
         comm = MPI.COMM_WORLD
         iproc, nproc = comm.rank, comm.size
 
         if nproc > sources.size:
-            raise Exception('Number of CPU cores exceeds size of grid')
-
+            raise Exception("Number of CPU cores exceeds size of grid")
 
     # print debugging information
-    if verbose>0 and _is_mpi_env() and iproc==0:
+    if verbose > 0 and _is_mpi_env() and iproc == 0:
         try:
             print(misfit.description())
         except:
             pass
 
-        print('    Number of misfit evaluations: {:,}\n'.format(size))
-        print('    Number of MPI processes: {:,}'.format(nproc))
-        print('    Number of evaluations per process: {:,}\n'.format(size//nproc))
+        print("    Number of misfit evaluations: {:,}\n".format(size))
+        print("    Number of MPI processes: {:,}".format(nproc))
+        print("    Number of evaluations per process: {:,}\n".format(size // nproc))
 
-
-    elif verbose>0 and not _is_mpi_env():
+    elif verbose > 0 and not _is_mpi_env():
         try:
             print(misfit.description())
         except:
             pass
 
-        print('    Number of misfit evaluations: {:,}\n'.format(size))
-
+        print("    Number of misfit evaluations: {:,}\n".format(size))
 
     if _is_mpi_env():
         #
@@ -132,14 +144,12 @@ def grid_search(data, greens, misfit, origins, sources,
             timed = False
             msg_interval = 0
 
-
     #
     # evaluate misfit over grids
     #
     values = _grid_search_serial(
-        data, greens, misfit, origins, sources, timed=timed,
-        msg_interval=msg_interval)
-
+        data, greens, misfit, origins, sources, timed=timed, msg_interval=msg_interval
+    )
 
     #
     # collect results
@@ -149,7 +159,7 @@ def grid_search(data, greens, misfit, origins, sources,
         values = gather2(comm, values)
         sources = _all
 
-        if iproc!=0:
+        if iproc != 0:
             return
 
     # convert from NumPy array to DataArray or DataFrame
@@ -160,11 +170,11 @@ def grid_search(data, greens, misfit, origins, sources,
         return _to_dataframe(origins, sources, values)
 
 
-
 @timer
-def _grid_search_serial(data, greens, misfit, origins, sources, 
-    timed=True, msg_interval=25):
-    """ Evaluates misfit over origin and source grids 
+def _grid_search_serial(
+    data, greens, misfit, origins, sources, timed=True, msg_interval=25
+):
+    """Evaluates misfit over origin and source grids
     (serial implementation)
     """
     ni = len(origins)
@@ -173,63 +183,62 @@ def _grid_search_serial(data, greens, misfit, origins, sources,
     values = []
     for _i, origin in enumerate(origins):
 
-        msg_handle = ProgressCallback(
-            start=_i*nj, stop=ni*nj, percent=msg_interval)
+        msg_handle = ProgressCallback(start=_i * nj, stop=ni * nj, percent=msg_interval)
 
         # evaluate misfit function
-        values += [misfit(
-            data, greens.select(origin), sources, msg_handle)]
+        values += [misfit(data, greens.select(origin), sources, msg_handle)]
 
-    # returns NumPy array of shape `(len(sources), len(origins))` 
+    # returns NumPy array of shape `(len(sources), len(origins))`
     return np.concatenate(values, axis=1)
 
 
-
 class MTUQDataArray(xarray.DataArray):
-    """ Data structure for storing values on regularly-spaced grids
+    """Data structure for storing values on regularly-spaced grids
 
     .. note::
 
         Besides the methods below, `MTUQDataArray` includes many useful methods
-        inherited from ``xarray.DataArray``. See 
-        `xarray documentation <http://xarray.pydata.org/en/stable/generated/xarray.DataArray.html>`_ 
+        inherited from ``xarray.DataArray``. See
+        `xarray documentation <http://xarray.pydata.org/en/stable/generated/xarray.DataArray.html>`_
         for more information.
 
     """
 
     def origin_idxmin(self):
-        """ Returns `origins` index corresponding to minimum misfit
-        """
-        return int(dataarray_idxmin(self)['origin_idx'])
+        """Returns `origins` index corresponding to minimum misfit"""
+        return int(dataarray_idxmin(self)["origin_idx"])
 
     def source_idxmin(self):
-        """ Returns `sources` index corresponding to minimum misfit
-        """
+        """Returns `sources` index corresponding to minimum misfit"""
         shape = self._get_shape()
         return np.unravel_index(self.argmin(), shape)[0]
 
     def _get_shape(self):
-        """ Private helper method
-        """
-        nn = len(self.coords['origin_idx'])
-        return (int(self.size/nn), nn)
+        """Private helper method"""
+        nn = len(self.coords["origin_idx"])
+        return (int(self.size / nn), nn)
 
     def save(self, filename, *args, **kwargs):
-        """ Saves grid search results to NetCDF file
-        """
-        print('  saving NetCDF file: %s' % filename)
-        self.to_netcdf(filename)
+        """Saves grid search results to NetCDF file"""
+        import os
+
+        # Remove existing file to avoid HDF5/NetCDF conflicts
+        if os.path.exists(filename):
+            os.remove(filename)
+        print("  saving NetCDF file: %s" % filename)
+        # Use scipy engine for better compatibility in MPI environments
+        self.to_netcdf(filename, engine="scipy")
 
     def __repr__(self):
         summary = [
-            'Summary:',
-            '  grid shape: %s' % self.shape.__repr__(),
-            '  grid size:  %d' % self.size,
-            '  mean: %.3e' % np.mean(self.values),
-            '  std:  %.3e' % np.std(self.values),
-            '  min:  %.3e' % self.values.min(),
-            '  max:  %.3e' % self.values.max(),
-            '',
+            "Summary:",
+            "  grid shape: %s" % self.shape.__repr__(),
+            "  grid size:  %d" % self.size,
+            "  mean: %.3e" % np.mean(self.values),
+            "  std:  %.3e" % np.std(self.values),
+            "  min:  %.3e" % self.values.min(),
+            "  max:  %.3e" % self.values.max(),
+            "",
         ]
 
         if hasattr(self, "coords"):
@@ -240,39 +249,41 @@ class MTUQDataArray(xarray.DataArray):
             if unindexed_dims_str:
                 summary.append(unindexed_dims_str)
 
-        return "\n".join(summary+[''])
-
+        return "\n".join(summary + [""])
 
 
 class MTUQDataFrame(pandas.DataFrame):
-    """ Data structure for storing values on irregularly-spaced grids
+    """Data structure for storing values on irregularly-spaced grids
 
     .. note::
 
         Besides the methods below, `MTUQDataFrame` includes many useful methods
-        inherited from ``pandas.DataFrame``. See `pandas documentation 
+        inherited from ``pandas.DataFrame``. See `pandas documentation
         <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html>`_
         for more information.
 
     """
+
     def origin_idxmin(self):
-        """ Returns coordinates corresponding to minimum misfit
-        """
+        """Returns coordinates corresponding to minimum misfit"""
         df = self.reset_index()
-        return df['origin_idx'][df[0].idxmin()]
+        return df["origin_idx"][df[0].idxmin()]
 
     def source_idxmin(self):
-        """ Returns coordinates corresponding to minimum misfit
-        """
+        """Returns coordinates corresponding to minimum misfit"""
         df = self.reset_index()
-        return df['source_idx'][df[0].idxmin()]
+        return df["source_idx"][df[0].idxmin()]
 
     def save(self, filename, *args, **kwargs):
-        """ Saves grid search results to HDF5 file
-        """
-        print('  saving HDF5 file: %s' % filename)
+        """Saves grid search results to HDF5 file"""
+        import os
+
+        # Remove existing file to avoid HDF5 conflicts
+        if os.path.exists(filename):
+            os.remove(filename)
+        print("  saving HDF5 file: %s" % filename)
         df = pandas.DataFrame(self.values, index=self.index)
-        df.to_hdf(filename, key='df', mode='w')
+        df.to_hdf(filename, key="df", mode="w")
 
     @property
     def _constructor(self):
@@ -282,6 +293,7 @@ class MTUQDataFrame(pandas.DataFrame):
 #
 # utility functions
 #
+
 
 def _is_mpi_env():
     try:
@@ -294,16 +306,15 @@ def _is_mpi_env():
     except ImportError:
         return False
 
-    if mpi4py.MPI.COMM_WORLD.Get_size()>1:
+    if mpi4py.MPI.COMM_WORLD.Get_size() > 1:
         return True
     else:
         return False
 
 
 def _to_dataarray(origins, sources, values):
-    """ Converts grid_search inputs to DataArray
-    """
-    origin_dims = ('origin_idx',)
+    """Converts grid_search inputs to DataArray"""
+    origin_dims = ("origin_idx",)
     origin_coords = [np.arange(len(origins))]
     origin_shape = (len(origins),)
 
@@ -311,23 +322,25 @@ def _to_dataarray(origins, sources, values):
     source_coords = sources.coords
     source_shape = sources.shape
 
-    return MTUQDataArray(**{
-        'data': np.reshape(values, source_shape + origin_shape),
-        'coords': source_coords + origin_coords,
-        'dims': source_dims + origin_dims,
-         })
+    return MTUQDataArray(
+        **{
+            "data": np.reshape(values, source_shape + origin_shape),
+            "coords": source_coords + origin_coords,
+            "dims": source_dims + origin_dims,
+        }
+    )
 
 
 def _to_dataframe(origins, sources, values, index_type=2):
-    """ Converts grid_search inputs to DataFrame
-    """
-    if len(origins)*len(sources) > 1.e7:
-        print("  pandas indexing becomes very slow with >10 million rows\n"
-              "  consider using index_type=1 in mtuq.grid_search._to_dataframe\n"
-             )
+    """Converts grid_search inputs to DataFrame"""
+    if len(origins) * len(sources) > 1.0e7:
+        print(
+            "  pandas indexing becomes very slow with >10 million rows\n"
+            "  consider using index_type=1 in mtuq.grid_search._to_dataframe\n"
+        )
 
-    origin_idx = np.arange(len(origins), dtype='int')
-    source_idx = np.arange(len(sources), dtype='int')
+    origin_idx = np.arange(len(origins), dtype="int")
+    source_idx = np.arange(len(sources), dtype="int")
 
     # Cartesian products
     origin_idx = list(np.repeat(origin_idx, len(sources)))
@@ -338,8 +351,8 @@ def _to_dataframe(origins, sources, values, index_type=2):
 
     # assemble coordinates
     coords = [origin_idx, source_idx]
-    dims = ('origin_idx', 'source_idx')
-    if index_type==2:
+    dims = ("origin_idx", "source_idx")
+    if index_type == 2:
         coords += source_coords
         dims += sources.dims
 
@@ -355,8 +368,9 @@ def _to_dataframe(origins, sources, values, index_type=2):
 # I/O functions
 #
 
+
 def open_ds(filename, format=None):
-    """ Reads grid search results from disk
+    """Reads grid search results from disk
 
     .. rubric :: Parameters
 
@@ -370,34 +384,31 @@ def open_ds(filename, format=None):
     if not format:
         # try to determine file format, if not given
         if h5py.is_hdf5(filename):
-            format = 'HDF'
+            format = "HDF"
         else:
             try:
                 netCDF.Dataset(filename, "r")
-                format = 'NETCDF4'
+                format = "NETCDF4"
             except:
-                raise Exception('File format not recognized: %s' % filename)
+                raise Exception("File format not recognized: %s" % filename)
 
-    if format.upper() in ['H5', 'HDF','HDF5']:
+    if format.upper() in ["H5", "HDF", "HDF5"]:
         return open_df(filename)
 
-    elif format.upper() in ['NC', 'NC4', 'NETCDF', 'NETCDF4']:
+    elif format.upper() in ["NC", "NC4", "NETCDF", "NETCDF4"]:
         return open_da(filename)
 
     else:
-        raise Exception('File format not supported: %s' % filename)
+        raise Exception("File format not supported: %s" % filename)
 
 
 def open_da(filename):
-    """ Reads MTUQDataArray from NetCDF file
-    """
+    """Reads MTUQDataArray from NetCDF file"""
     da = xarray.open_dataarray(filename)
     return MTUQDataArray(data=da.values, coords=da.coords, dims=da.dims)
 
 
 def open_df(filename):
-    """ Reads MTUQDataFrame from HDF5 file
-    """
+    """Reads MTUQDataFrame from HDF5 file"""
     df = pandas.read_hdf(filename)
     return MTUQDataFrame(df.values, index=df.index)
-
