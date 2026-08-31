@@ -34,6 +34,7 @@ jobs:
     - name: Basic tests
       run: |
          python tests/check_import.py
+         python tests/test_polarity_amplitudes.py
          bash tests/check_examples.bash
     - name: Advanced tests
       run: |
