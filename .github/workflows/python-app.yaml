@@ -35,6 +35,8 @@ jobs:
       run: |
          python tests/check_import.py
          bash tests/check_examples.bash
+    - name: Workflow tests
+      run: pytest -q tests/test_workflow.py tests/test_workflow_catalog.py
     - name: Advanced tests
       run: |
          bash data/examples/unpack.bash

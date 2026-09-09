@@ -46,7 +46,12 @@ dependencies = [
   "setuptools",
   "seisgen",
   "seisclient",
+  "PyYAML",
 ]
+
+[project.scripts]
+mtuq-run = "mtuq.workflow:main"
+mtuq-catalog = "mtuq.workflow.catalog:main"
 
 [project.entry-points."readers"]
 SAC = "mtuq.io.readers.SAC:read"
@@ -67,7 +72,7 @@ SEISCLOUD = "mtuq.io.clients.seiscloud:Client"
 SYNGINE = "mtuq.io.clients.syngine:Client"
 
 [tool.setuptools]
-packages = ["mtuq"]
+packages = ["mtuq", "mtuq.workflow"]
 
 
 #[tool.setuptools.package-data]
