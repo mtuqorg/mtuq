@@ -1,0 +1,52 @@
+version: 1
+
+event:
+  id: '20090407201255351'
+  time: '2009-04-07T20:12:55Z'
+  latitude: 61.4542
+  longitude: -149.7428
+  depth_in_m: 33033.6
+
+data:
+  format: SAC
+  path: ../../data/examples/20090407201255351/*.[zrt]
+  weights: ../../data/examples/20090407201255351/weights.dat
+  units: m/s
+
+greens:
+  format: SYNGINE
+  model: ak135
+  cache_path: ~/.cache/mtuq/syngine
+
+picks:
+  type: taup
+  model: ak135
+
+misfit:
+  norm: L2
+  normalize: true
+
+measurements:
+  body:
+    filter: [0.1, 0.333]
+    window: [body_wave, 15]
+    components: [ZR]
+    time_shift: 2
+
+  surface:
+    filter: [0.025, 0.0625]
+    window: [surface_wave, 150]
+    components: [ZR, T]
+    time_shift: 10
+
+source:
+  type: fmt
+  magnitudes: [4.4, 4.5, 4.6, 4.7]
+  grid:
+    type: regular
+    npts_per_axis: 10
+
+wavelet:
+  type: trapezoid
+
+output: output/20090407201255351-fmt
