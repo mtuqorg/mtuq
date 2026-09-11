@@ -260,7 +260,7 @@ class ProcessData(object):
             # or frequency [Hz], but not both
             if period is not None:
                 assert freq is None
-                freq = period*-1
+                freq = period**-1
             else:
                 assert freq is not None
 
