@@ -90,6 +90,8 @@ def _fake_success(recipe_path):
         ),
         encoding='utf-8',
     )
+    if 'origin_search' in config:
+        (output / 'origins.json').write_text('{}\n', encoding='utf-8')
     return SimpleNamespace(returncode=0)
 
 
@@ -250,6 +252,30 @@ def test_resume_skips_complete_outputs(tmp_path, monkeypatch):
 
     assert result['valid'] is True
     assert calls == ['e2']
+
+
+def test_resume_does_not_require_origins_json(tmp_path, monkeypatch):
+    directory = tmp_path / 'events'
+    directory.mkdir()
+    recipe = _recipe(directory, 'e1')
+    config = yaml.safe_load(recipe.read_text(encoding='utf-8'))
+    config['origin_search'] = {
+        'depth_in_m': {'values': [25000, 35000]},
+    }
+    recipe.write_text(yaml.safe_dump(config, sort_keys=False), encoding='utf-8')
+    _fake_success(recipe)
+    (Path(config['output']) / 'origins.json').unlink()
+    calls = []
+
+    def runner(path, timeout=None):
+        calls.append(Path(path).stem)
+        return _fake_success(path)
+
+    monkeypatch.setattr('mtuq.workflow.catalog._run_event_process', runner)
+    result = run_catalog(directory, resume=True)
+
+    assert result['valid'] is True
+    assert calls == []
 
 
 def test_summary_is_simple_and_can_be_regenerated(tmp_path):

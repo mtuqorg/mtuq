@@ -112,7 +112,6 @@ def _is_complete(recipe):
         and _result_total(output) is not None
     ):
         return False
-
     try:
         with solution_path.open('r', encoding='utf-8') as handle:
             solution = json.load(handle)

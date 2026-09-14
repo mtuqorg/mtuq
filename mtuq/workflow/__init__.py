@@ -12,25 +12,11 @@ The stable public interface is ``run()``, ``validate_config()``,
 ``run_catalog()``, and ``WorkflowConfigError``.
 """
 
+from .catalog import run_catalog as run_catalog
 from .config import WorkflowConfigError as WorkflowConfigError
 from .config import validate_config as validate_config
 from .run import main as main
 from .run import run as run
-
-
-def run_catalog(
-    directory, validate_only=False, resume=False, summary_only=False,
-    timeout=None,
-):
-    """Runs or summarizes a directory of event recipes."""
-    from .catalog import run_catalog as _run_catalog
-    return _run_catalog(
-        directory,
-        validate_only=validate_only,
-        resume=resume,
-        summary_only=summary_only,
-        timeout=timeout,
-    )
 
 
 __all__ = [

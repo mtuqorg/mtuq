@@ -18,6 +18,15 @@ from mtuq.grid import (
     FullMomentTensorGridRandom,
     FullMomentTensorGridSemiregular,
 )
+from mtuq.wavelet import (
+    EarthquakeTrapezoid,
+    Gabor,
+    GaborWavelet,
+    Gaussian,
+    RickerWavelet,
+    Trapezoid as WaveletTrapezoid,
+    Triangle,
+)
 from mtuq.workflow import WorkflowConfigError, run, validate_config
 from mtuq.workflow.build import (
     _build_grid,
@@ -26,6 +35,7 @@ from mtuq.workflow.build import (
     prepare_workflow,
 )
 from mtuq.workflow.io import _write_input_config
+from mtuq.workflow.plots import _plot_waveform, generate_plots
 
 
 def _weights_file(tmp_path):
@@ -237,12 +247,13 @@ def test_event_id_is_normalized_to_string(tmp_path):
     assert normalized['event']['id'] == '12345'
 
 
-def test_boolean_event_id_is_rejected(tmp_path):
-    config = _config(tmp_path)
-    config['event']['id'] = True
+def test_invalid_event_ids_are_rejected(tmp_path):
+    for event_id in (True, 'unsafe/id'):
+        config = _config(tmp_path)
+        config['event']['id'] = event_id
 
-    with pytest.raises(WorkflowConfigError, match='event.id'):
-        _validate(tmp_path, config)
+        with pytest.raises(WorkflowConfigError, match='event.id'):
+            _validate(tmp_path, config)
 
 
 def test_unquoted_yaml_timestamp_is_accepted(tmp_path):
@@ -258,6 +269,84 @@ def test_unquoted_yaml_timestamp_is_accepted(tmp_path):
     normalized = validate_config(path)
 
     assert normalized['event']['time'].year == 2009
+
+
+@pytest.mark.parametrize(
+    'npts_per_edge, location_count',
+    [(2, 5), (3, 9)],
+)
+def test_origin_search_builds_origins_from_reference_event(
+    tmp_path, npts_per_edge, location_count
+):
+    config = _config(tmp_path)
+    config['origin_search'] = {
+        'depth_in_m': {'values': [25000, '3e4', 35000]},
+        'hypocenter': {
+            'spacing_in_m': 1000,
+            'npts_per_edge': npts_per_edge,
+        },
+    }
+
+    prepared = prepare_workflow(_validate(tmp_path, config))
+
+    assert prepared.catalog_origin.time == config['event']['time']
+    assert prepared.catalog_origin.latitude == pytest.approx(61.4542)
+    assert prepared.catalog_origin.longitude == pytest.approx(-149.7428)
+    assert prepared.catalog_origin.depth_in_m == pytest.approx(33033.6)
+    assert len(prepared.origins) == 3 * location_count
+    assert {origin.depth_in_m for origin in prepared.origins} == {
+        25000, 30000, 35000,
+    }
+    assert len({
+        (origin.latitude, origin.longitude)
+        for origin in prepared.origins
+    }) == location_count
+    assert all(
+        origin.time == prepared.catalog_origin.time
+        for origin in prepared.origins
+    )
+    assert all(
+        sum(
+            np.allclose(
+                (origin.latitude, origin.longitude),
+                (
+                    prepared.catalog_origin.latitude,
+                    prepared.catalog_origin.longitude,
+                ),
+                rtol=0.0,
+                atol=1.0e-10,
+            )
+            for origin in prepared.origins
+            if origin.depth_in_m == depth
+        ) == 1
+        for depth in (25000, 30000, 35000)
+    )
+    assert all(
+        origin.depth_in_m != prepared.catalog_origin.depth_in_m
+        for origin in prepared.origins
+    )
+    assert prepared.resolved['origin_search']['depth_in_m']['values'] == [
+        25000, 30000, 35000,
+    ]
+
+
+@pytest.mark.parametrize('origin_search, message', [
+    ({'depth_in_m': {'values': []}}, 'non-empty list'),
+    ({'hypocenter': {
+        'spacing_in_m': 0,
+        'npts_per_edge': 4,
+    }}, 'spacing_in_m must be positive'),
+    ({'hypocenter': {
+        'spacing_in_m': 1000,
+        'npts_per_edge': 2.5,
+    }}, 'npts_per_edge must be a positive integer'),
+])
+def test_origin_search_rejects_invalid_grid(tmp_path, origin_search, message):
+    config = _config(tmp_path)
+    config['origin_search'] = origin_search
+
+    with pytest.raises(WorkflowConfigError, match=message):
+        _validate(tmp_path, config)
 
 
 def test_non_syngine_greens_requires_path(tmp_path):
@@ -472,6 +561,66 @@ def test_bandpass_filter_accepts_fraction_and_scientific_notation(tmp_path):
     assert surface['freq_max'] == pytest.approx(0.1)
 
 
+@pytest.mark.parametrize('filter_type', ['lowpass', 'highpass'])
+@pytest.mark.parametrize(
+    'corner, native_key, value, expected_frequency',
+    [
+        ('frequency', 'freq', '1e-1', 0.1),
+        ('period', 'period', 10, 0.1),
+    ],
+)
+@pytest.mark.parametrize('style', ['shorthand', 'native'])
+def test_one_corner_filters_use_native_conversion_and_resolve_to_frequency(
+    tmp_path, filter_type, corner, native_key, value, expected_frequency,
+    style,
+):
+    config = _config(tmp_path)
+    body = config['measurements']['body']
+    body.pop('filter')
+
+    if style == 'shorthand':
+        body['filter'] = {'type': filter_type, corner: value}
+    else:
+        body['processing'] = {
+            'filter_type': filter_type,
+            native_key: value,
+        }
+
+    normalized = _validate(tmp_path, config)
+    processors, _, measurements = _build_measurements(normalized)
+
+    processor = processors['body']
+    resolved = measurements['body']['processing']
+    assert processor.filter_type == filter_type
+    assert processor.freq == pytest.approx(expected_frequency)
+    assert resolved['filter_type'] == filter_type.title()
+    assert resolved['freq'] == pytest.approx(expected_frequency)
+    assert 'period' not in resolved
+
+
+@pytest.mark.parametrize(
+    'filter_config, message',
+    [
+        ({'type': 'bandpass', 'frequency': 0.1}, 'lowpass or highpass'),
+        ({'type': 'lowpass'}, 'exactly one'),
+        (
+            {'type': 'lowpass', 'frequency': 0.1, 'period': 10},
+            'exactly one',
+        ),
+        ({'type': 'highpass', 'frequency': 0}, 'must be positive'),
+        ({'type': 'highpass', 'period': -10}, 'must be positive'),
+    ],
+)
+def test_one_corner_filter_shorthand_rejects_invalid_values(
+    tmp_path, filter_config, message
+):
+    config = _config(tmp_path)
+    config['measurements']['body']['filter'] = filter_config
+
+    with pytest.raises(WorkflowConfigError, match=message):
+        _validate(tmp_path, config)
+
+
 @pytest.mark.parametrize('style', ['shorthand', 'native'])
 def test_bandpass_period_inputs_use_native_conversion_and_resolve_to_frequency(
     tmp_path, style
@@ -523,6 +672,7 @@ def test_numeric_strings_reject_non_scientific_syntax(tmp_path, value):
     'magnitudes, explicit_magnitude, expected',
     [
         ([4.4, 4.5, 4.6], None, 4.5),
+        ([4.4, 4.6], None, 4.5),
         ([4.6], None, 4.6),
         ([4.4, 4.5, 4.6], 4.7, 4.7),
     ],
@@ -535,10 +685,160 @@ def test_wavelet_magnitude_resolution(
     if explicit_magnitude is not None:
         config['wavelet']['magnitude'] = explicit_magnitude
 
-    wavelet, magnitude = _build_wavelet(_validate(tmp_path, config))
+    wavelet, resolved = _build_wavelet(_validate(tmp_path, config))
 
     assert wavelet is not None
-    assert magnitude == pytest.approx(expected)
+    assert resolved['function'] == 'mtuq.util.cap.Trapezoid'
+    assert resolved['magnitude'] == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    'wavelet_config, function, expected_parameters',
+    [
+        (
+            {
+                'type': 'trapezoid',
+                'rise_time': 1.0,
+                'half_duration': 2.0,
+            },
+            WaveletTrapezoid,
+            {'rise_time': 1.0, 'half_duration': 2.0},
+        ),
+        (
+            {'type': 'triangle', 'half_duration': 2.0},
+            Triangle,
+            {'half_duration': 2.0},
+        ),
+        (
+            {'type': 'gaussian'},
+            Gaussian,
+            {'sigma': 1.0, 'mu': 0.0},
+        ),
+        (
+            {'type': 'gabor'},
+            Gabor,
+            {'a': 1.0, 'b': 2.0},
+        ),
+        (
+            {
+                'type': 'earthquake_trapezoid',
+                'rise_time': 1.0,
+                'rupture_time': 3.0,
+            },
+            EarthquakeTrapezoid,
+            {'rise_time': 1.0, 'rupture_time': 3.0},
+        ),
+        (
+            {'type': 'ricker', 'dominant_frequency': 0.5},
+            RickerWavelet,
+            {'dominant_frequency': 0.5},
+        ),
+        (
+            {'type': 'gabor_wavelet', 'dominant_frequency': 0.5},
+            GaborWavelet,
+            {'dominant_frequency': 0.5},
+        ),
+    ],
+)
+def test_native_wavelet_construction_and_resolution(
+    tmp_path, wavelet_config, function, expected_parameters
+):
+    config = _config(tmp_path)
+    config['wavelet'] = wavelet_config
+    normalized = _validate(tmp_path, config)
+
+    actual, resolved = _build_wavelet(normalized)
+    expected = function(**expected_parameters)
+
+    assert type(actual) is type(expected)
+    assert resolved['type'] == wavelet_config['type']
+    assert resolved['function'] == '%s.%s' % (
+        function.__module__, function.__name__
+    )
+    for key, value in expected_parameters.items():
+        assert resolved[key] == pytest.approx(value)
+
+
+def test_resolved_native_wavelet_is_rerunnable(tmp_path):
+    config = _config(tmp_path)
+    config['wavelet'] = {'type': 'gaussian'}
+
+    resolved = prepare_workflow(_validate(tmp_path, config)).resolved
+    assert resolved['wavelet'] == {
+        'type': 'gaussian',
+        'function': 'mtuq.wavelet.Gaussian',
+        'sigma': 1.0,
+        'mu': 0.0,
+    }
+
+    normalized = _validate(tmp_path, resolved, 'resolved.yaml')
+    assert 'function' not in normalized['wavelet']
+    refreshed = prepare_workflow(normalized).resolved
+    assert refreshed['wavelet'] == resolved['wavelet']
+
+
+def test_wavelet_schema_rejects_ambiguous_or_invalid_parameters(tmp_path):
+    invalid = [
+        (
+            {
+                'type': 'trapezoid',
+                'magnitude': 4.5,
+                'rise_time': 1.0,
+                'half_duration': 2.0,
+            },
+            'magnitude or rise_time/half_duration',
+        ),
+        (
+            {'type': 'trapezoid', 'rise_time': 1.0},
+            'missing required key',
+        ),
+        (
+            {'type': 'trapezoid', 'rise_time': 3.0, 'half_duration': 2.0},
+            'must not exceed half_duration',
+        ),
+        (
+            {'type': 'triangle', 'half_duration': 0.0},
+            'half_duration must be positive',
+        ),
+        (
+            {'type': 'gaussian', 'sigma': 0.0},
+            'sigma must be positive',
+        ),
+        (
+            {'type': 'earthquake_trapezoid', 'rise_time': 2.0},
+            'missing required key',
+        ),
+        (
+            {
+                'type': 'earthquake_trapezoid',
+                'rise_time': 2.0,
+                'rupture_time': 1.0,
+            },
+            'must be at least rise_time',
+        ),
+        (
+            {'type': 'ricker'},
+            'missing required key',
+        ),
+        (
+            {'type': 'ricker', 'dominant_frequency': 0.0},
+            'dominant_frequency must be positive',
+        ),
+        (
+            {'type': 'gaussian', 'magnitude': 4.5},
+            'unknown key',
+        ),
+        (
+            {'type': 'user_supplied'},
+            'wavelet.type must be',
+        ),
+    ]
+
+    for wavelet_config, message in invalid:
+        config = _config(tmp_path)
+        config['wavelet'] = wavelet_config
+        with pytest.raises(WorkflowConfigError, match=message):
+            _validate(tmp_path, config)
 
 
 @pytest.mark.parametrize(
@@ -573,7 +873,9 @@ def test_semiregular_grid_arguments_are_exposed_and_used(
 def test_resolved_defaults_match_native_objects(tmp_path):
     recipe = _config(tmp_path)
     recipe['measurements']['P-waves'] = recipe['measurements'].pop('body')
+    recipe['measurements']['P-waves']['role'] = 'body'
     recipe['measurements']['P-waves']['time_shift'] = [-1.5, 2.5]
+    recipe['plots'] = ['waveform', 'beachball', 'misfit']
     prepared = prepare_workflow(_validate(tmp_path, recipe))
     resolved = prepared.resolved
 
@@ -619,9 +921,148 @@ def test_resolved_defaults_match_native_objects(tmp_path):
         'P-waves': 1.0,
         'surface': 1.0,
     }
+    assert body['role'] == 'body'
+    assert resolved['measurements']['surface']['role'] == 'surface'
+    assert resolved['plots'] == ['waveform', 'beachball', 'misfit']
 
 
-def test_complete_recipe_round_trips_to_same_canonical_config(tmp_path):
+def test_plot_schema_rejects_invalid_requests_and_roles(tmp_path):
+    config = _config(tmp_path)
+    config['plots'] = ['confidence']
+    with pytest.raises(WorkflowConfigError, match='unsupported plot'):
+        _validate(tmp_path, config)
+
+    config = _config(tmp_path)
+    config['measurements']['surface']['role'] = 'body'
+    with pytest.raises(WorkflowConfigError, match='must match'):
+        _validate(tmp_path, config)
+
+    config = _config(tmp_path)
+    config['measurements']['other'] = config['measurements'].pop('surface')
+    config['measurements']['other']['role'] = 'body'
+    with pytest.raises(WorkflowConfigError, match='role.*already used'):
+        _validate(tmp_path, config)
+
+    config = _config(tmp_path)
+    config['measurements']['body']['role'] = None
+    with pytest.raises(WorkflowConfigError, match=r'body\.role'):
+        _validate(tmp_path, config)
+
+    normalized = _validate(tmp_path, _config(tmp_path))
+    assert normalized['measurements']['body']['role'] == 'body'
+    assert normalized['measurements']['surface']['role'] == 'surface'
+
+
+def test_standard_plots_dispatch_by_role_and_fail_independently(
+    tmp_path, monkeypatch, capsys
+):
+    plotting = importlib.import_module('mtuq.workflow.plots')
+    one = Mock()
+    two = Mock()
+    three = Mock()
+    monkeypatch.setattr(plotting, 'plot_data_greens1', one)
+    monkeypatch.setattr(plotting, 'plot_data_greens2', two)
+    monkeypatch.setattr(plotting, 'plot_data_greens3', three)
+
+    stations, origin, source, source_dict = object(), object(), object(), {}
+
+    def waveform(measurements):
+        names = list(measurements)
+        data = {name: 'data-' + name for name in names}
+        greens = {name: 'greens-' + name for name in names}
+        processors = {name: 'processor-' + name for name in names}
+        misfits = {name: 'misfit-' + name for name in names}
+        _plot_waveform(
+            tmp_path,
+            'test-event',
+            measurements,
+            data,
+            greens,
+            processors,
+            misfits,
+            stations,
+            origin,
+            source,
+            source_dict,
+        )
+
+    waveform({'term': {}})
+    assert one.call_args.args[0] == str(
+        tmp_path / 'test-event_waveform.png'
+    )
+    assert one.call_args.args[1:5] == (
+        'data-term', 'greens-term', 'processor-term', 'misfit-term'
+    )
+
+    for surface_role in ('surface', 'rayleigh', 'love'):
+        two.reset_mock()
+        waveform({
+            'sw': {'role': surface_role},
+            'bw': {'role': 'body'},
+        })
+        assert two.call_args.args[0] == str(
+            tmp_path / 'test-event_waveform.png'
+        )
+        assert two.call_args.args[1:9] == (
+            'data-bw', 'data-sw', 'greens-bw', 'greens-sw',
+            'processor-bw', 'processor-sw', 'misfit-bw', 'misfit-sw',
+        )
+
+    waveform({
+        'transverse': {'role': 'love'},
+        'vertical': {'role': 'rayleigh'},
+        'short': {'role': 'body'},
+    })
+    assert three.call_args.args[1:13] == (
+        'data-short', 'data-vertical', 'data-transverse',
+        'greens-short', 'greens-vertical', 'greens-transverse',
+        'processor-short', 'processor-vertical', 'processor-transverse',
+        'misfit-short', 'misfit-vertical', 'misfit-transverse',
+    )
+
+    one.reset_mock()
+    waveform({'first': {}, 'second': {}})
+    assert [call.args[0] for call in one.call_args_list] == [
+        str(tmp_path / 'test-event_waveform_first.png'),
+        str(tmp_path / 'test-event_waveform_second.png'),
+    ]
+
+    beachball = Mock(side_effect=RuntimeError('backend unavailable'))
+    misfit_vw = Mock()
+    monkeypatch.setattr(plotting, 'plot_beachball', beachball)
+    monkeypatch.setitem(plotting._SOURCE_MISFIT_PLOTS, 'dev', misfit_vw)
+    config = {
+        'event': {'id': 'test-event'},
+        'plots': ['beachball', 'misfit'],
+        'measurements': {},
+        'source': {'type': 'dev', 'grid': {'type': 'regular'}},
+    }
+    generate_plots(
+        config,
+        output_dir=tmp_path,
+        results='results',
+        data={},
+        greens={},
+        processors={},
+        misfits={},
+        stations=stations,
+        origin=origin,
+        source=source,
+        source_dict=source_dict,
+    )
+
+    assert "Plot 'beachball' failed: backend unavailable" in (
+        capsys.readouterr().out
+    )
+    misfit_vw.assert_called_once_with(
+        str(tmp_path / 'plots' / 'test-event_misfit.png'), 'results'
+    )
+    assert beachball.call_args.args[0] == str(
+        tmp_path / 'plots' / 'test-event_beachball.png'
+    )
+
+
+def test_complete_recipe_round_trips_to_same_resolved_config(tmp_path):
     resolved = _resolved_config(tmp_path)
 
     rerun = _validate(tmp_path, resolved, 'resolved.yaml')
@@ -685,19 +1126,31 @@ def test_rerunning_resolved_recipe_preserves_original_input(tmp_path):
     )
 
 
-def test_custom_objective_coefficients_are_rejected(tmp_path):
+def test_objective_coefficients_are_validated_and_resolved(tmp_path):
     config = _config(tmp_path)
     config['objective'] = {
         'coefficients': {
             'body': 0.7,
-            'surface': 0.3,
+            'surface': '3/10',
         }
     }
 
-    with pytest.raises(
-        WorkflowConfigError, match='custom objective coefficients'
-    ):
-        _validate(tmp_path, config)
+    normalized = _validate(tmp_path, config)
+    resolved = prepare_workflow(normalized).resolved
+    expected = {'body': 0.7, 'surface': 0.3}
+
+    assert normalized['objective']['coefficients'] == expected
+    assert resolved['objective']['coefficients'] == expected
+
+    invalid = [
+        ({'body': 1.0}, 'missing required key'),
+        ({'body': -1.0, 'surface': 1.0}, 'body must be non-negative'),
+        ({'body': 0.0, 'surface': 0.0}, 'at least one positive value'),
+    ]
+    for coefficients, message in invalid:
+        config['objective']['coefficients'] = coefficients
+        with pytest.raises(WorkflowConfigError, match=message):
+            _validate(tmp_path, config)
 
 
 def test_generated_metadata_is_refreshed(tmp_path):
@@ -734,7 +1187,17 @@ def test_run_combines_terms_selects_source_and_writes_outputs(
     numerical parity and serialization belong to integration tests.
     """
     runner = importlib.import_module('mtuq.workflow.run')
-    recipe = _write_config(tmp_path, _config(tmp_path))
+    config = _config(tmp_path)
+    config['origin_search'] = {
+        'depth_in_m': {'values': [25000, 35000]},
+    }
+    config['objective'] = {
+        'coefficients': {'body': 0.25, 'surface': 0.75},
+    }
+    config['measurements']['body']['role'] = 'body'
+    config['measurements']['surface']['role'] = 'surface'
+    config['plots'] = ['waveform', 'beachball', 'misfit']
+    recipe = _write_config(tmp_path, config)
     output = tmp_path / 'override'
     data, greens = Mock(), Mock()
     data_terms, greens_terms = [object(), object()], [object(), object()]
@@ -745,18 +1208,25 @@ def test_run_combines_terms_selects_source_and_writes_outputs(
 
     class Surface(np.ndarray):
         def source_idxmin(self):
-            return int(self.argmin())
+            return int(np.unravel_index(self.argmin(), self.shape)[1])
 
-    def search(data_term, greens_term, misfit, origin, grid):
-        values = np.full(grid.size, 100.0)
-        # Neither term prefers source 1 individually; their sum does.
-        values[:3] = (
-            [0.0, 2.0, 8.0] if data_term is data_terms[0]
-            else [8.0, 2.0, 0.0]
+        def origin_idxmin(self):
+            return int(np.unravel_index(self.argmin(), self.shape)[0])
+
+    def search(data_term, greens_term, misfit, origins, grid):
+        values = np.full((len(origins), grid.size), 100.0)
+        values[:, :3] = (
+            [[0.0, 2.0, 8.0], [8.0, 2.0, 8.0]]
+            if data_term is data_terms[0]
+            else [[8.0, 2.0, 0.0], [8.0, 0.0, 8.0]]
         )
         return values.view(Surface)
 
-    search_mock, save_results = Mock(side_effect=search), Mock()
+    search_mock, save_results, plot_results = (
+        Mock(side_effect=search),
+        Mock(),
+        Mock(side_effect=RuntimeError('plot setup unavailable')),
+    )
     monkeypatch.setattr(runner, '_mpi_comm', lambda: None)
     monkeypatch.setattr(runner, 'read', Mock(return_value=data))
     monkeypatch.setattr(
@@ -764,12 +1234,13 @@ def test_run_combines_terms_selects_source_and_writes_outputs(
     )
     monkeypatch.setattr(runner, 'grid_search', search_mock)
     monkeypatch.setattr(runner, '_save_native_results', save_results)
+    monkeypatch.setattr(runner, 'generate_plots', plot_results)
 
     result = run(recipe, output=output)
 
     data.sort_by_distance.assert_called_once_with()
     database.get_greens_tensors.assert_called_once_with(
-        data.get_stations.return_value, result['origin']
+        data.get_stations.return_value, result['origins']
     )
     greens.convolve.assert_called_once()
     assert data.map.call_count == greens.map.call_count == 2
@@ -782,14 +1253,22 @@ def test_run_combines_terms_selects_source_and_writes_outputs(
         assert args[0] is result['data'][name] is data_terms[index]
         assert args[1] is result['greens'][name] is greens_terms[index]
         assert args[2] is result['misfits'][name]
-        assert args[3] is result['origin']
+        assert args[3] is result['origins']
         assert args[4] is result['grid']
 
     np.testing.assert_allclose(
-        result['results'], result['terms']['body'] + result['terms']['surface']
+        result['results'],
+        0.25 * result['terms']['body'] + 0.75 * result['terms']['surface'],
     )
+    assert result['config']['objective']['coefficients'] == {
+        'body': 0.25,
+        'surface': 0.75,
+    }
     expected_source = result['grid'].get(1)
     assert result['source'].as_dict() == expected_source.as_dict()
+    assert result['origin'] is result['origins'][1]
+    assert result['origin'].depth_in_m == pytest.approx(35000)
+    assert result['reference_origin'].depth_in_m == pytest.approx(33033.6)
     save_results.assert_called_once()
     saved = save_results.call_args.args
     assert saved[0] == output
@@ -804,3 +1283,23 @@ def test_run_combines_terms_selects_source_and_writes_outputs(
         assert solution[key] == pytest.approx(value)
     assert solution['Mw'] == pytest.approx(expected_source.magnitude())
     assert solution['depth_in_m'] == pytest.approx(result['origin'].depth_in_m)
+    assert solution['reference_origin']['depth_in_m'] == pytest.approx(
+        result['reference_origin'].depth_in_m
+    )
+    origins = json.loads((output / 'origins.json').read_text())
+    assert [origins[str(index)]['depth_in_m'] for index in range(2)] == [
+        25000, 35000,
+    ]
+    plot_results.assert_called_once()
+    plot_args = plot_results.call_args
+    assert plot_args.args[0]['plots'] == [
+        'waveform', 'beachball', 'misfit'
+    ]
+    assert plot_args.args[0]['measurements']['body']['role'] == 'body'
+    assert plot_args.args[0]['measurements']['surface']['role'] == 'surface'
+    assert plot_args.args[0]['output'] == str(output)
+    assert plot_args.kwargs['output_dir'] == output
+    assert plot_args.kwargs['results'] is result['results']
+    assert plot_args.kwargs['origin'] is result['origin']
+    assert plot_args.kwargs['source'] is result['source']
+    assert plot_args.kwargs['origins'] is result['origins']

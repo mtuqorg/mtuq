@@ -25,6 +25,7 @@ from .io import (
     _write_input_config,
     _write_yaml,
 )
+from .plots import generate_plots
 
 
 def run(config, output=None):
@@ -58,7 +59,9 @@ def run(config, output=None):
     rank = 0 if comm is None else comm.rank
 
     prepared = prepare_workflow(normalized)
-    origin = prepared.origin
+    catalog_origin = prepared.catalog_origin
+    origins = prepared.origins
+    origin_arg = origins if origins is not None else catalog_origin
     grid = prepared.grid
     wavelet = prepared.wavelet
     processors = prepared.processors
@@ -95,7 +98,7 @@ def run(config, output=None):
 
         print('Reading Greens functions...\n')
         db = _open_greens_database(normalized['greens'])
-        greens = db.get_greens_tensors(stations, origin)
+        greens = db.get_greens_tensors(stations, origin_arg)
 
         print('Convolving Greens functions...\n')
         greens.convolve(wavelet)
@@ -125,7 +128,7 @@ def run(config, output=None):
             processed_data[name],
             processed_greens[name],
             misfits[name],
-            origin,
+            origin_arg,
             grid,
         )
 
@@ -133,37 +136,83 @@ def run(config, output=None):
         return None
 
     #
-    # Sum misfit terms and find the best-fitting source
+    # Combine misfit terms and find the best-fitting source
     #
+    if 'objective' in normalized:
+        coefficients = normalized['objective']['coefficients']
+    else:
+        coefficients = {
+            name: 1.0 for name in normalized['measurements']
+        }
+
     total_results = None
     for name in normalized['measurements']:
+        coefficient = coefficients[name]
+        weighted = term_results[name]
+        if coefficient != 1.0:
+            weighted = weighted * coefficient
         if total_results is None:
-            total_results = term_results[name]
+            total_results = weighted
         else:
-            total_results = total_results + term_results[name]
+            total_results = total_results + weighted
 
-    idx = total_results.source_idxmin()
-    best_source = grid.get(idx)
-    source_coordinates = grid.get_dict(idx)
+    source_idx = total_results.source_idxmin()
+    best_source = grid.get(source_idx)
+    source_coordinates = grid.get_dict(source_idx)
+
+    if origins is None:
+        best_origin = catalog_origin
+    else:
+        origin_idx = total_results.origin_idxmin()
+        best_origin = origins[origin_idx]
 
     solution = merge_dicts(
         best_source.as_dict(),
         source_coordinates,
         {'M0': best_source.moment()},
         {'Mw': best_source.magnitude()},
-        origin,
+        best_origin,
     )
+    if origins is not None:
+        solution['reference_origin'] = catalog_origin.as_dict().copy()
 
     #
     # Save results
     #
     print('Saving results...\n')
     _save_native_results(output_dir, total_results, term_results)
+    if origins is not None:
+        save_json(
+            output_dir / 'origins.json',
+            {index: origin for index, origin in enumerate(origins)},
+        )
     save_json(output_dir / 'solution.json', solution)
 
-    return {
+    if normalized.get('plots'):
+        print('Generating plots...\n')
+        try:
+            generate_plots(
+                normalized,
+                output_dir=output_dir,
+                results=total_results,
+                data=processed_data,
+                greens=processed_greens,
+                processors=processors,
+                misfits=misfits,
+                stations=stations,
+                origin=best_origin,
+                source=best_source,
+                source_dict=source_coordinates,
+                origins=origins,
+            )
+        except Exception as exc:
+            detail = str(exc).strip() or type(exc).__name__
+            print('  Plot generation failed: %s' % detail)
+
+    result = {
         'config': resolved,
-        'origin': origin,
+        'origin': best_origin,
+        'reference_origin': catalog_origin,
         'grid': grid,
         'source': best_source,
         'results': total_results,
@@ -173,6 +222,9 @@ def run(config, output=None):
         'misfits': misfits,
         'processors': processors,
     }
+    if origins is not None:
+        result['origins'] = origins
+    return result
 
 
 def main(argv=None):
@@ -199,19 +251,26 @@ def main(argv=None):
         if args.output is not None:
             normalized['output'] = _resolve_path(args.output, Path.cwd())
         prepared = prepare_workflow(normalized)
-        origin = prepared.origin
+        origin = prepared.catalog_origin
         resolved = prepared.resolved
 
         print('Configuration is valid.\n')
         _print_grid_summary(resolved)
         print('Wavelet')
-        print('  function: mtuq.util.cap.Trapezoid')
-        print('  magnitude: %g' % prepared.wavelet_magnitude)
+        wavelet = resolved['wavelet']
+        print('  function: %s' % wavelet['function'])
+        for key, value in wavelet.items():
+            if key in {'type', 'function'}:
+                continue
+            print('  %s: %s' % (key, value))
         print('\nOrigin')
         print('  time: %s' % origin.time)
         print('  latitude: %g' % origin.latitude)
         print('  longitude: %g' % origin.longitude)
         print('  depth_in_m: %g' % origin.depth_in_m)
+        if prepared.origins is not None:
+            print('\nOrigin search')
+            print('  number of origins: %d' % len(prepared.origins))
         return 0
 
     run(args.config, output=args.output)

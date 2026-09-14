@@ -7,6 +7,10 @@ event:
   longitude: -149.7428
   depth_in_m: 33033.6
 
+origin_search:
+  depth_in_m:
+    values: [25000, 30000, 35000, 40000, 45000, 50000]
+
 data:
   format: SAC
   path: ../../data/examples/20090407201255351/*.[zrt]
@@ -32,7 +36,6 @@ measurements:
     window: [body_wave, 15]
     components: [ZR]
     time_shift: 2
-
   surface:
     filter: [0.025, 0.0625]
     window: [surface_wave, 150]
@@ -49,6 +52,4 @@ source:
 wavelet:
   type: trapezoid
 
-plots: [waveform, beachball, misfit]
-
-output: output/20090407201255351
+output: output/20090407201255351_depth
