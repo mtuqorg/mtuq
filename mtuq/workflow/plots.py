@@ -11,13 +11,12 @@ from mtuq.graphics import (
     plot_misfit_depth,
     plot_misfit_latlon,
     plot_misfit_lune,
-    plot_misfit_vw,
 )
 
 
 _SOURCE_MISFIT_PLOTS = {
     'dc': plot_misfit_dc,
-    'dev': plot_misfit_vw,
+    'dev': plot_misfit_lune,
     'fmt': plot_misfit_lune,
 }
 
@@ -211,6 +210,13 @@ def _plot_misfit(plot_dir, event_id, config, results, origins):
         _plot_filename(plot_dir, event_id, 'misfit'),
         results,
     )
+    if source_type in {'dev', 'fmt'}:
+        _call_plot(
+            'misfit_dc',
+            plot_misfit_dc,
+            _plot_filename(plot_dir, event_id, 'misfit_dc'),
+            results,
+        )
 
     search = config.get('origin_search')
     if search is None:
@@ -223,28 +229,44 @@ def _plot_misfit(plot_dir, event_id, config, results, origins):
         )
         return
 
-    if set(search) == {'depth_in_m', 'hypocenter'}:
+    depths = {origin.depth_in_m for origin in origins}
+    locations = {
+        (origin.latitude, origin.longitude) for origin in origins
+    }
+    varies_in_depth = len(depths) > 1
+    varies_horizontally = len(locations) > 1
+
+    if varies_in_depth and varies_horizontally:
         _print_skip(
             'origin misfit',
             'combined depth and hypocenter searches have no native 2-D plot',
         )
         return
 
-    if 'depth_in_m' in search:
+    if varies_in_depth:
         _call_plot(
             'misfit_depth',
             plot_misfit_depth,
             _plot_filename(plot_dir, event_id, 'misfit_depth'),
             results,
             origins,
+            show_tradeoffs=True,
+            show_magnitudes=True,
+            title=event_id,
         )
-    elif 'hypocenter' in search:
+    elif varies_horizontally:
         _call_plot(
             'misfit_latlon',
             plot_misfit_latlon,
             _plot_filename(plot_dir, event_id, 'misfit_latlon'),
             results,
             origins,
+            show_tradeoffs=True,
+        )
+    else:
+        _print_skip(
+            'origin misfit',
+            'searched origins do not vary in depth or hypocenter',
         )
 
 
@@ -252,9 +274,9 @@ def _plot_filename(plot_dir, event_id, plot_type):
     return Path(plot_dir) / ('%s_%s.png' % (event_id, plot_type))
 
 
-def _call_plot(label, function, filename, *args):
+def _call_plot(label, function, filename, *args, **kwargs):
     try:
-        function(str(filename), *args)
+        function(str(filename), *args, **kwargs)
     except Exception as exc:
         detail = str(exc).strip() or type(exc).__name__
         print("  Plot %r failed: %s" % (label, detail))

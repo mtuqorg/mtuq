@@ -262,7 +262,9 @@ def test_resume_does_not_require_origins_json(tmp_path, monkeypatch):
     config['origin_search'] = {
         'depth_in_m': {'values': [25000, 35000]},
     }
-    recipe.write_text(yaml.safe_dump(config, sort_keys=False), encoding='utf-8')
+    recipe.write_text(
+        yaml.safe_dump(config, sort_keys=False), encoding='utf-8'
+    )
     _fake_success(recipe)
     (Path(config['output']) / 'origins.json').unlink()
     calls = []

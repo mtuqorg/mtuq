@@ -55,4 +55,6 @@ source:
 wavelet:
   type: trapezoid
 
+plots: [waveform, beachball, misfit]
+
 output: output/20090407201255351_hypocenter

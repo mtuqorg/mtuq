@@ -3,6 +3,7 @@ import importlib
 import inspect
 import json
 import textwrap
+from pathlib import Path
 from unittest.mock import Mock
 
 import numpy as np
@@ -1028,9 +1029,11 @@ def test_standard_plots_dispatch_by_role_and_fail_independently(
     ]
 
     beachball = Mock(side_effect=RuntimeError('backend unavailable'))
-    misfit_vw = Mock()
+    misfit_lune = Mock()
+    misfit_dc = Mock()
     monkeypatch.setattr(plotting, 'plot_beachball', beachball)
-    monkeypatch.setitem(plotting._SOURCE_MISFIT_PLOTS, 'dev', misfit_vw)
+    monkeypatch.setattr(plotting, 'plot_misfit_dc', misfit_dc)
+    monkeypatch.setitem(plotting._SOURCE_MISFIT_PLOTS, 'dev', misfit_lune)
     config = {
         'event': {'id': 'test-event'},
         'plots': ['beachball', 'misfit'],
@@ -1054,12 +1057,172 @@ def test_standard_plots_dispatch_by_role_and_fail_independently(
     assert "Plot 'beachball' failed: backend unavailable" in (
         capsys.readouterr().out
     )
-    misfit_vw.assert_called_once_with(
+    misfit_lune.assert_called_once_with(
         str(tmp_path / 'plots' / 'test-event_misfit.png'), 'results'
+    )
+    misfit_dc.assert_called_once_with(
+        str(tmp_path / 'plots' / 'test-event_misfit_dc.png'), 'results'
     )
     assert beachball.call_args.args[0] == str(
         tmp_path / 'plots' / 'test-event_beachball.png'
     )
+
+
+@pytest.mark.parametrize(
+    'source_type, expected_name, includes_dc_projection',
+    [
+        ('dc', 'plot_misfit_dc', False),
+        ('dev', 'plot_misfit_lune', True),
+        ('fmt', 'plot_misfit_lune', True),
+    ],
+)
+def test_source_misfit_plot_dispatch(
+    tmp_path, monkeypatch, source_type, expected_name,
+    includes_dc_projection,
+):
+    plotting = importlib.import_module('mtuq.workflow.plots')
+    plotter = Mock(name=expected_name)
+    dc_plotter = Mock(name='plot_misfit_dc')
+    monkeypatch.setitem(
+        plotting._SOURCE_MISFIT_PLOTS, source_type, plotter
+    )
+    monkeypatch.setattr(plotting, 'plot_misfit_dc', dc_plotter)
+    config = {
+        'source': {'type': source_type, 'grid': {'type': 'regular'}},
+    }
+
+    plotting._plot_misfit(
+        tmp_path, 'test-event', config, 'results', origins=None
+    )
+
+    plotter.assert_called_once_with(
+        str(tmp_path / 'test-event_misfit.png'), 'results'
+    )
+    if includes_dc_projection:
+        dc_plotter.assert_called_once_with(
+            str(tmp_path / 'test-event_misfit_dc.png'), 'results'
+        )
+    else:
+        dc_plotter.assert_not_called()
+
+
+def test_origin_misfit_plot_dispatches_by_effective_dimension(
+    tmp_path, monkeypatch
+):
+    plotting = importlib.import_module('mtuq.workflow.plots')
+    source_plot = Mock()
+    depth_plot = Mock()
+    latlon_plot = Mock()
+    monkeypatch.setitem(
+        plotting._SOURCE_MISFIT_PLOTS, 'dc', source_plot
+    )
+    monkeypatch.setattr(plotting, 'plot_misfit_depth', depth_plot)
+    monkeypatch.setattr(plotting, 'plot_misfit_latlon', latlon_plot)
+    config = {
+        'source': {'type': 'dc', 'grid': {'type': 'regular'}},
+        'origin_search': {'depth_in_m': {'values': [25000, 35000]}},
+    }
+    depth_origins = [
+        Mock(depth_in_m=25000, latitude=61.0, longitude=-149.0),
+        Mock(depth_in_m=35000, latitude=61.0, longitude=-149.0),
+    ]
+
+    plotting._plot_misfit(
+        tmp_path, 'test-event', config, 'results', depth_origins
+    )
+
+    depth_plot.assert_called_once_with(
+        str(tmp_path / 'test-event_misfit_depth.png'),
+        'results',
+        depth_origins,
+        show_tradeoffs=True,
+        show_magnitudes=True,
+        title='test-event',
+    )
+    latlon_plot.assert_not_called()
+
+    depth_plot.reset_mock()
+    config['origin_search']['hypocenter'] = {
+        'spacing_in_m': 1000,
+        'npts_per_edge': 2,
+    }
+    config['origin_search']['depth_in_m']['values'] = [45000]
+    horizontal_origins = [
+        Mock(depth_in_m=45000, latitude=61.0, longitude=-149.0),
+        Mock(depth_in_m=45000, latitude=61.1, longitude=-149.1),
+    ]
+
+    plotting._plot_misfit(
+        tmp_path, 'test-event', config, 'results', horizontal_origins
+    )
+
+    latlon_plot.assert_called_once_with(
+        str(tmp_path / 'test-event_misfit_latlon.png'),
+        'results',
+        horizontal_origins,
+        show_tradeoffs=True,
+    )
+    depth_plot.assert_not_called()
+
+
+def test_origin_misfit_plot_skips_unsupported_domains(
+    tmp_path, monkeypatch, capsys
+):
+    plotting = importlib.import_module('mtuq.workflow.plots')
+    source_plot = Mock()
+    depth_plot = Mock()
+    latlon_plot = Mock()
+    monkeypatch.setitem(
+        plotting._SOURCE_MISFIT_PLOTS, 'dc', source_plot
+    )
+    monkeypatch.setattr(plotting, 'plot_misfit_depth', depth_plot)
+    monkeypatch.setattr(plotting, 'plot_misfit_latlon', latlon_plot)
+    config = {
+        'source': {'type': 'dc', 'grid': {'type': 'regular'}},
+        'origin_search': {
+            'depth_in_m': {'values': [25000, 35000]},
+            'hypocenter': {
+                'spacing_in_m': 1000,
+                'npts_per_edge': 2,
+            },
+        },
+    }
+    combined_origins = [
+        Mock(depth_in_m=25000, latitude=61.0, longitude=-149.0),
+        Mock(depth_in_m=35000, latitude=61.1, longitude=-149.1),
+    ]
+
+    plotting._plot_misfit(
+        tmp_path, 'test-event', config, 'results', combined_origins
+    )
+    assert 'combined depth and hypocenter searches' in capsys.readouterr().out
+    depth_plot.assert_not_called()
+    latlon_plot.assert_not_called()
+
+    config['source']['grid']['type'] = 'random'
+    plotting._plot_misfit(
+        tmp_path, 'test-event', config, 'results', combined_origins
+    )
+    assert 'require a regular source grid' in capsys.readouterr().out
+    depth_plot.assert_not_called()
+    latlon_plot.assert_not_called()
+
+
+def test_workflow_examples_request_all_standard_plots():
+    example_dir = Path(__file__).resolve().parents[1] / 'examples' / 'Workflow'
+    recipes = sorted(example_dir.glob('*.yaml'))
+
+    assert [recipe.name for recipe in recipes] == [
+        'DepthSearch.yaml',
+        'Deviatoric.yaml',
+        'DoubleCouple.yaml',
+        'FullMomentTensor.yaml',
+        'HypocenterSearch.yaml',
+        'RandomGrid.yaml',
+    ]
+    for recipe in recipes:
+        config = yaml.safe_load(recipe.read_text(encoding='utf-8'))
+        assert config['plots'] == ['waveform', 'beachball', 'misfit']
 
 
 def test_complete_recipe_round_trips_to_same_resolved_config(tmp_path):
