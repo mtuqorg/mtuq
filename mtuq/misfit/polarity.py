@@ -264,8 +264,11 @@ class PolarityMisfit(object):
 
 
 
-def _takeoff_angles_taup(taup, greens):
+def _takeoff_angles_taup(taup, greens, phase_list=['p', 'P']):
     """ Calculates takeoff angles from Tau-P model
+
+    ``phase_list`` selects which seismic phase the angles correspond to.
+    The default gives direct P; pass ``['s', 'S']`` for direct S.
     """
 
     takeoff_angles = np.zeros(len(greens))
@@ -276,15 +279,16 @@ def _takeoff_angles_taup(taup, greens):
         distance_in_deg = m_to_deg(greens_tensor.distance_in_m)
 
         takeoff_angles[_i] = _takeoff_angle_taup(
-            taup, depth_in_km, distance_in_deg)
+            taup, depth_in_km, distance_in_deg, phase_list=phase_list)
 
     return takeoff_angles
 
 
-def _takeoff_angle_taup(taup, depth_in_km, distance_in_deg):
+def _takeoff_angle_taup(taup, depth_in_km, distance_in_deg,
+        phase_list=['p', 'P']):
 
     arrivals = taup.get_travel_times(
-        depth_in_km, distance_in_deg, phase_list=['p', 'P'])
+        depth_in_km, distance_in_deg, phase_list=phase_list)
     
     if len(arrivals) == 0:
         raise Exception
@@ -293,7 +297,15 @@ def _takeoff_angle_taup(taup, depth_in_km, distance_in_deg):
         return sorted_arrivals[0].takeoff_angle
 
 
-def _polarities_mt(mt_array, takeoff, azimuth):
+def _radiation_coef_P(mt_array, takeoff, azimuth):
+    """ Calculates far-field P radiation coefficients
+
+    Returns an array of shape `(len(mt_array), len(takeoff))` containing the
+    signed coefficient `R_P` obtained by contracting each moment tensor twice
+    with the ray direction.  Taking the sign of this quantity gives the
+    first-motion polarity; retaining its magnitude gives the relative
+    far-field P amplitude.
+    """
 
     n1,n2 = mt_array.shape
     if n2!= 6:
@@ -304,7 +316,7 @@ def _polarities_mt(mt_array, takeoff, azimuth):
         raise Exception('Inconsistent dimensions')
 
     # prepare arrays
-    polarities = np.zeros((n1,n3))
+    coefficients = np.zeros((n1,n3))
     drc = np.empty((n1, 3))
     takeoff = np.deg2rad(takeoff)
     azimuth = np.deg2rad(azimuth)
@@ -320,17 +332,20 @@ def _polarities_mt(mt_array, takeoff, azimuth):
         drc[:, 2] = cth
 
         # Aki & Richards 2ed, p. 108, eq. 4.88
-        cth = mt_array[:, 0]*drc[:, 2]*drc[:, 2] +\
+        coefficients[:, _i] = \
+              mt_array[:, 0]*drc[:, 2]*drc[:, 2] +\
               mt_array[:, 1]*drc[:, 0]*drc[:, 0] +\
               mt_array[:, 2]*drc[:, 1]*drc[:, 1] +\
            2*(mt_array[:, 3]*drc[:, 0]*drc[:, 2] -
               mt_array[:, 4]*drc[:, 1]*drc[:, 2] -
               mt_array[:, 5]*drc[:, 0]*drc[:, 1])
 
-        polarities[cth > 0, _i] = +1
-        polarities[cth < 0, _i] = -1
+    return coefficients
 
-    return polarities
+
+def _polarities_mt(mt_array, takeoff, azimuth):
+
+    return np.sign(_radiation_coef_P(mt_array, takeoff, azimuth))
 
 
 def _polarities_force(force_array, takeoff_array, azimuth_array):
