@@ -7,7 +7,7 @@ from mtuq.greens_tensor.base import GreensTensor as GreensTensorBase
 
 class GreensTensor(GreensTensorBase):
     """
-    FK Green's tensor object
+    CPS Green's tensor object
 
     Overloads base class with machinery for working with CPS-style
     Green's functions
