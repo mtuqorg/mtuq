@@ -2,8 +2,11 @@
 
 from pathlib import Path
 
+import numpy as np
+
 from mtuq.graphics import (
     plot_beachball,
+    plot_confidence_curve,
     plot_data_greens1,
     plot_data_greens2,
     plot_data_greens3,
@@ -12,6 +15,7 @@ from mtuq.graphics import (
     plot_misfit_latlon,
     plot_misfit_lune,
 )
+from mtuq.misfit.waveform import calculate_norm_data, estimate_sigma
 
 
 _SOURCE_MISFIT_PLOTS = {
@@ -34,6 +38,8 @@ def generate_plots(
     source,
     source_dict,
     origins=None,
+    term_results=None,
+    origin_idx=0,
 ):
     """Generates requested public-MTUQ plots after results are saved."""
     plot_dir = Path(output_dir) / 'plots'
@@ -72,6 +78,24 @@ def generate_plots(
                 results,
                 origins,
             )
+        elif name == 'confidence':
+            try:
+                _plot_confidence(
+                    plot_dir,
+                    event_id,
+                    config,
+                    term_results,
+                    data,
+                    greens,
+                    misfits,
+                    origin,
+                    origin_idx,
+                    source,
+                    source_dict,
+                )
+            except Exception as exc:
+                detail = str(exc).strip() or type(exc).__name__
+                print("  Plot 'confidence' failed: %s" % detail)
 
 
 def _plot_waveform(
@@ -268,6 +292,115 @@ def _plot_misfit(plot_dir, event_id, config, results, origins):
             'origin misfit',
             'searched origins do not vary in depth or hypocenter',
         )
+
+
+def _plot_confidence(
+    plot_dir,
+    event_id,
+    config,
+    term_results,
+    data,
+    greens,
+    misfits,
+    origin,
+    origin_idx,
+    source,
+    source_dict,
+):
+    """Plots one confidence curve from the joint measurement likelihood.
+
+    Each measurement surface is conditioned on the reported origin and scalar
+    moment, then divided by its own public MTUQ a posteriori variance estimate.
+    Summing those dimensionless surfaces is equivalent to multiplying the
+    independent per-measurement likelihoods.
+    """
+    if term_results is None:
+        raise ValueError('measurement result surfaces are unavailable')
+
+    rho = source_dict['rho']
+    combined = None
+
+    for name in config['measurements']:
+        misfit = misfits[name]
+        components = _measurement_components(misfit)
+        selected_greens = greens[name].select(origin)
+        sigma = estimate_sigma(
+            data[name],
+            selected_greens,
+            source,
+            misfit.norm,
+            components,
+            misfit.time_shift_min,
+            misfit.time_shift_max,
+        )
+        variance = float(sigma)**2
+
+        if misfit.normalize:
+            data_norm = calculate_norm_data(
+                data[name], misfit.norm, components
+            )
+            if not np.isfinite(data_norm) or data_norm <= 0.0:
+                raise ValueError(
+                    "measurement %r has invalid data norm %r"
+                    % (name, data_norm)
+                )
+            variance /= data_norm
+
+        if not np.isfinite(variance) or variance <= 0.0:
+            raise ValueError(
+                "measurement %r has invalid estimated variance %r"
+                % (name, variance)
+            )
+
+        conditioned = _condition_confidence_results(
+            term_results[name], origin_idx, rho
+        )
+        scaled = conditioned / variance
+        combined = scaled if combined is None else combined + scaled
+
+    if combined is None:
+        raise ValueError('confidence requires at least one measurement')
+
+    _call_plot(
+        'confidence',
+        plot_confidence_curve,
+        _plot_filename(plot_dir, event_id, 'confidence'),
+        combined,
+        1.0,
+        m0=source,
+        normalized=False,
+    )
+
+def _measurement_components(misfit):
+    components = []
+    for group in misfit.time_shift_groups:
+        for component in group:
+            if component not in components:
+                components.append(component)
+    return components
+
+
+def _condition_confidence_results(results, origin_idx, rho):
+    names = set(results.index.names)
+    missing = {'origin_idx', 'rho'} - names
+    if missing:
+        raise ValueError(
+            'confidence result index is missing %s'
+            % ', '.join(sorted(missing))
+        )
+
+    origins = results.index.get_level_values('origin_idx')
+    magnitudes = results.index.get_level_values('rho')
+    mask = (origins == origin_idx) & np.isclose(
+        magnitudes, rho, rtol=1.e-10, atol=0.0
+    )
+    conditioned = results.loc[mask].copy()
+    if conditioned.empty:
+        raise ValueError(
+            'no confidence samples match origin_idx=%r and rho=%r'
+            % (origin_idx, rho)
+        )
+    return conditioned
 
 
 def _plot_filename(plot_dir, event_id, plot_type):

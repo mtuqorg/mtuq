@@ -161,6 +161,7 @@ def run(config, output=None):
     source_coordinates = grid.get_dict(source_idx)
 
     if origins is None:
+        origin_idx = 0
         best_origin = catalog_origin
     else:
         origin_idx = total_results.origin_idxmin()
@@ -204,6 +205,8 @@ def run(config, output=None):
                 source=best_source,
                 source_dict=source_coordinates,
                 origins=origins,
+                term_results=term_results,
+                origin_idx=origin_idx,
             )
         except Exception as exc:
             detail = str(exc).strip() or type(exc).__name__

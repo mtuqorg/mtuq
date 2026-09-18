@@ -24,7 +24,7 @@ picks:
 
 misfit:
   norm: L2
-  normalize: true
+  normalize: false
 
 measurements:
   body:
@@ -40,7 +40,7 @@ measurements:
     time_shift: 10
 
 source:
-  type: fmt
+  type: dc
   magnitudes: [4.4, 4.5, 4.6]
   grid:
     type: random
@@ -49,6 +49,6 @@ source:
 wavelet:
   type: trapezoid
 
-plots: [waveform, beachball, misfit]
+plots: [waveform, beachball, misfit, confidence]
 
 output: output/20090407201255351-random

@@ -102,6 +102,7 @@ _SUPPORTED_PLOTS = {
     'waveform',
     'beachball',
     'misfit',
+    'confidence',
 }
 
 
@@ -279,6 +280,9 @@ def validate_config(config):
     grid_cfg.pop('function', None)
     grid_cfg.pop('size', None)
     _validate_source(source)
+
+    if plots is not None:
+        _validate_confidence_request(plots, source, misfit, objective)
 
     wavelet = copy.deepcopy(config.get('wavelet', {'type': 'trapezoid'}))
     wavelet = _require_mapping(wavelet, 'wavelet')
@@ -1429,13 +1433,42 @@ def _validate_plots(plots):
     for name in plots:
         if not isinstance(name, str) or name not in _SUPPORTED_PLOTS:
             raise WorkflowConfigError(
-                'unsupported plot %r; choose waveform, beachball, or misfit'
-                % name
+                'unsupported plot %r; choose waveform, beachball, misfit, '
+                'or confidence' % name
             )
         if name in normalized:
             raise WorkflowConfigError('plots may not contain duplicates')
         normalized.append(name)
     return normalized
+
+
+def _validate_confidence_request(plots, source, misfit, objective):
+    if 'confidence' not in plots:
+        return
+
+    if source['grid']['type'] != 'random':
+        raise WorkflowConfigError(
+            "plot 'confidence' requires source.grid.type: random"
+        )
+
+    if misfit['norm'] not in {'L1', 'L2'}:
+        raise WorkflowConfigError(
+            "plot 'confidence' requires misfit.norm of L1 or L2"
+        )
+
+    if objective is not None:
+        coefficients = list(objective['coefficients'].values())
+        first = coefficients[0]
+        if first <= 0.0 or any(
+            value <= 0.0 or not math.isclose(
+                value, first, rel_tol=1.e-12, abs_tol=0.0
+            )
+            for value in coefficients[1:]
+        ):
+            raise WorkflowConfigError(
+                "plot 'confidence' requires equal positive objective "
+                "coefficients"
+            )
 
 
 def _resolve_time_shift(value):

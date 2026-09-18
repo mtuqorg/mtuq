@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import numpy as np
+import pandas as pd
 import pytest
 import yaml
 
@@ -19,6 +20,7 @@ from mtuq.grid import (
     FullMomentTensorGridRandom,
     FullMomentTensorGridSemiregular,
 )
+from mtuq.grid_search import MTUQDataFrame
 from mtuq.wavelet import (
     EarthquakeTrapezoid,
     Gabor,
@@ -118,6 +120,28 @@ def _config(tmp_path, source_type='dc', grid_type='regular'):
 def _resolved_config(tmp_path):
     config = _validate(tmp_path, _config(tmp_path))
     return prepare_workflow(config).resolved
+
+
+def _random_result_surface(values):
+    rows = []
+    sources = [
+        (0, 10.0, 0.0),
+        (1, 10.0, 10.0),
+        (2, 20.0, 20.0),
+        (3, 20.0, 30.0),
+    ]
+    for origin_idx in (0, 1):
+        for source_idx, rho, kappa in sources:
+            rows.append(
+                (origin_idx, source_idx, rho, 0.0, 0.0,
+                 kappa, 0.0, 0.5)
+            )
+    names = [
+        'origin_idx', 'source_idx', 'rho', 'v', 'w',
+        'kappa', 'sigma', 'h',
+    ]
+    index = pd.MultiIndex.from_tuples(rows, names=names)
+    return MTUQDataFrame({0: values}, index=index)
 
 
 def test_duplicate_yaml_keys_are_rejected(tmp_path):
@@ -930,6 +954,38 @@ def test_resolved_defaults_match_native_objects(tmp_path):
 def test_plot_schema_rejects_invalid_requests_and_roles(tmp_path):
     config = _config(tmp_path)
     config['plots'] = ['confidence']
+    with pytest.raises(WorkflowConfigError, match='requires.*random'):
+        _validate(tmp_path, config)
+
+    config = _config(tmp_path, grid_type='random')
+    config['plots'] = ['confidence']
+    assert _validate(tmp_path, config)['plots'] == ['confidence']
+
+    config['misfit']['norm'] = 'hybrid'
+    with pytest.raises(WorkflowConfigError, match='requires.*L1 or L2'):
+        _validate(tmp_path, config)
+
+    config = _config(tmp_path, grid_type='random')
+    config['plots'] = ['confidence']
+    config['objective'] = {
+        'coefficients': {'body': 0.25, 'surface': 0.75},
+    }
+    with pytest.raises(WorkflowConfigError, match='equal positive'):
+        _validate(tmp_path, config)
+
+    config['objective'] = {
+        'coefficients': {'body': 1.0, 'surface': 0.0},
+    }
+    with pytest.raises(WorkflowConfigError, match='equal positive'):
+        _validate(tmp_path, config)
+
+    config['objective'] = {
+        'coefficients': {'body': 2.0, 'surface': 2.0},
+    }
+    assert _validate(tmp_path, config)['plots'] == ['confidence']
+
+    config = _config(tmp_path)
+    config['plots'] = ['unknown']
     with pytest.raises(WorkflowConfigError, match='unsupported plot'):
         _validate(tmp_path, config)
 
@@ -1208,7 +1264,130 @@ def test_origin_misfit_plot_skips_unsupported_domains(
     latlon_plot.assert_not_called()
 
 
-def test_workflow_examples_request_all_standard_plots():
+def test_combined_confidence_conditions_and_scales_terms(
+    tmp_path, monkeypatch
+):
+    plotting = importlib.import_module('mtuq.workflow.plots')
+    body_results = _random_result_surface(np.arange(8.0))
+    surface_results = _random_result_surface(np.arange(10.0, 18.0))
+    body_greens, surface_greens = Mock(), Mock()
+    selected_body, selected_surface = object(), object()
+    body_greens.select.return_value = selected_body
+    surface_greens.select.return_value = selected_surface
+    body_misfit = Mock(
+        norm='L2',
+        normalize=True,
+        time_shift_groups=['ZR'],
+        time_shift_min=-2.0,
+        time_shift_max=2.0,
+    )
+    surface_misfit = Mock(
+        norm='L2',
+        normalize=True,
+        time_shift_groups=['ZR', 'T'],
+        time_shift_min=-10.0,
+        time_shift_max=10.0,
+    )
+    estimate = Mock(side_effect=[2.0, 3.0])
+    data_norm = Mock(side_effect=[2.0, 4.0])
+    confidence = Mock()
+    monkeypatch.setattr(plotting, 'estimate_sigma', estimate)
+    monkeypatch.setattr(plotting, 'calculate_norm_data', data_norm)
+    monkeypatch.setattr(plotting, 'plot_confidence_curve', confidence)
+    config = {
+        'measurements': {'body': {}, 'surface': {}},
+        'objective': {
+            'coefficients': {'body': 1.0, 'surface': 1.0},
+        },
+    }
+    origin, source = object(), object()
+    body_data, surface_data = object(), object()
+
+    plotting._plot_confidence(
+        tmp_path,
+        'test-event',
+        config,
+        {'body': body_results, 'surface': surface_results},
+        {'body': body_data, 'surface': surface_data},
+        {'body': body_greens, 'surface': surface_greens},
+        {'body': body_misfit, 'surface': surface_misfit},
+        origin,
+        1,
+        source,
+        {'rho': 20.0},
+    )
+
+    body_greens.select.assert_called_once_with(origin)
+    surface_greens.select.assert_called_once_with(origin)
+    assert estimate.call_args_list[0].args == (
+        body_data, selected_body, source, 'L2', ['Z', 'R'], -2.0, 2.0
+    )
+    assert estimate.call_args_list[1].args == (
+        surface_data,
+        selected_surface,
+        source,
+        'L2',
+        ['Z', 'R', 'T'],
+        -10.0,
+        10.0,
+    )
+    assert data_norm.call_args_list[0].args == (
+        body_data, 'L2', ['Z', 'R']
+    )
+    assert data_norm.call_args_list[1].args == (
+        surface_data, 'L2', ['Z', 'R', 'T']
+    )
+
+    confidence.assert_called_once()
+    args = confidence.call_args.args
+    kwargs = confidence.call_args.kwargs
+    assert args[0] == str(tmp_path / 'test-event_confidence.png')
+    assert args[2] == 1.0
+    assert kwargs == {'m0': source, 'normalized': False}
+    combined = args[1]
+    assert len(combined) == 2
+    assert set(combined.index.get_level_values('origin_idx')) == {1}
+    assert set(combined.index.get_level_values('rho')) == {20.0}
+    expected = np.array([6.0, 7.0]) / 2.0
+    expected += np.array([16.0, 17.0]) / 2.25
+    np.testing.assert_allclose(combined[0].values, expected)
+
+def test_confidence_failure_does_not_stop_other_plots(
+    tmp_path, monkeypatch, capsys
+):
+    plotting = importlib.import_module('mtuq.workflow.plots')
+    confidence = Mock(side_effect=RuntimeError('variance unavailable'))
+    beachball = Mock()
+    monkeypatch.setattr(plotting, '_plot_confidence', confidence)
+    monkeypatch.setattr(plotting, 'plot_beachball', beachball)
+    config = {
+        'event': {'id': 'test-event'},
+        'measurements': {'body': {}},
+        'plots': ['confidence', 'beachball'],
+    }
+
+    generate_plots(
+        config,
+        tmp_path,
+        results='results',
+        data={},
+        greens={},
+        processors={},
+        misfits={},
+        stations='stations',
+        origin='origin',
+        source='source',
+        source_dict={'rho': 1.0},
+        term_results={},
+    )
+
+    assert "Plot 'confidence' failed: variance unavailable" in (
+        capsys.readouterr().out
+    )
+    beachball.assert_called_once()
+
+
+def test_workflow_examples_request_expected_plots():
     example_dir = Path(__file__).resolve().parents[1] / 'examples' / 'Workflow'
     recipes = sorted(example_dir.glob('*.yaml'))
 
@@ -1222,7 +1401,10 @@ def test_workflow_examples_request_all_standard_plots():
     ]
     for recipe in recipes:
         config = yaml.safe_load(recipe.read_text(encoding='utf-8'))
-        assert config['plots'] == ['waveform', 'beachball', 'misfit']
+        expected = ['waveform', 'beachball', 'misfit']
+        if recipe.name == 'RandomGrid.yaml':
+            expected.append('confidence')
+        assert config['plots'] == expected
 
 
 def test_complete_recipe_round_trips_to_same_resolved_config(tmp_path):
@@ -1463,6 +1645,8 @@ def test_run_combines_terms_selects_source_and_writes_outputs(
     assert plot_args.args[0]['output'] == str(output)
     assert plot_args.kwargs['output_dir'] == output
     assert plot_args.kwargs['results'] is result['results']
+    assert plot_args.kwargs['term_results'] is result['terms']
     assert plot_args.kwargs['origin'] is result['origin']
+    assert plot_args.kwargs['origin_idx'] == 1
     assert plot_args.kwargs['source'] is result['source']
     assert plot_args.kwargs['origins'] is result['origins']
