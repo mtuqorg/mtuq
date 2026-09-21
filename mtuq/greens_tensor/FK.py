@@ -29,7 +29,7 @@ class GreensTensor(GreensTensorBase):
         if 'type:greens' not in self.tags:
             self.tags += ['type:greens']
 
-        if 'type:velocity' not in self.tags:
+        if 'type:velocity' not in self.tags or 'type:displacement' not in self.tags:
             self.tags += ['type:velocity']
 
         if 'units:m' not in self.tags:
