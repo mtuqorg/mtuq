@@ -1,0 +1,23 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mtuq-dev
+    volumes:
+      - .:/workspace
+      - mtuq-data:/workspace/data
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    # Uncomment the following lines if you need to expose ports
+    # ports:
+    #   - "8000:8000"
+    #   - "8888:8888"
+
+volumes:
+  mtuq-data:
+

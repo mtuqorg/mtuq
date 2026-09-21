@@ -48,6 +48,11 @@ dependencies = [
   "seisclient",
 ]
 
+[project.optional-dependencies]
+dev = [
+  "mpi4py",
+]
+
 [project.entry-points."readers"]
 SAC = "mtuq.io.readers.SAC:read"
 
