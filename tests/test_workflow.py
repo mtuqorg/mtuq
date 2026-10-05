@@ -1010,6 +1010,473 @@ def test_plot_schema_rejects_invalid_requests_and_roles(tmp_path):
     assert normalized['measurements']['surface']['role'] == 'surface'
 
 
+def test_detailed_plot_schema_constraints(tmp_path):
+    config = _config(tmp_path, source_type='fmt', grid_type='regular')
+    config['plots'] = [
+        'likelihood',
+        'marginal',
+        'variance_reduction',
+        'orientation_tradeoffs',
+        'magnitude_tradeoffs',
+        'time_shifts',
+        'amplitude_ratios',
+    ]
+    assert _validate(tmp_path, config)['plots'] == config['plots']
+
+    config = _config(tmp_path, source_type='dc', grid_type='regular')
+    config['plots'] = ['likelihood']
+    with pytest.raises(WorkflowConfigError, match='source.type.*dev or fmt'):
+        _validate(tmp_path, config)
+
+    config = _config(tmp_path, source_type='fmt', grid_type='random')
+    config['plots'] = ['likelihood']
+    with pytest.raises(WorkflowConfigError, match='grid.type.*regular'):
+        _validate(tmp_path, config)
+
+    config = _config(tmp_path, source_type='fmt', grid_type='regular')
+    config['misfit']['norm'] = 'hybrid'
+    config['plots'] = ['likelihood']
+    with pytest.raises(WorkflowConfigError, match='require misfit.norm'):
+        _validate(tmp_path, config)
+
+    config['plots'] = ['variance_reduction']
+    assert _validate(tmp_path, config)['plots'] == ['variance_reduction']
+
+    config = _config(tmp_path, source_type='fmt', grid_type='regular')
+    config['plots'] = ['marginal']
+    config['objective'] = {
+        'coefficients': {'body': 0.25, 'surface': 0.75},
+    }
+    with pytest.raises(WorkflowConfigError, match='equal positive'):
+        _validate(tmp_path, config)
+
+    config = _config(tmp_path, source_type='dc', grid_type='random')
+    config['misfit']['norm'] = 'hybrid'
+    config['plots'] = ['time_shifts', 'amplitude_ratios']
+    assert _validate(tmp_path, config)['plots'] == config['plots']
+
+
+def test_save_schema_constraints(tmp_path):
+    config = _config(tmp_path, source_type='fmt', grid_type='regular')
+    config['save'] = [
+        'stations',
+        'origins',
+        'attributes',
+        'statistics',
+        'solutions',
+        'waveforms',
+    ]
+    assert _validate(tmp_path, config)['save'] == config['save']
+
+    config = _config(tmp_path)
+    config['save'] = []
+    with pytest.raises(WorkflowConfigError, match='save must be'):
+        _validate(tmp_path, config)
+
+    config['save'] = ['stations', 'stations']
+    with pytest.raises(WorkflowConfigError, match='duplicates'):
+        _validate(tmp_path, config)
+
+    config['save'] = ['unknown']
+    with pytest.raises(WorkflowConfigError, match='unsupported save product'):
+        _validate(tmp_path, config)
+
+    config = _config(tmp_path, source_type='dc', grid_type='random')
+    config['misfit']['norm'] = 'hybrid'
+    config['save'] = ['stations', 'origins', 'attributes', 'waveforms']
+    assert _validate(tmp_path, config)['save'] == config['save']
+
+    config['save'] = ['statistics']
+    with pytest.raises(WorkflowConfigError, match='requires misfit.norm'):
+        _validate(tmp_path, config)
+
+    config = _config(tmp_path, source_type='dc', grid_type='regular')
+    config['save'] = ['solutions']
+    with pytest.raises(WorkflowConfigError, match='source.type.*dev or fmt'):
+        _validate(tmp_path, config)
+
+    config = _config(tmp_path, source_type='fmt', grid_type='random')
+    config['save'] = ['solutions']
+    with pytest.raises(WorkflowConfigError, match='grid.type.*regular'):
+        _validate(tmp_path, config)
+
+    config = _config(tmp_path, source_type='fmt', grid_type='regular')
+    config['objective'] = {
+        'coefficients': {'body': 0.25, 'surface': 0.75},
+    }
+    config['save'] = ['solutions']
+    with pytest.raises(WorkflowConfigError, match='equal positive'):
+        _validate(tmp_path, config)
+
+
+def test_save_requested_metadata_products(tmp_path, monkeypatch):
+    outputs = importlib.import_module('mtuq.workflow.outputs')
+    save_json = Mock()
+    monkeypatch.setattr(outputs, 'save_json', save_json)
+    stations = [Mock(id='AA.ONE'), Mock(id='BB.TWO')]
+    catalog_origin = object()
+    origins = [object(), object()]
+
+    outputs.save_requested_outputs(
+        {'save': ['stations', 'origins']},
+        tmp_path,
+        term_results={},
+        data={},
+        greens={},
+        misfits={},
+        stations=stations,
+        catalog_origin=catalog_origin,
+        origin=origins[1],
+        source='source',
+        solution={},
+        origins=origins,
+    )
+
+    assert save_json.call_args_list[0].args == (
+        tmp_path / 'stations.json',
+        {'AA.ONE': stations[0], 'BB.TWO': stations[1]},
+    )
+    assert save_json.call_args_list[1].args == (
+        tmp_path / 'origins.json',
+        {0: origins[0], 1: origins[1]},
+    )
+
+    save_json.reset_mock()
+    outputs.save_requested_outputs(
+        {'save': ['origins']},
+        tmp_path,
+        term_results={},
+        data={},
+        greens={},
+        misfits={},
+        stations=stations,
+        catalog_origin=catalog_origin,
+        origin=catalog_origin,
+        source='source',
+        solution={},
+        origins=None,
+    )
+    save_json.assert_called_once_with(
+        tmp_path / 'origins.json', {0: catalog_origin}
+    )
+
+
+def test_save_attributes_statistics_and_solutions(tmp_path, monkeypatch):
+    outputs = importlib.import_module('mtuq.workflow.outputs')
+    save_json = Mock()
+    attributes = Mock(side_effect=[
+        [{'Z': {'time_shift': 1.0}}, {'Z': {'time_shift': 2.0}}],
+        [{'T': {'time_shift': 3.0}}, {'T': {'time_shift': 4.0}}],
+    ])
+    variance = Mock(side_effect=[2.0, 3.0, 2.0, 3.0])
+    data_norm = Mock(side_effect=[4.0, 5.0])
+    likelihood = Mock(return_value=(
+        'likelihoods',
+        {'v': 0.1, 'w': 0.2},
+        {'v': 0.3, 'w': 0.4},
+    ))
+    monkeypatch.setattr(outputs, 'save_json', save_json)
+    monkeypatch.setattr(outputs, '_measurement_attributes', attributes)
+    monkeypatch.setattr(outputs, '_measurement_variance', variance)
+    monkeypatch.setattr(outputs, '_raw_data_norm', data_norm)
+    monkeypatch.setattr(outputs, 'likelihood_analysis', likelihood)
+
+    stations = [Mock(id='AA.ONE'), Mock(id='BB.TWO')]
+    misfits = {
+        'body': Mock(normalize=True),
+        'surface': Mock(normalize=False),
+    }
+    config = {
+        'save': ['attributes', 'statistics', 'solutions'],
+        'measurements': {'body': {}, 'surface': {}},
+    }
+    cache = {'variance': {}, 'data_norm': {}, 'attributes': {}}
+    solution = {'Mw': 4.5}
+
+    outputs.save_requested_outputs(
+        config,
+        tmp_path,
+        term_results={'body': 'body-results', 'surface': 'surface-results'},
+        data={'body': 'body-data', 'surface': 'surface-data'},
+        greens={'body': 'body-greens', 'surface': 'surface-greens'},
+        misfits=misfits,
+        stations=stations,
+        catalog_origin='catalog-origin',
+        origin='origin',
+        source='source',
+        solution=solution,
+        cache=cache,
+    )
+
+    saved = {call.args[0]: call.args[1] for call in save_json.call_args_list}
+    assert saved[tmp_path / 'attributes' / 'body.json'] == {
+        'AA.ONE': {'Z': {'time_shift': 1.0}},
+        'BB.TWO': {'Z': {'time_shift': 2.0}},
+    }
+    assert saved[tmp_path / 'attributes' / 'surface.json'] == {
+        'AA.ONE': {'T': {'time_shift': 3.0}},
+        'BB.TWO': {'T': {'time_shift': 4.0}},
+    }
+    assert saved[tmp_path / 'statistics' / 'data_variance.json'] == {
+        'body': 8.0,
+        'surface': 3.0,
+    }
+    assert saved[tmp_path / 'statistics' / 'data_norm.json'] == {
+        'body': 4.0,
+        'surface': 5.0,
+    }
+    assert saved[tmp_path / 'solutions' / 'minimum_misfit.json'] == solution
+    assert saved[tmp_path / 'solutions' / 'maximum_likelihood.json'] == {
+        'v': 0.1, 'w': 0.2,
+    }
+    assert saved[tmp_path / 'solutions' / 'marginal_likelihood.json'] == {
+        'v': 0.3, 'w': 0.4,
+    }
+    likelihood.assert_called_once_with(
+        ('body-results', 2.0), ('surface-results', 3.0)
+    )
+
+
+def test_save_processed_data_and_best_synthetics(tmp_path):
+    outputs = importlib.import_module('mtuq.workflow.outputs')
+    body_data = Mock()
+    surface_data = Mock()
+    body_data.get_components.return_value = ['Z', 'R']
+    surface_data.get_components.return_value = ['Z', 'R', 'T']
+    body_greens = Mock()
+    surface_greens = Mock()
+    selected_body = Mock()
+    selected_surface = Mock()
+    body_greens.select.return_value = selected_body
+    surface_greens.select.return_value = selected_surface
+    body_syn = Mock()
+    surface_syn = Mock()
+    selected_body.get_synthetics.return_value = body_syn
+    selected_surface.get_synthetics.return_value = surface_syn
+
+    outputs._save_waveforms(
+        tmp_path,
+        {'measurements': {'body': {}, 'surface': {}}},
+        {'body': body_data, 'surface': surface_data},
+        {'body': body_greens, 'surface': surface_greens},
+        'origin',
+        'source',
+    )
+
+    body_data.write.assert_called_once_with(
+        tmp_path / 'waveforms' / 'body' / 'data'
+    )
+    surface_data.write.assert_called_once_with(
+        tmp_path / 'waveforms' / 'surface' / 'data'
+    )
+    body_greens.select.assert_called_once_with('origin')
+    surface_greens.select.assert_called_once_with('origin')
+    selected_body.get_synthetics.assert_called_once_with(
+        'source', components=['Z', 'R'], mode='map'
+    )
+    selected_surface.get_synthetics.assert_called_once_with(
+        'source', components=['Z', 'R', 'T'], mode='map'
+    )
+    body_syn.write.assert_called_once_with(
+        tmp_path / 'waveforms' / 'body' / 'synthetics'
+    )
+    surface_syn.write.assert_called_once_with(
+        tmp_path / 'waveforms' / 'surface' / 'synthetics'
+    )
+
+
+def test_detailed_plot_names_dispatch_through_existing_plot_interface(
+    tmp_path, monkeypatch
+):
+    plotting = importlib.import_module('mtuq.workflow.plots')
+    detailed = Mock()
+    monkeypatch.setattr(plotting, '_plot_detailed', detailed)
+    names = [
+        'likelihood',
+        'marginal',
+        'variance_reduction',
+        'orientation_tradeoffs',
+        'magnitude_tradeoffs',
+        'time_shifts',
+        'amplitude_ratios',
+    ]
+    config = {
+        'event': {'id': 'test-event'},
+        'measurements': {'body': {}, 'surface': {}},
+        'plots': names,
+    }
+
+    generate_plots(
+        config,
+        tmp_path,
+        results='results',
+        data='data',
+        greens='greens',
+        processors={},
+        misfits='misfits',
+        stations='stations',
+        origin='origin',
+        source='source',
+        source_dict={'rho': 1.0},
+        term_results='terms',
+        origin_idx=2,
+    )
+
+    assert [call.args[0] for call in detailed.call_args_list] == names
+    assert all(call.args[1] == tmp_path / 'plots'
+               for call in detailed.call_args_list)
+    caches = [call.args[-1] for call in detailed.call_args_list]
+    assert all(cache is caches[0] for cache in caches)
+
+
+def test_detailed_likelihood_writes_each_measurement_and_total(
+    tmp_path, monkeypatch
+):
+    plotting = importlib.import_module('mtuq.workflow.plots')
+    conditioned = Mock(side_effect=['body-conditioned', 'surface-conditioned'])
+    variance = Mock(side_effect=[2.0, 3.0])
+    likelihood = Mock()
+    likelihood_surface = Mock(side_effect=['body-like', 'surface-like'])
+    product = Mock(return_value='combined-like')
+    combined_plot = Mock()
+    monkeypatch.setattr(plotting, '_condition_regular_results', conditioned)
+    monkeypatch.setattr(plotting, '_measurement_variance', variance)
+    monkeypatch.setattr(plotting, 'plot_likelihood_lune', likelihood)
+    monkeypatch.setattr(
+        plotting, '_likelihoods_vw_regular', likelihood_surface
+    )
+    monkeypatch.setattr(plotting, '_product_vw', product)
+    monkeypatch.setattr(plotting, '_plot_lune', combined_plot)
+    config = {'measurements': {'body': {}, 'surface': {}}}
+    cache = {'variance': {}, 'data_norm': {}, 'attributes': {}}
+
+    plotting._plot_likelihood(
+        tmp_path,
+        config,
+        {'body': 'body-results', 'surface': 'surface-results'},
+        {'body': 'body-data', 'surface': 'surface-data'},
+        {'body': 'body-greens', 'surface': 'surface-greens'},
+        {'body': 'body-misfit', 'surface': 'surface-misfit'},
+        'origin',
+        1,
+        'source',
+        cache,
+    )
+
+    assert likelihood.call_args_list[0].args[:2] == (
+        str(tmp_path / 'likelihood' / 'body.png'),
+        'body-conditioned',
+    )
+    assert likelihood.call_args_list[0].kwargs == {
+        'var': 2.0,
+        'title': 'Body',
+    }
+    assert likelihood.call_args_list[1].args[:2] == (
+        str(tmp_path / 'likelihood' / 'surface.png'),
+        'surface-conditioned',
+    )
+    assert likelihood.call_args_list[1].kwargs == {
+        'var': 3.0,
+        'title': 'Surface',
+    }
+    product.assert_called_once_with('body-like', 'surface-like')
+    combined_plot.assert_called_once_with(
+        str(tmp_path / 'likelihood' / 'total.png'),
+        'combined-like',
+        colormap='hot_r',
+        title='All data categories',
+    )
+
+
+def test_detailed_variance_matches_result_normalization_and_is_cached(
+    monkeypatch
+):
+    plotting = importlib.import_module('mtuq.workflow.plots')
+    greens = Mock()
+    selected = object()
+    greens.select.return_value = selected
+    misfit = Mock(
+        norm='L2',
+        normalize=True,
+        time_shift_groups=['ZR'],
+        time_shift_min=-2.0,
+        time_shift_max=2.0,
+    )
+    estimate = Mock(return_value=3.0)
+    data_norm = Mock(return_value=4.0)
+    monkeypatch.setattr(plotting, 'estimate_sigma', estimate)
+    monkeypatch.setattr(plotting, 'calculate_norm_data', data_norm)
+    cache = {'variance': {}, 'data_norm': {}, 'attributes': {}}
+
+    first = plotting._measurement_variance(
+        'body',
+        {'body': 'data'},
+        {'body': greens},
+        {'body': misfit},
+        'origin',
+        'source',
+        cache,
+    )
+    second = plotting._measurement_variance(
+        'body',
+        {'body': 'data'},
+        {'body': greens},
+        {'body': misfit},
+        'origin',
+        'source',
+        cache,
+    )
+
+    assert first == pytest.approx(9.0 / 4.0)
+    assert second == pytest.approx(first)
+    assert plotting._result_data_norm(
+        'body', {'body': 'data'}, {'body': misfit}, cache
+    ) == 1.0
+    greens.select.assert_called_once_with('origin')
+    estimate.assert_called_once_with(
+        'data', selected, 'source', 'L2', ['Z', 'R'], -2.0, 2.0
+    )
+    data_norm.assert_called_once_with('data', 'L2', ['Z', 'R'])
+
+
+def test_trace_attribute_plots_cover_all_measurements_and_reuse_attrs(
+    tmp_path, monkeypatch
+):
+    plotting = importlib.import_module('mtuq.workflow.plots')
+    attrs = Mock(side_effect=['body-attrs', 'surface-attrs'])
+    plotter = Mock()
+    monkeypatch.setattr(plotting, '_measurement_attributes', attrs)
+    config = {'measurements': {'body': {}, 'surface': {}}}
+    cache = {'variance': {}, 'data_norm': {}, 'attributes': {}}
+
+    plotting._plot_trace_attributes(
+        tmp_path,
+        'time_shifts',
+        plotter,
+        config,
+        'data',
+        'greens',
+        'misfits',
+        'stations',
+        'origin',
+        'source',
+        cache,
+    )
+
+    assert plotter.call_args_list[0].args == (
+        str(tmp_path / 'time_shifts' / 'body'),
+        'body-attrs',
+        'stations',
+        'origin',
+    )
+    assert plotter.call_args_list[1].args == (
+        str(tmp_path / 'time_shifts' / 'surface'),
+        'surface-attrs',
+        'stations',
+        'origin',
+    )
+
+
 def test_standard_plots_dispatch_by_role_and_fail_independently(
     tmp_path, monkeypatch, capsys
 ):
@@ -1393,6 +1860,7 @@ def test_workflow_examples_request_expected_plots():
 
     assert [recipe.name for recipe in recipes] == [
         'DepthSearch.yaml',
+        'DetailedAnalysis.yaml',
         'Deviatoric.yaml',
         'DoubleCouple.yaml',
         'FullMomentTensor.yaml',
@@ -1404,7 +1872,28 @@ def test_workflow_examples_request_expected_plots():
         expected = ['waveform', 'beachball', 'misfit']
         if recipe.name == 'RandomGrid.yaml':
             expected.append('confidence')
+        elif recipe.name == 'DetailedAnalysis.yaml':
+            expected.extend([
+                'likelihood',
+                'marginal',
+                'variance_reduction',
+                'orientation_tradeoffs',
+                'magnitude_tradeoffs',
+                'time_shifts',
+                'amplitude_ratios',
+            ])
         assert config['plots'] == expected
+        if recipe.name == 'DetailedAnalysis.yaml':
+            assert config['save'] == [
+                'stations',
+                'origins',
+                'attributes',
+                'statistics',
+                'solutions',
+                'waveforms',
+            ]
+        else:
+            assert 'save' not in config
 
 
 def test_complete_recipe_round_trips_to_same_resolved_config(tmp_path):
@@ -1542,6 +2031,7 @@ def test_run_combines_terms_selects_source_and_writes_outputs(
     config['measurements']['body']['role'] = 'body'
     config['measurements']['surface']['role'] = 'surface'
     config['plots'] = ['waveform', 'beachball', 'misfit']
+    config['save'] = ['stations']
     recipe = _write_config(tmp_path, config)
     output = tmp_path / 'override'
     data, greens = Mock(), Mock()
@@ -1567,8 +2057,9 @@ def test_run_combines_terms_selects_source_and_writes_outputs(
         )
         return values.view(Surface)
 
-    search_mock, save_results, plot_results = (
+    search_mock, save_results, save_products, plot_results = (
         Mock(side_effect=search),
+        Mock(),
         Mock(),
         Mock(side_effect=RuntimeError('plot setup unavailable')),
     )
@@ -1579,6 +2070,7 @@ def test_run_combines_terms_selects_source_and_writes_outputs(
     )
     monkeypatch.setattr(runner, 'grid_search', search_mock)
     monkeypatch.setattr(runner, '_save_native_results', save_results)
+    monkeypatch.setattr(runner, 'save_requested_outputs', save_products)
     monkeypatch.setattr(runner, 'generate_plots', plot_results)
 
     result = run(recipe, output=output)
@@ -1623,6 +2115,7 @@ def test_run_combines_terms_selects_source_and_writes_outputs(
     resolved = yaml.safe_load((output / 'config.resolved.yaml').read_text())
     assert resolved == result['config']
     assert resolved['output'] == str(output)
+    assert resolved['save'] == ['stations']
     solution = json.loads((output / 'solution.json').read_text())
     for key, value in expected_source.as_dict().items():
         assert solution[key] == pytest.approx(value)
@@ -1635,6 +2128,14 @@ def test_run_combines_terms_selects_source_and_writes_outputs(
     assert [origins[str(index)]['depth_in_m'] for index in range(2)] == [
         25000, 35000,
     ]
+    save_products.assert_called_once()
+    save_args = save_products.call_args
+    assert save_args.args[0]['save'] == ['stations']
+    assert save_args.kwargs['output_dir'] == output
+    assert save_args.kwargs['term_results'] is result['terms']
+    assert save_args.kwargs['origin'] is result['origin']
+    assert save_args.kwargs['source'] is result['source']
+    assert save_args.kwargs['origins'] is result['origins']
     plot_results.assert_called_once()
     plot_args = plot_results.call_args
     assert plot_args.args[0]['plots'] == [
@@ -1650,3 +2151,4 @@ def test_run_combines_terms_selects_source_and_writes_outputs(
     assert plot_args.kwargs['origin_idx'] == 1
     assert plot_args.kwargs['source'] is result['source']
     assert plot_args.kwargs['origins'] is result['origins']
+    assert plot_args.kwargs['cache'] is save_args.kwargs['cache']

@@ -254,6 +254,39 @@ def test_resume_skips_complete_outputs(tmp_path, monkeypatch):
     assert calls == ['e2']
 
 
+def test_resume_requires_explicitly_requested_save_products(
+    tmp_path, monkeypatch
+):
+    directory = tmp_path / 'events'
+    directory.mkdir()
+    recipe = _recipe(directory, 'e1')
+    config = yaml.safe_load(recipe.read_text(encoding='utf-8'))
+    config['save'] = ['stations']
+    recipe.write_text(
+        yaml.safe_dump(config, sort_keys=False), encoding='utf-8'
+    )
+    _fake_success(recipe)
+    calls = []
+
+    def runner(path, timeout=None):
+        calls.append(Path(path).stem)
+        completed = _fake_success(path)
+        output = Path(config['output'])
+        (output / 'stations.json').write_text('{}\n', encoding='utf-8')
+        return completed
+
+    monkeypatch.setattr('mtuq.workflow.catalog._run_event_process', runner)
+    result = run_catalog(directory, resume=True)
+
+    assert result['valid'] is True
+    assert calls == ['e1']
+
+    calls.clear()
+    result = run_catalog(directory, resume=True)
+    assert result['valid'] is True
+    assert calls == []
+
+
 def test_resume_does_not_require_origins_json(tmp_path, monkeypatch):
     directory = tmp_path / 'events'
     directory.mkdir()

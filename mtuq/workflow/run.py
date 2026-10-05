@@ -25,6 +25,7 @@ from .io import (
     _write_input_config,
     _write_yaml,
 )
+from .outputs import save_requested_outputs
 from .plots import generate_plots
 
 
@@ -189,6 +190,30 @@ def run(config, output=None):
         )
     save_json(output_dir / 'solution.json', solution)
 
+    derived_cache = {
+        'variance': {},
+        'data_norm': {},
+        'attributes': {},
+    }
+
+    if normalized.get('save'):
+        print('Saving requested products...\n')
+        save_requested_outputs(
+            normalized,
+            output_dir=output_dir,
+            term_results=term_results,
+            data=processed_data,
+            greens=processed_greens,
+            misfits=misfits,
+            stations=stations,
+            catalog_origin=catalog_origin,
+            origin=best_origin,
+            source=best_source,
+            solution=solution,
+            origins=origins,
+            cache=derived_cache,
+        )
+
     if normalized.get('plots'):
         print('Generating plots...\n')
         try:
@@ -207,6 +232,7 @@ def run(config, output=None):
                 origins=origins,
                 term_results=term_results,
                 origin_idx=origin_idx,
+                cache=derived_cache,
             )
         except Exception as exc:
             detail = str(exc).strip() or type(exc).__name__

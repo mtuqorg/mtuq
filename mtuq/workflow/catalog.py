@@ -117,7 +117,58 @@ def _is_complete(recipe):
             solution = json.load(handle)
     except (OSError, ValueError):
         return False
-    return isinstance(solution, Mapping)
+    if not isinstance(solution, Mapping):
+        return False
+    return _saved_products_complete(recipe)
+
+
+def _saved_products_complete(recipe):
+    requested = recipe['config'].get('save') or []
+    output = recipe['output']
+    measurements = recipe['config']['measurements']
+
+    for name in requested:
+        if name == 'stations':
+            if not (output / 'stations.json').is_file():
+                return False
+        elif name == 'origins':
+            if not (output / 'origins.json').is_file():
+                return False
+        elif name == 'attributes':
+            if not all(
+                (output / 'attributes' / ('%s.json' % measurement)).is_file()
+                for measurement in measurements
+            ):
+                return False
+        elif name == 'statistics':
+            if not all(
+                (output / 'statistics' / filename).is_file()
+                for filename in ('data_variance.json', 'data_norm.json')
+            ):
+                return False
+        elif name == 'solutions':
+            if not all(
+                (output / 'solutions' / filename).is_file()
+                for filename in (
+                    'minimum_misfit.json',
+                    'maximum_likelihood.json',
+                    'marginal_likelihood.json',
+                )
+            ):
+                return False
+        elif name == 'waveforms':
+            for measurement in measurements:
+                for kind in ('data', 'synthetics'):
+                    directory = output / 'waveforms' / measurement / kind
+                    if not _directory_has_files(directory):
+                        return False
+
+    return True
+
+
+def _directory_has_files(path):
+    path = Path(path)
+    return path.is_dir() and any(item.is_file() for item in path.iterdir())
 
 
 def _run_event_process(path, timeout=None):

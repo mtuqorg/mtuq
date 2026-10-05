@@ -1,0 +1,79 @@
+version: 1
+
+event:
+  id: '20090407201255351'
+  time: '2009-04-07T20:12:55.000000Z'
+  latitude: 61.454200744628906
+  longitude: -149.7427978515625
+  depth_in_m: 33033.599853515625
+
+data:
+  format: SAC
+  path: ../../data/examples/20090407201255351/*.[zrt]
+  weights: ../../data/examples/20090407201255351/weights.dat
+  units: m/s
+
+greens:
+  format: SYNGINE
+  model: ak135
+  cache_path: ~/.cache/mtuq/syngine
+
+picks:
+  type: taup
+  model: ak135
+
+misfit:
+  norm: L2
+  normalize: false
+
+measurements:
+  body:
+    filter: [0.1, 0.333]
+    window: [body_wave, 15]
+    components: [ZR]
+    time_shift: 2
+
+  rayleigh:
+    filter: [0.025, 0.0625]
+    window: [surface_wave, 150]
+    components: [ZR]
+    time_shift: 10
+
+  love:
+    filter: [0.025, 0.0625]
+    window: [surface_wave, 150]
+    components: [T]
+    time_shift: 10
+
+source:
+  type: fmt
+  magnitudes: [4.4, 4.5, 4.6, 4.7]
+  grid:
+    type: regular
+    npts_per_axis: 12
+
+wavelet:
+  type: trapezoid
+  magnitude: 4.5
+
+plots:
+  - waveform
+  - beachball
+  - misfit
+  - likelihood
+  - marginal
+  - variance_reduction
+  - orientation_tradeoffs
+  - magnitude_tradeoffs
+  - time_shifts
+  - amplitude_ratios
+
+save:
+  - stations
+  - origins
+  - attributes
+  - statistics
+  - solutions
+  - waveforms
+
+output: output/20090407201255351-detailed
