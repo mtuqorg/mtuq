@@ -45,6 +45,7 @@ source:
   grid:
     type: random
     npts: 100000
+    seed: 12345
 
 wavelet:
   type: trapezoid

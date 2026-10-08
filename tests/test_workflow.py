@@ -571,6 +571,112 @@ def test_random_grid_npts_preserves_large_integer_exactly(tmp_path):
     assert normalized['source']['grid']['npts'] == 9_007_199_254_740_993
 
 
+def test_random_grid_seed_is_preserved_and_resolved(tmp_path):
+    config = _config(tmp_path, 'fmt', 'random')
+    config['source']['grid']['seed'] = 12345
+
+    normalized = _validate(tmp_path, config)
+    prepared = prepare_workflow(normalized)
+
+    assert normalized['source']['grid']['seed'] == 12345
+    assert prepared.resolved['source']['grid']['seed'] == 12345
+
+
+@pytest.mark.parametrize('seed', [True, -1, 2**32, 1.5, '12345'])
+def test_random_grid_rejects_invalid_seed(tmp_path, seed):
+    config = _config(tmp_path, 'fmt', 'random')
+    config['source']['grid']['seed'] = seed
+
+    with pytest.raises(
+        WorkflowConfigError,
+        match=r'source\.grid\.seed must be an integer between 0 and',
+    ):
+        _validate(tmp_path, config)
+
+
+def test_regular_grid_rejects_seed(tmp_path):
+    config = _config(tmp_path, 'fmt', 'regular')
+    config['source']['grid']['seed'] = 12345
+
+    with pytest.raises(
+        WorkflowConfigError,
+        match=r'source\.grid\.seed is only valid for random grids',
+    ):
+        _validate(tmp_path, config)
+
+
+@pytest.mark.parametrize('source_type', ['dc', 'dev', 'fmt'])
+def test_random_grid_same_seed_reproduces_identical_coordinates(
+    tmp_path, source_type
+):
+    config = _config(tmp_path, source_type, 'random')
+    config['source']['grid']['seed'] = 12345
+    normalized = _validate(tmp_path, config)
+
+    first = _build_grid(normalized)
+    second = _build_grid(normalized)
+
+    assert first.dims == second.dims
+    assert first.size == second.size
+    for first_coord, second_coord in zip(first.coords, second.coords):
+        np.testing.assert_array_equal(first_coord, second_coord)
+
+
+def test_random_grid_different_seeds_change_coordinates(tmp_path):
+    first_config = _config(tmp_path, 'fmt', 'random')
+    first_config['source']['grid']['seed'] = 12345
+    second_config = copy.deepcopy(first_config)
+    second_config['source']['grid']['seed'] = 54321
+
+    first = _build_grid(_validate(tmp_path, first_config, 'first.yaml'))
+    second = _build_grid(_validate(tmp_path, second_config, 'second.yaml'))
+
+    assert any(
+        not np.array_equal(first_coord, second_coord)
+        for first_coord, second_coord in zip(first.coords, second.coords)
+    )
+
+
+def test_seeded_random_grid_restores_numpy_random_state(tmp_path):
+    config = _config(tmp_path, 'fmt', 'random')
+    config['source']['grid']['seed'] = 12345
+    normalized = _validate(tmp_path, config)
+
+    state = np.random.get_state()
+    try:
+        np.random.seed(24680)
+        expected = np.random.random(8)
+
+        np.random.seed(24680)
+        _build_grid(normalized)
+        actual = np.random.random(8)
+    finally:
+        np.random.set_state(state)
+
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_unseeded_random_grid_preserves_native_rng_behavior(tmp_path):
+    config = _validate(tmp_path, _config(tmp_path, 'fmt', 'random'))
+    native_kwargs = {
+        'magnitudes': config['source']['magnitudes'],
+        'npts': config['source']['grid']['npts'],
+    }
+
+    state = np.random.get_state()
+    try:
+        np.random.seed(13579)
+        expected = FullMomentTensorGridRandom(**native_kwargs)
+
+        np.random.seed(13579)
+        actual = _build_grid(config)
+    finally:
+        np.random.set_state(state)
+
+    for actual_coord, expected_coord in zip(actual.coords, expected.coords):
+        np.testing.assert_array_equal(actual_coord, expected_coord)
+
+
 def test_bandpass_filter_accepts_fraction_and_scientific_notation(tmp_path):
     config = _config(tmp_path)
     config['measurements']['body']['filter'] = ['1/50', '1/10']
@@ -1872,6 +1978,7 @@ def test_workflow_examples_request_expected_plots():
         expected = ['waveform', 'beachball', 'misfit']
         if recipe.name == 'RandomGrid.yaml':
             expected.append('confidence')
+            assert config['source']['grid']['seed'] == 12345
         elif recipe.name == 'DetailedAnalysis.yaml':
             expected.extend([
                 'likelihood',

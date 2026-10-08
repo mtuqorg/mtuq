@@ -120,7 +120,17 @@ def _build_grid(config):
             kwargs['uniformity'] = float(grid_cfg['uniformity'])
     else:
         kwargs['npts'] = int(grid_cfg['npts'])
-    return _construct_native(function, kwargs, 'source.grid')
+
+    seed = grid_cfg.get('seed')
+    if seed is None:
+        return _construct_native(function, kwargs, 'source.grid')
+
+    random_state = np.random.get_state()
+    try:
+        np.random.seed(seed)
+        return _construct_native(function, kwargs, 'source.grid')
+    finally:
+        np.random.set_state(random_state)
 
 
 def _build_wavelet(config):

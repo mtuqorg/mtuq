@@ -41,6 +41,9 @@ _NUMERIC_LITERAL_RE = re.compile(
 _EVENT_ID_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]*$')
 
 
+_NUMPY_RANDOM_SEED_MAX = 2**32 - 1
+
+
 _TOP_LEVEL_KEYS = {
     'version',
     'event',
@@ -1271,7 +1274,7 @@ def _validate_source(source):
     grid = _require_mapping(source['grid'], 'source.grid')
     _reject_unknown(
         grid,
-        {'type', 'npts', 'npts_per_axis', 'tightness', 'uniformity'},
+        {'type', 'npts', 'npts_per_axis', 'tightness', 'uniformity', 'seed'},
         'source.grid',
     )
     _require_keys(grid, {'type'}, 'source.grid')
@@ -1282,6 +1285,10 @@ def _validate_source(source):
             'source.grid.type must be regular or random'
         )
     if grid_type == 'regular':
+        if 'seed' in grid:
+            raise WorkflowConfigError(
+                'source.grid.seed is only valid for random grids'
+            )
         if 'npts' in grid:
             raise WorkflowConfigError(
                 'source.grid.npts is only valid for random grids'
@@ -1322,6 +1329,10 @@ def _validate_source(source):
         grid['npts'] = _validate_positive_integer(
             grid['npts'], 'source.grid.npts'
         )
+        if 'seed' in grid:
+            grid['seed'] = _validate_random_seed(
+                grid['seed'], 'source.grid.seed'
+            )
     else:
         raise WorkflowConfigError('source.grid.type must be regular or random')
 
@@ -1438,6 +1449,24 @@ def _validate_positive_integer(value, name):
     if number <= 0 or number != number.to_integral_value():
         raise WorkflowConfigError('%s must be a positive integer' % name)
     return int(number)
+
+
+def _validate_random_seed(value, name):
+    if isinstance(value, (bool, np.bool_)) or not isinstance(
+        value, (int, np.integer)
+    ):
+        raise WorkflowConfigError(
+            '%s must be an integer between 0 and %d'
+            % (name, _NUMPY_RANDOM_SEED_MAX)
+        )
+
+    value = int(value)
+    if value < 0 or value > _NUMPY_RANDOM_SEED_MAX:
+        raise WorkflowConfigError(
+            '%s must be an integer between 0 and %d'
+            % (name, _NUMPY_RANDOM_SEED_MAX)
+        )
+    return value
 
 
 def _validate_objective(objective, names):
