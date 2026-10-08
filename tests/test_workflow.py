@@ -782,6 +782,176 @@ def test_bandpass_period_inputs_use_native_conversion_and_resolve_to_frequency(
     assert 'period_max' not in resolved
 
 
+@pytest.mark.parametrize('style', ['shorthand', 'native'])
+@pytest.mark.parametrize('alignment', [None, 0.25])
+def test_group_velocity_window_uses_native_processing_and_resolves(
+    tmp_path, style, alignment
+):
+    config = _config(tmp_path)
+    config.pop('picks')
+    surface = copy.deepcopy(config['measurements']['surface'])
+    config['measurements'] = {'surface': surface}
+
+    if style == 'shorthand':
+        surface['window'] = {
+            'type': 'group_velocity',
+            'group_velocity': '3500',
+            'window_length': 120,
+        }
+        if alignment is not None:
+            surface['window']['window_alignment'] = alignment
+    else:
+        surface.pop('window')
+        surface['processing'] = {
+            'window_type': 'group_velocity',
+            'group_velocity': '3500',
+            'window_length': 120,
+        }
+        if alignment is not None:
+            surface['processing']['window_alignment'] = alignment
+
+    normalized = _validate(tmp_path, config)
+    processors, _, measurements = _build_measurements(normalized)
+
+    processor = processors['surface']
+    resolved = measurements['surface']['processing']
+    expected_alignment = 0.5 if alignment is None else alignment
+
+    assert processor.window_type == 'group_velocity'
+    assert processor.group_velocity == pytest.approx(3500.0)
+    assert processor.window_length == pytest.approx(120.0)
+    assert processor.window_alignment == pytest.approx(expected_alignment)
+    assert resolved['window_type'] == 'group_velocity'
+    assert resolved['group_velocity'] == pytest.approx(3500.0)
+    assert resolved['window_length'] == pytest.approx(120.0)
+    assert resolved['window_alignment'] == pytest.approx(expected_alignment)
+    assert 'pick_type' not in resolved
+
+
+@pytest.mark.parametrize('style', ['shorthand', 'native'])
+def test_min_max_window_uses_native_processing_and_resolves(tmp_path, style):
+    config = _config(tmp_path)
+    config.pop('picks')
+    surface = copy.deepcopy(config['measurements']['surface'])
+    config['measurements'] = {'surface': surface}
+
+    if style == 'shorthand':
+        surface['window'] = {
+            'type': 'min_max',
+            'v_min': '2500',
+            'v_max': '4000',
+            'window_length': 30,
+        }
+    else:
+        surface.pop('window')
+        surface['processing'] = {
+            'window_type': 'min_max',
+            'v_min': '2500',
+            'v_max': '4000',
+            'window_length': 30,
+        }
+
+    normalized = _validate(tmp_path, config)
+    processors, _, measurements = _build_measurements(normalized)
+
+    processor = processors['surface']
+    resolved = measurements['surface']['processing']
+
+    assert processor.window_type == 'min_max'
+    assert processor.v_min == pytest.approx(2500.0)
+    assert processor.v_max == pytest.approx(4000.0)
+    assert processor.window_length == pytest.approx(30.0)
+    assert resolved['window_type'] == 'min_max'
+    assert resolved['v_min'] == pytest.approx(2500.0)
+    assert resolved['v_max'] == pytest.approx(4000.0)
+    assert resolved['window_length'] == pytest.approx(30.0)
+    assert 'pick_type' not in resolved
+
+
+@pytest.mark.parametrize(
+    'window, message',
+    [
+        (
+            {'type': 'group_velocity', 'window_length': 120},
+            'missing required key',
+        ),
+        (
+            {
+                'type': 'group_velocity',
+                'group_velocity': -1,
+                'window_length': 120,
+            },
+            'must be non-negative',
+        ),
+        (
+            {
+                'type': 'group_velocity',
+                'group_velocity': 3500,
+                'window_length': 120,
+                'window_alignment': 1.1,
+            },
+            'must be between 0 and 1',
+        ),
+        (
+            {'type': 'min_max', 'v_min': 2500, 'window_length': 30},
+            'missing required key',
+        ),
+        (
+            {
+                'type': 'min_max',
+                'v_min': 4500,
+                'v_max': 4000,
+                'window_length': 30,
+            },
+            '0 <= v_min <= v_max',
+        ),
+        (
+            {
+                'type': 'min_max',
+                'v_min': 2500,
+                'v_max': 4000,
+                'window_length': -1,
+            },
+            'must be non-negative',
+        ),
+        (
+            ['group_velocity', 120],
+            'requires mapping form',
+        ),
+    ],
+)
+def test_velocity_window_shorthand_rejects_invalid_values(
+    tmp_path, window, message
+):
+    config = _config(tmp_path)
+    config['measurements']['surface']['window'] = window
+
+    with pytest.raises(WorkflowConfigError, match=message):
+        _validate(tmp_path, config)
+
+
+def test_body_and_surface_windows_still_require_picks(tmp_path):
+    config = _config(tmp_path)
+    config.pop('picks')
+
+    with pytest.raises(WorkflowConfigError, match='pick_type'):
+        _validate(tmp_path, config)
+
+
+def test_group_velocity_shorthand_and_native_override_must_agree(tmp_path):
+    config = _config(tmp_path)
+    surface = config['measurements']['surface']
+    surface['window'] = {
+        'type': 'group_velocity',
+        'group_velocity': '3500',
+        'window_length': 120,
+    }
+    surface['processing'] = {'group_velocity': 3600}
+
+    with pytest.raises(WorkflowConfigError, match='conflicting values'):
+        _validate(tmp_path, config)
+
+
 def test_filter_and_period_shorthand_are_mutually_exclusive(tmp_path):
     config = _config(tmp_path)
     config['measurements']['body']['period'] = [10, 50]

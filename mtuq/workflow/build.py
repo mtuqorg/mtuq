@@ -247,6 +247,10 @@ def _resolved_processing(processor, supplied_kwargs):
         'FK_model',
         'window_type',
         'window_length',
+        'group_velocity',
+        'window_alignment',
+        'v_min',
+        'v_max',
         'apply_padding',
         'apply_statics',
         'time_shift_min',
@@ -265,7 +269,15 @@ def _resolved_processing(processor, supplied_kwargs):
             and not processor.apply_padding
         ):
             continue
-        if key in {'freq', 'freq_min', 'freq_max'} and hasattr(processor, key):
+        if key in {
+            'freq',
+            'freq_min',
+            'freq_max',
+            'group_velocity',
+            'window_alignment',
+            'v_min',
+            'v_max',
+        } and hasattr(processor, key):
             value = getattr(processor, key)
         elif key in {'scaling_power', 'scaling_coefficient'}:
             if not processor.apply_scaling:

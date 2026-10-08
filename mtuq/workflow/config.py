@@ -91,7 +91,12 @@ _SUPPORTED_PICK_TYPES = {
 }
 
 
-_SUPPORTED_WINDOW_TYPES = {'body_wave', 'surface_wave'}
+_SUPPORTED_WINDOW_TYPES = {
+    'body_wave',
+    'surface_wave',
+    'group_velocity',
+    'min_max',
+}
 
 
 _SUPPORTED_MEASUREMENT_ROLES = {
@@ -150,6 +155,10 @@ _NUMERIC_OVERRIDE_KEYS = {
     'period_min',
     'period_max',
     'window_length',
+    'group_velocity',
+    'window_alignment',
+    'v_min',
+    'v_max',
     'time_shift_min',
     'time_shift_max',
     'scaling_power',
@@ -826,13 +835,7 @@ def _normalize_processing(
         )
 
     if 'window' in measurement:
-        window_type, window_length = _validate_window(
-            measurement['window'], path
-        )
-        shorthand.update(
-            window_type=window_type,
-            window_length=window_length,
-        )
+        shorthand.update(_validate_window(measurement['window'], path))
 
     if picks is not None:
         shorthand['pick_type'] = picks['type']
@@ -864,6 +867,10 @@ def _normalize_processing(
         'FK_model',
         'window_type',
         'window_length',
+        'group_velocity',
+        'window_alignment',
+        'v_min',
+        'v_max',
         'apply_padding',
         'apply_statics',
         'time_shift_min',
@@ -898,6 +905,10 @@ def _normalize_processing(
         'period_min',
         'period_max',
         'window_length',
+        'group_velocity',
+        'window_alignment',
+        'v_min',
+        'v_max',
         'time_shift_min',
         'time_shift_max',
         'scaling_power',
@@ -1071,20 +1082,124 @@ def _validate_period(value, path):
 
 
 def _validate_window(value, path):
-    if not isinstance(value, (list, tuple)) or len(value) != 2:
-        raise WorkflowConfigError(
-            '%s.window must be [window_type, length]' % path
+    window_path = path + '.window'
+
+    if isinstance(value, (list, tuple)):
+        if len(value) != 2:
+            raise WorkflowConfigError(
+                '%s must be [window_type, length]' % window_path
+            )
+        window_type = value[0]
+        if window_type not in {'body_wave', 'surface_wave'}:
+            if window_type in _SUPPORTED_WINDOW_TYPES:
+                raise WorkflowConfigError(
+                    '%s type %r requires mapping form'
+                    % (window_path, window_type)
+                )
+            raise WorkflowConfigError(
+                'unsupported window type %r in measurement %s'
+                % (window_type, path.split('.')[-1])
+            )
+        window_length = _coerce_number(
+            value[1], window_path + '[1]'
         )
-    window_type = value[0]
-    if window_type not in _SUPPORTED_WINDOW_TYPES:
-        raise WorkflowConfigError(
-            'unsupported window type %r in measurement %s'
-            % (window_type, path.split('.')[-1])
+        if window_length <= 0.0:
+            raise WorkflowConfigError(
+                'measurement window length must be positive'
+            )
+        return {
+            'window_type': window_type,
+            'window_length': window_length,
+        }
+
+    window = copy.deepcopy(_require_mapping(value, window_path))
+    _require_keys(window, {'type'}, window_path)
+    window_type = window['type']
+
+    if window_type == 'group_velocity':
+        _reject_unknown(
+            window,
+            {'type', 'group_velocity', 'window_length', 'window_alignment'},
+            window_path,
         )
-    window_length = _coerce_number(value[1], path + '.window[1]')
-    if window_length <= 0.0:
-        raise WorkflowConfigError('measurement window length must be positive')
-    return window_type, window_length
+        _require_keys(
+            window,
+            {'group_velocity', 'window_length'},
+            window_path,
+        )
+        group_velocity = _coerce_number(
+            window['group_velocity'], window_path + '.group_velocity'
+        )
+        window_length = _coerce_number(
+            window['window_length'], window_path + '.window_length'
+        )
+        if group_velocity < 0.0:
+            raise WorkflowConfigError(
+                '%s.group_velocity must be non-negative' % window_path
+            )
+        if window_length <= 0.0:
+            raise WorkflowConfigError(
+                '%s.window_length must be positive' % window_path
+            )
+        normalized = {
+            'window_type': window_type,
+            'group_velocity': group_velocity,
+            'window_length': window_length,
+        }
+        if 'window_alignment' in window:
+            alignment = _coerce_number(
+                window['window_alignment'],
+                window_path + '.window_alignment',
+            )
+            if not 0.0 <= alignment <= 1.0:
+                raise WorkflowConfigError(
+                    '%s.window_alignment must be between 0 and 1'
+                    % window_path
+                )
+            normalized['window_alignment'] = alignment
+        return normalized
+
+    if window_type == 'min_max':
+        _reject_unknown(
+            window,
+            {'type', 'v_min', 'v_max', 'window_length'},
+            window_path,
+        )
+        _require_keys(
+            window,
+            {'v_min', 'v_max', 'window_length'},
+            window_path,
+        )
+        v_min = _coerce_number(window['v_min'], window_path + '.v_min')
+        v_max = _coerce_number(window['v_max'], window_path + '.v_max')
+        window_length = _coerce_number(
+            window['window_length'], window_path + '.window_length'
+        )
+        if not 0.0 <= v_min <= v_max:
+            raise WorkflowConfigError(
+                '%s must satisfy 0 <= v_min <= v_max' % window_path
+            )
+        if window_length < 0.0:
+            raise WorkflowConfigError(
+                '%s.window_length must be non-negative' % window_path
+            )
+        return {
+            'window_type': window_type,
+            'v_min': v_min,
+            'v_max': v_max,
+            'window_length': window_length,
+        }
+
+    if window_type in {'body_wave', 'surface_wave'}:
+        raise WorkflowConfigError(
+            '%s mapping form is only supported for group_velocity or min_max'
+            % window_path
+        )
+
+    raise WorkflowConfigError(
+        'unsupported window type %r in measurement %s'
+        % (window_type, path.split('.')[-1])
+    )
 
 
 def _validate_component_groups(groups, path):
@@ -1123,10 +1238,7 @@ def _validate_processing(processing, path):
     """
     _require_keys(
         processing,
-        {
-            'filter_type', 'pick_type', 'window_type', 'window_length',
-            'capuaf_file',
-        },
+        {'filter_type', 'window_type', 'window_length', 'capuaf_file'},
         path,
     )
 
@@ -1181,20 +1293,82 @@ def _validate_processing(processing, path):
                 '%s.%s must be positive' % (path, cutoff_key)
             )
 
+    window_type = processing['window_type']
     if (
-        not isinstance(processing['window_type'], str)
-        or processing['window_type'] not in _SUPPORTED_WINDOW_TYPES
+        not isinstance(window_type, str)
+        or window_type not in _SUPPORTED_WINDOW_TYPES
     ):
         raise WorkflowConfigError(
-            'unsupported window_type %r' % processing['window_type']
+            'unsupported window_type %r' % window_type
         )
 
-    if (
-        not isinstance(processing['pick_type'], str)
-        or processing['pick_type'] not in _SUPPORTED_PICK_TYPES
+    window_specific = {
+        'group_velocity',
+        'window_alignment',
+        'v_min',
+        'v_max',
+    }
+
+    if window_type in {'body_wave', 'surface_wave'}:
+        unexpected = window_specific.intersection(processing)
+        if unexpected:
+            raise WorkflowConfigError(
+                '%s has window parameter(s) incompatible with %s: %s'
+                % (path, window_type, ', '.join(sorted(unexpected)))
+            )
+        _require_keys(processing, {'pick_type'}, path)
+
+    elif window_type == 'group_velocity':
+        unexpected = {'v_min', 'v_max'}.intersection(processing)
+        if unexpected:
+            raise WorkflowConfigError(
+                '%s has window parameter(s) incompatible with '
+                'group_velocity: %s'
+                % (path, ', '.join(sorted(unexpected)))
+            )
+        _require_keys(processing, {'group_velocity'}, path)
+        if processing['group_velocity'] < 0.0:
+            raise WorkflowConfigError(
+                '%s.group_velocity must be non-negative' % path
+            )
+        if processing['window_length'] <= 0.0:
+            raise WorkflowConfigError(
+                '%s.window_length must be positive' % path
+            )
+        if 'window_alignment' in processing and not (
+            0.0 <= processing['window_alignment'] <= 1.0
+        ):
+            raise WorkflowConfigError(
+                '%s.window_alignment must be between 0 and 1' % path
+            )
+
+    elif window_type == 'min_max':
+        unexpected = {
+            'group_velocity',
+            'window_alignment',
+        }.intersection(processing)
+        if unexpected:
+            raise WorkflowConfigError(
+                '%s has window parameter(s) incompatible with min_max: %s'
+                % (path, ', '.join(sorted(unexpected)))
+            )
+        _require_keys(processing, {'v_min', 'v_max'}, path)
+        if not 0.0 <= processing['v_min'] <= processing['v_max']:
+            raise WorkflowConfigError(
+                '%s must satisfy 0 <= v_min <= v_max' % path
+            )
+        if processing['window_length'] < 0.0:
+            raise WorkflowConfigError(
+                '%s.window_length must be non-negative' % path
+            )
+
+    pick_type = processing.get('pick_type')
+    if pick_type is not None and (
+        not isinstance(pick_type, str)
+        or pick_type not in _SUPPORTED_PICK_TYPES
     ):
         raise WorkflowConfigError(
-            'unsupported pick_type %r' % processing['pick_type']
+            'unsupported pick_type %r' % pick_type
         )
 
     for key in (
