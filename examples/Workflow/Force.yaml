@@ -1,0 +1,53 @@
+version: 1
+
+event:
+  id: '20210809074550'
+  time: '2021-08-09T07:45:50.000000Z'
+  latitude: 61.24
+  longitude: -147.96
+  depth_in_m: 0
+
+data:
+  format: SAC
+  path: ../../data/examples/20210809074550/*[ZRT].sac
+  weights: ../../data/examples/20210809074550/weights.dat
+  units: m/s
+
+greens:
+  format: SYNGINE
+  model: ak135
+  cache_path: ~/.cache/mtuq/syngine
+
+picks:
+  type: taup
+  model: ak135
+
+misfit:
+  norm: L2
+  normalize: true
+
+measurements:
+  surface:
+    filter: [0.025, 0.0625]
+    window: [surface_wave, 150]
+    components: [ZR, T]
+    time_shift: 35
+
+source:
+  type: force
+  magnitudes_in_N:
+    start: 1e9
+    stop: 1e12
+    num: 7
+    spacing: log
+  grid:
+    type: regular
+    npts_per_axis: 45
+
+wavelet:
+  type: trapezoid
+  magnitude: 8
+
+plots: [waveform, misfit]
+
+output: output/20210809074550-force

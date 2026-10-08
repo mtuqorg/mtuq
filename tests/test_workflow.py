@@ -17,6 +17,8 @@ from mtuq.grid import (
     DeviatoricGridSemiregular,
     DoubleCoupleGridRandom,
     DoubleCoupleGridRegular,
+    ForceGridRandom,
+    ForceGridRegular,
     FullMomentTensorGridRandom,
     FullMomentTensorGridSemiregular,
 )
@@ -38,7 +40,7 @@ from mtuq.workflow.build import (
     prepare_workflow,
 )
 from mtuq.workflow.io import _write_input_config
-from mtuq.workflow.plots import _plot_waveform, generate_plots
+from mtuq.workflow.plots import _plot_misfit, _plot_waveform, generate_plots
 
 
 def _weights_file(tmp_path):
@@ -66,6 +68,21 @@ def _config(tmp_path, source_type='dc', grid_type='regular'):
         if grid_type == 'regular'
         else {'type': 'random', 'npts': 5}
     )
+    if source_type == 'force':
+        source = {
+            'type': 'force',
+            'magnitudes_in_N': [1.e9, 1.e10],
+            'grid': grid,
+        }
+        wavelet = {'type': 'trapezoid', 'magnitude': 8.0}
+    else:
+        source = {
+            'type': source_type,
+            'magnitudes': [4.4, 4.5, 4.6],
+            'grid': grid,
+        }
+        wavelet = {'type': 'trapezoid'}
+
     return {
         'version': 1,
         'event': {
@@ -107,12 +124,8 @@ def _config(tmp_path, source_type='dc', grid_type='regular'):
                 'time_shift': 10,
             },
         },
-        'source': {
-            'type': source_type,
-            'magnitudes': [4.4, 4.5, 4.6],
-            'grid': grid,
-        },
-        'wavelet': {'type': 'trapezoid'},
+        'source': source,
+        'wavelet': wavelet,
         'output': str(tmp_path / 'output'),
     }
 
@@ -549,6 +562,156 @@ def test_grid_function_dispatch(
         assert np.any(w != 0.0)
 
 
+@pytest.mark.parametrize(
+    'grid_type, expected_function',
+    [
+        ('regular', ForceGridRegular),
+        ('random', ForceGridRandom),
+    ],
+)
+def test_force_grid_function_dispatch(
+    tmp_path, grid_type, expected_function
+):
+    config = _config(tmp_path, 'force', grid_type)
+    if grid_type == 'random':
+        config['source']['grid']['seed'] = 12345
+    normalized = _validate(tmp_path, config)
+
+    actual = _build_grid(normalized)
+    kwargs = {
+        'magnitudes_in_N': normalized['source']['magnitudes_in_N'],
+    }
+    if grid_type == 'regular':
+        kwargs['npts_per_axis'] = normalized['source']['grid'][
+            'npts_per_axis'
+        ]
+        expected = expected_function(**kwargs)
+    else:
+        kwargs['npts'] = normalized['source']['grid']['npts']
+        state = np.random.get_state()
+        try:
+            np.random.seed(12345)
+            expected = expected_function(**kwargs)
+        finally:
+            np.random.set_state(state)
+
+    assert actual.dims == ('F0', 'phi', 'h')
+    assert actual.size == expected.size
+    for actual_coord, expected_coord in zip(actual.coords, expected.coords):
+        np.testing.assert_allclose(actual_coord, expected_coord)
+
+
+def test_force_source_uses_explicit_newton_magnitudes(tmp_path):
+    config = _config(tmp_path, 'force')
+    config['source']['magnitudes_in_N'] = ['1e9', '1e10']
+
+    normalized = _validate(tmp_path, config)
+    resolved = prepare_workflow(normalized).resolved
+
+    assert normalized['source']['magnitudes_in_N'] == [1.e9, 1.e10]
+    assert 'magnitudes' not in normalized['source']
+    assert resolved['source']['magnitudes_in_N'] == [1.e9, 1.e10]
+    assert resolved['source']['grid']['function'] == (
+        'mtuq.grid.ForceGridRegular'
+    )
+
+
+@pytest.mark.parametrize(
+    'spacing, expected_function',
+    [
+        ('linear', np.linspace),
+        ('log', np.geomspace),
+    ],
+)
+def test_force_source_expands_magnitude_range(
+    tmp_path, spacing, expected_function
+):
+    config = _config(tmp_path, 'force')
+    config['source']['magnitudes_in_N'] = {
+        'start': '1e9',
+        'stop': '1e12',
+        'num': 7,
+        'spacing': spacing,
+    }
+
+    normalized = _validate(tmp_path, config)
+    expected = expected_function(1.e9, 1.e12, 7)
+
+    np.testing.assert_allclose(
+        normalized['source']['magnitudes_in_N'], expected
+    )
+    resolved = prepare_workflow(normalized).resolved
+    np.testing.assert_allclose(
+        resolved['source']['magnitudes_in_N'], expected
+    )
+
+
+@pytest.mark.parametrize(
+    'magnitudes, message',
+    [
+        ({'start': 1e9, 'stop': 1e12, 'num': 7}, 'missing required key'),
+        (
+            {
+                'start': 1e9, 'stop': 1e12, 'num': 7,
+                'spacing': 'geometric',
+            },
+            'spacing must be linear or log',
+        ),
+        (
+            {'start': 0, 'stop': 1e12, 'num': 7, 'spacing': 'log'},
+            'start and stop must be positive',
+        ),
+        (
+            {'start': 1e12, 'stop': 1e9, 'num': 7, 'spacing': 'log'},
+            'start <= stop',
+        ),
+    ],
+)
+def test_force_source_rejects_invalid_magnitude_range(
+    tmp_path, magnitudes, message
+):
+    config = _config(tmp_path, 'force')
+    config['source']['magnitudes_in_N'] = magnitudes
+
+    with pytest.raises(WorkflowConfigError, match=message):
+        _validate(tmp_path, config)
+
+
+def test_force_source_rejects_moment_magnitude_field(tmp_path):
+    config = _config(tmp_path, 'force')
+    config['source']['magnitudes'] = config['source'].pop('magnitudes_in_N')
+
+    with pytest.raises(WorkflowConfigError, match='unknown key'):
+        _validate(tmp_path, config)
+
+
+def test_force_cap_trapezoid_requires_explicit_wavelet_magnitude(tmp_path):
+    config = _config(tmp_path, 'force')
+    config['wavelet'] = {'type': 'trapezoid'}
+
+    with pytest.raises(WorkflowConfigError, match='wavelet.magnitude'):
+        _validate(tmp_path, config)
+
+
+def test_force_greens_database_requests_force_terms(monkeypatch):
+    workflow_io = importlib.import_module('mtuq.workflow.io')
+    open_db = Mock(return_value=object())
+    monkeypatch.setattr(workflow_io, 'open_db', open_db)
+
+    workflow_io._open_greens_database(
+        {'format': 'SYNGINE', 'model': 'ak135'},
+        source_type='force',
+    )
+
+    open_db.assert_called_once_with(
+        path_or_url='',
+        format='SYNGINE',
+        model='ak135',
+        include_mt=False,
+        include_force=True,
+    )
+
+
 @pytest.mark.parametrize('literal', ['1_000_000', '1000000', '1e6'])
 def test_random_grid_npts_yaml_forms(tmp_path, literal):
     config = _config(tmp_path, 'fmt', 'random')
@@ -605,7 +768,7 @@ def test_regular_grid_rejects_seed(tmp_path):
         _validate(tmp_path, config)
 
 
-@pytest.mark.parametrize('source_type', ['dc', 'dev', 'fmt'])
+@pytest.mark.parametrize('source_type', ['dc', 'dev', 'fmt', 'force'])
 def test_random_grid_same_seed_reproduces_identical_coordinates(
     tmp_path, source_type
 ):
@@ -2130,6 +2293,99 @@ def test_confidence_failure_does_not_stop_other_plots(
     beachball.assert_called_once()
 
 
+def test_force_plot_schema_and_misfit_dispatch(
+    tmp_path, monkeypatch
+):
+    config = _config(tmp_path, 'force')
+    config['plots'] = ['waveform', 'misfit']
+    normalized = _validate(tmp_path, config)
+    assert normalized['plots'] == ['waveform', 'misfit']
+
+    for unsupported in ('beachball', 'confidence', 'likelihood'):
+        invalid = _config(tmp_path, 'force')
+        invalid['plots'] = [unsupported]
+        with pytest.raises(
+            WorkflowConfigError, match='force sources currently support'
+        ):
+            _validate(tmp_path, invalid, 'force-%s.yaml' % unsupported)
+
+    plotting = importlib.import_module('mtuq.workflow.plots')
+    force_plot = Mock()
+    monkeypatch.setitem(plotting._SOURCE_MISFIT_PLOTS, 'force', force_plot)
+
+    _plot_misfit(
+        tmp_path,
+        'force-event',
+        normalized,
+        results='results',
+        origins=None,
+    )
+
+    force_plot.assert_called_once_with(
+        str(tmp_path / 'force-event_misfit.png'),
+        'results',
+    )
+
+
+def test_run_force_uses_force_greens_and_writes_force_solution(
+    tmp_path, monkeypatch
+):
+    runner = importlib.import_module('mtuq.workflow.run')
+    config = _config(tmp_path, 'force')
+    config['measurements'] = {
+        'surface': config['measurements']['surface'],
+    }
+    recipe = _write_config(tmp_path, config)
+    output = tmp_path / 'force-output'
+
+    data, greens = Mock(), Mock()
+    data_term, greens_term = object(), object()
+    data.map.return_value = data_term
+    greens.map.return_value = greens_term
+    database = Mock()
+    database.get_greens_tensors.return_value = greens
+
+    class Surface(np.ndarray):
+        def source_idxmin(self):
+            return int(np.argmin(np.asarray(self)))
+
+    def search(data_arg, greens_arg, misfit, origin, grid):
+        values = np.arange(grid.size, dtype=float)
+        values[3] = -1.0
+        return values.view(Surface)
+
+    open_database = Mock(return_value=database)
+    monkeypatch.setattr(runner, '_mpi_comm', lambda: None)
+    monkeypatch.setattr(runner, 'read', Mock(return_value=data))
+    monkeypatch.setattr(runner, '_open_greens_database', open_database)
+    monkeypatch.setattr(runner, 'grid_search', Mock(side_effect=search))
+    monkeypatch.setattr(runner, '_save_native_results', Mock())
+
+    result = run(recipe, output=output)
+
+    assert open_database.call_count == 1
+    assert open_database.call_args.args[1] == 'force'
+    database.get_greens_tensors.assert_called_once_with(
+        data.get_stations.return_value, result['origin']
+    )
+    greens.convolve.assert_called_once()
+
+    expected_source = result['grid'].get(3)
+    expected_coordinates = result['grid'].get_dict(3)
+    assert result['source'].as_dict() == expected_source.as_dict()
+
+    solution = json.loads((output / 'solution.json').read_text())
+    for key, value in expected_source.as_dict().items():
+        assert solution[key] == pytest.approx(value)
+    for key, value in expected_coordinates.items():
+        assert solution[key] == pytest.approx(value)
+    assert 'M0' not in solution
+    assert 'Mw' not in solution
+    assert solution['depth_in_m'] == pytest.approx(
+        result['origin'].depth_in_m
+    )
+
+
 def test_workflow_examples_request_expected_plots():
     example_dir = Path(__file__).resolve().parents[1] / 'examples' / 'Workflow'
     recipes = sorted(example_dir.glob('*.yaml'))
@@ -2139,13 +2395,26 @@ def test_workflow_examples_request_expected_plots():
         'DetailedAnalysis.yaml',
         'Deviatoric.yaml',
         'DoubleCouple.yaml',
+        'Force.yaml',
         'FullMomentTensor.yaml',
         'HypocenterSearch.yaml',
         'RandomGrid.yaml',
     ]
     for recipe in recipes:
         config = yaml.safe_load(recipe.read_text(encoding='utf-8'))
-        expected = ['waveform', 'beachball', 'misfit']
+        if recipe.name == 'Force.yaml':
+            expected = ['waveform', 'misfit']
+            assert config['source']['type'] == 'force'
+            assert config['source']['magnitudes_in_N'] == {
+                'start': '1e9',
+                'stop': '1e12',
+                'num': 7,
+                'spacing': 'log',
+            }
+            assert config['wavelet']['magnitude'] == 8
+        else:
+            expected = ['waveform', 'beachball', 'misfit']
+
         if recipe.name == 'RandomGrid.yaml':
             expected.append('confidence')
             assert config['source']['grid']['seed'] == 12345

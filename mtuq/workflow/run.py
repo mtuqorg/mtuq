@@ -98,7 +98,9 @@ def run(config, output=None):
         stations = data.get_stations()
 
         print('Reading Greens functions...\n')
-        db = _open_greens_database(normalized['greens'])
+        db = _open_greens_database(
+            normalized['greens'], normalized['source']['type']
+        )
         greens = db.get_greens_tensors(stations, origin_arg)
 
         print('Convolving Greens functions...\n')
@@ -168,13 +170,14 @@ def run(config, output=None):
         origin_idx = total_results.origin_idxmin()
         best_origin = origins[origin_idx]
 
-    solution = merge_dicts(
-        best_source.as_dict(),
-        source_coordinates,
-        {'M0': best_source.moment()},
-        {'Mw': best_source.magnitude()},
-        best_origin,
-    )
+    solution_parts = [best_source.as_dict(), source_coordinates]
+    if normalized['source']['type'] != 'force':
+        solution_parts.extend([
+            {'M0': best_source.moment()},
+            {'Mw': best_source.magnitude()},
+        ])
+    solution_parts.append(best_origin)
+    solution = merge_dicts(*solution_parts)
     if origins is not None:
         solution['reference_origin'] = catalog_origin.as_dict().copy()
 

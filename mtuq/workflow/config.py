@@ -19,6 +19,8 @@ from mtuq.grid import (
     DeviatoricGridSemiregular,
     DoubleCoupleGridRandom,
     DoubleCoupleGridRegular,
+    ForceGridRandom,
+    ForceGridRegular,
     FullMomentTensorGridRandom,
     FullMomentTensorGridSemiregular,
 )
@@ -72,6 +74,8 @@ _SOURCE_FUNCTIONS = {
     ('dev', 'random'): DeviatoricGridRandom,
     ('fmt', 'regular'): FullMomentTensorGridSemiregular,
     ('fmt', 'random'): FullMomentTensorGridRandom,
+    ('force', 'regular'): ForceGridRegular,
+    ('force', 'random'): ForceGridRandom,
 }
 
 
@@ -331,6 +335,7 @@ def validate_config(config):
     _validate_source(source)
 
     if plots is not None:
+        _validate_force_plot_requests(plots, source)
         _validate_confidence_request(plots, source, misfit, objective)
         _validate_detailed_plot_requests(plots, source, misfit, objective)
     if save is not None:
@@ -340,6 +345,7 @@ def validate_config(config):
     wavelet = _require_mapping(wavelet, 'wavelet')
     wavelet.pop('function', None)
     _validate_wavelet(wavelet)
+    _validate_wavelet_source_compatibility(wavelet, source)
 
     _validate_generated_metadata(config.get('workflow'), config.get('mtuq'))
 
@@ -1426,24 +1432,44 @@ def _effective_values_equal(key, first, second):
 
 def _validate_source(source):
     source = _require_mapping(source, 'source')
-    allowed = {'type', 'magnitudes', 'grid'}
-    _reject_unknown(source, allowed, 'source')
-    _require_keys(source, allowed, 'source')
+    _require_keys(source, {'type', 'grid'}, 'source')
 
     source_type = source['type']
     if (
         not isinstance(source_type, str)
-        or source_type not in {'dc', 'dev', 'fmt'}
+        or source_type not in {'dc', 'dev', 'fmt', 'force'}
     ):
-        raise WorkflowConfigError('source.type must be dc, dev, or fmt')
+        raise WorkflowConfigError(
+            'source.type must be dc, dev, fmt, or force'
+        )
 
-    magnitudes = source['magnitudes']
-    if not isinstance(magnitudes, (list, tuple)) or not magnitudes:
-        raise WorkflowConfigError('source.magnitudes must be a non-empty list')
-    source['magnitudes'] = [
-        _coerce_number(value, 'source.magnitudes[%d]' % index)
-        for index, value in enumerate(magnitudes)
-    ]
+    if source_type == 'force':
+        _reject_unknown(
+            source, {'type', 'magnitudes_in_N', 'grid'}, 'source'
+        )
+        _require_keys(source, {'magnitudes_in_N'}, 'source')
+        magnitude_key = 'magnitudes_in_N'
+    else:
+        _reject_unknown(source, {'type', 'magnitudes', 'grid'}, 'source')
+        _require_keys(source, {'magnitudes'}, 'source')
+        magnitude_key = 'magnitudes'
+
+    magnitudes = source[magnitude_key]
+    if source_type == 'force' and isinstance(magnitudes, Mapping):
+        source[magnitude_key] = _expand_force_magnitudes(magnitudes)
+    else:
+        if not isinstance(magnitudes, (list, tuple)) or not magnitudes:
+            suffix = ' or range mapping' if source_type == 'force' else ''
+            raise WorkflowConfigError(
+                'source.%s must be a non-empty list%s'
+                % (magnitude_key, suffix)
+            )
+        source[magnitude_key] = [
+            _coerce_number(
+                value, 'source.%s[%d]' % (magnitude_key, index)
+            )
+            for index, value in enumerate(magnitudes)
+        ]
 
     grid = _require_mapping(source['grid'], 'source.grid')
     _reject_unknown(
@@ -1515,6 +1541,38 @@ def _validate_source(source):
             'unsupported source/grid combination: %s/%s'
             % (source_type, grid_type)
         )
+
+
+def _expand_force_magnitudes(config):
+    path = 'source.magnitudes_in_N'
+    config = copy.deepcopy(_require_mapping(config, path))
+    _reject_unknown(config, {'start', 'stop', 'num', 'spacing'}, path)
+    _require_keys(config, {'start', 'stop', 'num', 'spacing'}, path)
+
+    start = _coerce_number(config['start'], path + '.start')
+    stop = _coerce_number(config['stop'], path + '.stop')
+    num = _validate_positive_integer(config['num'], path + '.num')
+    spacing = config['spacing']
+
+    if not isinstance(spacing, str) or spacing not in {'linear', 'log'}:
+        raise WorkflowConfigError(
+            '%s.spacing must be linear or log' % path
+        )
+    if start <= 0.0 or stop <= 0.0:
+        raise WorkflowConfigError(
+            '%s start and stop must be positive' % path
+        )
+    if start > stop:
+        raise WorkflowConfigError(
+            '%s must satisfy start <= stop' % path
+        )
+
+    if spacing == 'linear':
+        values = np.linspace(start, stop, num)
+    else:
+        values = np.geomspace(start, stop, num)
+
+    return [float(value) for value in values]
 
 
 def _validate_wavelet(wavelet):
@@ -1615,6 +1673,21 @@ def _validate_wavelet(wavelet):
     if wavelet['dominant_frequency'] <= 0.0:
         raise WorkflowConfigError(
             'wavelet.dominant_frequency must be positive'
+        )
+
+
+def _validate_wavelet_source_compatibility(wavelet, source):
+    if source['type'] != 'force':
+        return
+
+    if (
+        wavelet['type'] == 'trapezoid'
+        and 'rise_time' not in wavelet
+        and 'magnitude' not in wavelet
+    ):
+        raise WorkflowConfigError(
+            'force sources using the CAP-style trapezoid require explicit '
+            'wavelet.magnitude'
         )
 
 
@@ -1727,6 +1800,19 @@ def _validate_save_requests(save, source, misfit, objective):
             )
         _validate_equal_positive_objective(
             objective, 'solutions', request_type='save'
+        )
+
+
+def _validate_force_plot_requests(plots, source):
+    if source['type'] != 'force':
+        return
+
+    supported = {'waveform', 'misfit'}
+    unsupported = [name for name in plots if name not in supported]
+    if unsupported:
+        raise WorkflowConfigError(
+            'force sources currently support only waveform and misfit plots; '
+            'unsupported plot(s): %s' % ', '.join(unsupported)
         )
 
 

@@ -112,7 +112,10 @@ def _build_grid(config):
     source = config['source']
     grid_cfg = source['grid']
     function = _SOURCE_FUNCTIONS[(source['type'], grid_cfg['type'])]
-    kwargs = {'magnitudes': list(source['magnitudes'])}
+    if source['type'] == 'force':
+        kwargs = {'magnitudes_in_N': list(source['magnitudes_in_N'])}
+    else:
+        kwargs = {'magnitudes': list(source['magnitudes'])}
     if grid_cfg['type'] == 'regular':
         kwargs['npts_per_axis'] = int(grid_cfg['npts_per_axis'])
         if source['type'] in {'dev', 'fmt'}:
@@ -148,6 +151,11 @@ def _build_wavelet(config):
             function = CapTrapezoid
             if 'magnitude' in wavelet_cfg:
                 magnitude = float(wavelet_cfg['magnitude'])
+            elif config['source']['type'] == 'force':
+                raise WorkflowConfigError(
+                    'force sources using the CAP-style trapezoid require '
+                    'explicit wavelet.magnitude'
+                )
             else:
                 magnitude = float(
                     np.median(

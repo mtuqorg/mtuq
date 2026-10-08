@@ -14,12 +14,15 @@ from mtuq import open_db
 from mtuq.grid_search import MTUQDataArray, MTUQDataFrame
 
 
-def _open_greens_database(greens):
+def _open_greens_database(greens, source_type=None):
     kwargs = {}
     if greens.get('model') is not None:
         kwargs['model'] = greens['model']
     if greens.get('cache_path') is not None:
         kwargs['cache_path'] = greens['cache_path']
+    if source_type == 'force':
+        kwargs['include_mt'] = False
+        kwargs['include_force'] = True
 
     return open_db(
         path_or_url=greens.get('path', ''),

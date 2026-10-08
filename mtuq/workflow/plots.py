@@ -21,6 +21,7 @@ from mtuq.graphics import (
     plot_marginal_vw,
     plot_misfit_dc,
     plot_misfit_depth,
+    plot_misfit_force,
     plot_misfit_latlon,
     plot_misfit_lune,
     plot_time_shifts,
@@ -33,6 +34,7 @@ _SOURCE_MISFIT_PLOTS = {
     'dc': plot_misfit_dc,
     'dev': plot_misfit_lune,
     'fmt': plot_misfit_lune,
+    'force': plot_misfit_force,
 }
 
 
@@ -294,6 +296,13 @@ def _plot_misfit(plot_dir, event_id, config, results, origins):
 
     search = config.get('origin_search')
     if search is None:
+        return
+
+    if source_type == 'force':
+        _print_skip(
+            'origin misfit',
+            'native origin-search plots are moment-tensor-specific',
+        )
         return
 
     if config['source']['grid']['type'] != 'regular':
